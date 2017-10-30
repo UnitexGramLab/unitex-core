@@ -435,7 +435,7 @@ OptimizedFst2State current_state, /* current state in the grammar */
 int pos, /* position in the token buffer, relative to the current origin */
 //int depth, /* number of nested calls to 'locate' */
 struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
-int *n_matches, /* number of sequences that have matched. It may be different from
+int *n_matches_subgraph, /* number of sequences that have matched. It may be different from
  * the length of the 'matches' list if a given sequence can be
  * matched in several ways. It is used to detect combinatorial
  * explosions due to bad written grammars. */
@@ -540,7 +540,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
             }
         } else {
             /* If we are in a subgraph */
-            if (*n_matches >= p->max_matches_per_subgraph) {
+            if (*n_matches_subgraph >= p->max_matches_per_subgraph) {
                 /* If there are too much matches, we suspect an error in the grammar
                  * like an infinite recursion */
                 error_at_token_pos(
@@ -551,7 +551,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
             } else {
                 /* If everything is fine, we add this match to the match list of the
                  * current graph level */
-                (*n_matches)++;
+                (*n_matches_subgraph)++;
                 p->literal_output->buffer[stack_top + 1] = '\0';
                 if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
                     (*matches) = insert_if_different(pos, -1, -1, (*matches),
@@ -676,7 +676,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                         p->weight=old_weight2;
                         locate(/*graph_depth,*/
                                 p->optimized_states[t1->state_number],
-                                L->pos_in_tokens, matches, n_matches,
+                                L->pos_in_tokens, matches, n_matches_subgraph,
                                 ctx, p);
 
 //p->backup_memory_reserve=reserve_new;
@@ -922,7 +922,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                             locate(/*graph_depth,*/
                                     p->optimized_states[t1->state_number],
                                     end_of_compound + 1, matches,
-                                    n_matches, ctx, p);
+                                    n_matches_subgraph, ctx, p);
                             p->literal_output->top = stack_top;
                             p->weight=old_weight1;
                             if (p->nb_output_variables != 0) {
@@ -1009,7 +1009,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                         locate(/*graph_depth,*/
                                 p->optimized_states[t1->state_number],
                                 end_of_compound + 1, matches,
-                                n_matches, ctx, p);
+                                n_matches_subgraph, ctx, p);
                         p->weight=old_weight1;
                         if (p->nb_output_variables != 0) {
                             remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -1189,7 +1189,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                  having no problem */
                 inc_dirty(p->backup_memory_reserve);
                 enter_morphological_mode(/*graph_depth,*/ t1->state_number, pos2,
-                        matches, n_matches, ctx, p);
+                        matches, n_matches_subgraph, ctx, p);
                 p->literal_output->top = stack_top;
                 break;
 
@@ -1218,7 +1218,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                  shift_variable_bounds(p->variables,real_origin-p->current_origin);
                  }*/
                 locate(/*graph_depth,*/ p->optimized_states[t1->state_number], pos2,
-                        matches, n_matches, ctx, p);
+                        matches, n_matches_subgraph, ctx, p);
                 /*if (p->output_policy!=IGNORE_OUTPUTS) {
                  install_variable_backup(p->variables,var_backup);
                  free_variable_backup(var_backup);
@@ -1264,7 +1264,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 int count = r.cardinality == 0 ? 1 : r.cardinality;
                 int i = 0;
 
-                // loop over all possible literal outputs
+                // this is to track if the exploration of the grammar reaches
+                // a final state
+                struct match_list* latest_match = p->match_cache_last;
+
+                // loop over all literal outputs
                 while (i < count) {
                   captured_chars=0;
 
@@ -1288,7 +1292,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                   locate(p->optimized_states[t1->state_number],
                          end,
                          matches,
-                         n_matches,
+                         n_matches_subgraph,
                          ctx,
                          p);
 
@@ -1304,6 +1308,10 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                   if (p->nb_output_variables != 0) {
                     remove_chars_from_output_variables(p->output_variables,
                                                        captured_chars);
+                  }
+
+                  if (latest_match != p->match_cache_last) {
+                    latest_match = p->match_cache_last;
                   }
 
                   // next literal output
@@ -1336,7 +1344,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
         locate(/*graph_depth,*/
                 p->optimized_states[output_variable_list->transition->state_number],
-                pos, matches, n_matches, ctx, p);
+                pos, matches, n_matches_subgraph, ctx, p);
         p->weight=old_weight1;
         unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 
@@ -1358,7 +1366,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
         locate(/*graph_depth,*/
                 p->optimized_states[output_variable_list->transition->state_number],
-                pos, matches, n_matches, ctx, p);
+                pos, matches, n_matches_subgraph, ctx, p);
         p->weight=old_weight1;
         set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
         p->literal_output->top = stack_top;
@@ -1380,7 +1388,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         set_variable_start_in_chars(p->input_variables, variable_list->variable_number, 0);
         locate(/*graph_depth,*/
                 p->optimized_states[variable_list->transition->state_number],
-                pos, matches, n_matches, ctx, p);
+                pos, matches, n_matches_subgraph, ctx, p);
         p->weight=old_weight1;
         p->literal_output->top = stack_top;
         if (ctx == NULL) {
@@ -1412,7 +1420,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         set_variable_end_in_chars(p->input_variables, variable_list->variable_number,-1);
         locate(/*graph_depth,*/
                 p->optimized_states[variable_list->transition->state_number],
-                pos, matches, n_matches, ctx, p);
+                pos, matches, n_matches_subgraph, ctx, p);
         p->weight=old_weight1;
         p->literal_output->top = stack_top;
         if (ctx == NULL) {
@@ -1466,7 +1474,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 while (states != NULL) {
                     locate(/*graph_depth,*/
                             p->optimized_states[states->state_number], pos,
-                            matches, n_matches, ctx, p);
+                            matches, n_matches_subgraph, ctx, p);
                     p->weight=old_weight1;
                     p->literal_output->top = stack_top;
                     states = states->next;
@@ -1495,7 +1503,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 while (states != NULL) {
                     locate(/*graph_depth,*/
                             p->optimized_states[states->state_number], pos,
-                            matches, n_matches, ctx, p);
+                            matches, n_matches_subgraph, ctx, p);
                     p->weight=old_weight1;
                     p->literal_output->top = stack_top;
                     states = states->next;
@@ -1583,7 +1591,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                         }
                     }
                     locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
-                            end_of_compound + 1, matches, n_matches,
+                            end_of_compound + 1, matches, n_matches_subgraph,
                             ctx, p);
                     p->weight=old_weight1;
                     p->literal_output->top = stack_top;
@@ -1645,7 +1653,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                         }
                     }
                     locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
-                            end_of_compound + 1, matches, n_matches,
+                            end_of_compound + 1, matches, n_matches_subgraph,
                             ctx, p);
                     p->weight=old_weight1;
                     p->literal_output->top = stack_top;
@@ -1685,7 +1693,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                         }
                         locate(/*graph_depth,*/
                                 p->optimized_states[t1->state_number], pos2 + 1,
-                                matches, n_matches, ctx, p);
+                                matches, n_matches_subgraph, ctx, p);
                         p->weight=old_weight1;
                         p->literal_output->top = stack_top;
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -1713,7 +1721,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                         }
                         locate(/*graph_depth,*/
                                 p->optimized_states[t1->state_number], pos2 + 1,
-                                matches, n_matches, ctx, p);
+                                matches, n_matches_subgraph, ctx, p);
                         p->weight=old_weight1;
                         p->literal_output->top = stack_top;
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -1758,7 +1766,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                                 p->protect_dic_chars);
                     }
                     locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
-                            pos2 + 1, matches, n_matches, ctx, p);
+                            pos2 + 1, matches, n_matches_subgraph, ctx, p);
                     p->weight=old_weight1;
                     p->literal_output->top = stack_top;
                     remove_chars_from_output_variables(p->output_variables,captured_chars);
