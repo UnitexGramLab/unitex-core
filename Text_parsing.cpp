@@ -275,8 +275,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     free_reserve(backup_reserve);
     p->backup_memory_reserve = NULL;
 
-    if ((p->search_limit == -1 ||
-         p->number_of_matches < p->search_limit)) {
+    if ((p->search_limit == -1 || p->number_of_matches < p->search_limit)) {
       p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->al.prv_alloc_generic);
     }
 
@@ -2337,8 +2336,7 @@ struct match_list* ptr;
 //            return NULL;
 //        }
         // this is an experimental change to avoid the issue described above
-        if ((p->search_limit != -1 &&
-             p->number_of_matches == p->search_limit)) {
+        if ((p->search_limit != -1 && p->number_of_matches == p->search_limit)) {
           // if no ambiguous outputs are allowed and we have reached the search
           // limitation, we free the remaining matches and return
           if (p->ambiguous_output_policy != ALLOW_AMBIGUOUS_OUTPUTS) {
@@ -2356,6 +2354,7 @@ struct match_list* ptr;
             while (l != NULL) {
               ptr = l;
               l = l->next;
+              // test if we have a non-ambiguous match
               if (l && !(p->start_position_last_printed_match == l->m.start_pos_in_token &&
                          p->end_position_last_printed_match   == l->m.end_pos_in_token)) {
                 ptr->next = l->next;
