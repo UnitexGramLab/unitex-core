@@ -695,6 +695,11 @@ for (;;) {
         goto read_script_param;
         script_call:
 
+        // 30.10.17 add cut predicate to have the control on match/fail
+        if (s[i1] == '!') {
+          ++i1;
+        }
+
         // 25.08.17 check before execute
         // Closing function
         if(s[i1]!='$') {

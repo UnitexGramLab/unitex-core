@@ -169,9 +169,9 @@ struct extended_output_render {
   int cardinality;
   struct stack_unichar* stack_template;
   struct stack_unichar* stack_render;
-  vector_ptr* output_sets;
   vector_int* placeholders;
   vector_int* divisors;
+  vector_ptr* output_sets;
 
   int new_output_set(int n_elements, int placeholder) const {
   ::push(stack_template, EXTENDED_OUTPUT_PLACEHOLDER);
@@ -299,9 +299,9 @@ struct extended_output_render {
       : cardinality(0),
         stack_template(new_stack_unichar(EXTENDED_OUTPUT_STACK_SIZE)),
         stack_render(new_stack_unichar(EXTENDED_OUTPUT_STACK_SIZE)),
-        output_sets(new_vector_ptr(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
         placeholders(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
-        divisors(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)) {
+        divisors(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
+        output_sets(new_vector_ptr(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)) {
   }
 
   ~extended_output_render() {

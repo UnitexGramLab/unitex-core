@@ -1309,6 +1309,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                                                        captured_chars);
                   }
 
+                  // if the exploration of the grammar reached a final state
                   if (latest_match != p->match_cache_last) {
                     latest_match = p->match_cache_last;
                   }
