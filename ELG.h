@@ -303,27 +303,35 @@ struct extended_output_render {
 
     // cut loop
     for (int i = 0; i < output_sets->nbelems; ++i) {
-      if (stops_after->tab[i] != STOP_AFTER_EXHAUSTIVELY_CHECK &&
-         (stops_after->tab[i] >= n_fails ||
-          stops_after->tab[i] >= n_matches)) {
+      if ( stops_after->tab[i] != STOP_AFTER_EXHAUSTIVELY_CHECK) {
+        //
+        if (stops_after->tab[i] >= STOP_AFTER_N_MATCHES  &&
+            n_matches >= stops_after->tab[i]) {
+          // get the current output of the set i
+          divisor = divisors->tab[i];
+          cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
+          index = (int) (*n / divisor) % cardinal;
+          variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[index];
 
-        // get the current output of the set i
-        divisor = divisors->tab[i];
-        cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
-        index = (int) (*n / divisor) % cardinal;
-        variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[index];
+          // keep only the current output of the set i
+          vector_ptr* vector = (vector_ptr*) output_sets->tab[i];
+          output_sets->tab[i] = new_vector_ptr(1);
+          add_output(i, variable);
+          free_vector_ptr(vector, (release_f) free);
 
-        // keep only the current output of the set i
-        vector_ptr* vector = (vector_ptr*) output_sets->tab[i];
-        output_sets->tab[i] = new_vector_ptr(1);
-        add_output(i, variable);
-        free_vector_ptr(vector, (release_f) free);
+          // update the stop after policy
+          stops_after->tab[i] = STOP_AFTER_EXHAUSTIVELY_CHECK;
 
-        // update the stop after policy
-        stops_after->tab[i] = STOP_AFTER_EXHAUSTIVELY_CHECK;
+          // it's necessary
+          has_changed = 1;
+       }
 
-        // it's necessary
-        has_changed = 1;
+       if (stops_after->tab[i] <= STOP_AFTER_N_FAILURES &&
+           n_fails  >= stops_after->tab[i]) {
+         *n = *count;
+         // update the stop after policy
+         stops_after->tab[i] = STOP_AFTER_EXHAUSTIVELY_CHECK;
+       }
       }
     }
 
