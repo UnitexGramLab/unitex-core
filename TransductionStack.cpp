@@ -1582,6 +1582,12 @@ int deal_with_extended_output(unichar* output,
     return 0;
   }
 
+  // there is no more chars to add to the output template,
+  // hence we put a mark to indicate the end of the string
+  if (!is_empty(r->stack_template)) {
+    push(r->stack_template, '\0');
+  }
+
   // prepare the output template to be rendered
   r->prepare();
 

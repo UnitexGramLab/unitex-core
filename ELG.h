@@ -209,10 +209,6 @@ struct extended_output_render {
     // if there are not a template to render return 0 as cardinal
     if(is_empty(stack_template)) return 0;
 
-    // there is no more chars to add to the output template,
-    // hence we put a mark to indicate the end of the string
-    push(stack_template, '\0');
-
     cardinality = 1;
     int i = output_sets->nbelems;
 
@@ -235,7 +231,7 @@ struct extended_output_render {
     return cardinality;
   }
 
-  // Renders a templated output into a literal output
+  // Renders a template into a literal output
   // n is a combination number among the total number of allowed combinations
   // 0 <= n < cardinality.
   // e.g., if the template is equal to "foo % bar % baz" and there are two output
@@ -246,13 +242,13 @@ struct extended_output_render {
   // for n = 3, "foo & bar 2 baz"
   // for n = 4, "foo + bar 1 baz"
   // for n = 5, "foo + bar 2 baz"
-  struct stack_unichar* render(int n) {
+  struct stack_unichar* render(int n) const {
     // if there are nothing to render then return NULL
     if (cardinality == 0) {
       return NULL;
     }
 
-    // if there are no output sets (cardinality <= 1)  or the
+    // if there are no output sets (nbelems == 0)  or the
     // given combination number (n) is out-of-bounds (0 <= n < cardinality)
     // then return the template without render it
     if (UNITEX_LIKELY(output_sets->nbelems == 0) || (n < 0 || n > cardinality)) {
@@ -263,9 +259,9 @@ struct extended_output_render {
     stack_render->top = -1;
 
     // auxiliary variables
+    int placeholder = 0;
     int divisor = 0;
     int cardinal = 0;
-    int placeholder = 0;
     int index = 0;
     int top = 0;
     unichar* literal = NULL;
@@ -284,7 +280,7 @@ struct extended_output_render {
       top = placeholder + 1;
     }
 
-    // process the remaing template
+    // process the remaining template
     if (top < stack_template->top) {
       literal = &stack_template->buffer[top];
       push_array(stack_render, literal, stack_template->top - top);
@@ -295,6 +291,46 @@ struct extended_output_render {
     push(stack_render, '\0');
 
     return stack_render;
+  }
+
+  void cut(int* count, int* n, int n_matches, int n_fails) {
+    // auxiliary variables
+    int divisor = 0;
+    int cardinal = 0;
+    int index = 0;
+    int has_changed = 0;
+    unichar* variable = NULL;
+
+    // cut loop
+    for (int i = 0; i < output_sets->nbelems; ++i) {
+      if (stops_after->tab[i] != STOP_AFTER_EXHAUSTIVELY_CHECK &&
+         (stops_after->tab[i] >= n_fails ||
+          stops_after->tab[i] >= n_matches)) {
+
+        // get the current output of the set i
+        divisor = divisors->tab[i];
+        cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
+        index = (int) (*n / divisor) % cardinal;
+        variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[index];
+
+        // keep only the current output of the set i
+        vector_ptr* vector = (vector_ptr*) output_sets->tab[i];
+        output_sets->tab[i] = new_vector_ptr(1);
+        add_output(i, variable);
+        free_vector_ptr(vector, (release_f) free);
+
+        // update the stop after policy
+        stops_after->tab[i] = STOP_AFTER_EXHAUSTIVELY_CHECK;
+
+        // it's necessary
+        has_changed = 1;
+      }
+    }
+
+    if (has_changed) {
+      *count = prepare();
+      *n = 0;
+    }
   }
 
   extended_output_render()

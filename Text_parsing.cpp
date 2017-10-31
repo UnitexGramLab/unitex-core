@@ -1261,23 +1261,30 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 // are at least n literals outputs associated to the
                 // current extended output
                 int count = r.cardinality == 0 ? 1 : r.cardinality;
-                int i = 0;
+                int n = 0;
 
                 int loop_matches = 0;
                 int loop_fails = 0;
+
+                struct stack_unichar* literal_output = NULL;
 
                 // this is to track if the exploration of the grammar reaches
                 // a final state
                 struct match_list* latest_match = p->match_cache_last;
 
                 // loop over all literal outputs
-                while (i < count) {
+                while (n < count) {
                   captured_chars=0;
 
                   // when output_policy == IGNORE_OUTPUTS r.cardinality is
                   // equal to 0, if r.cardinality is 0 then r.render(i)
-                  // returns NULL and append_literal_output() does nothing
-                  append_literal_output(r.render(i), p, &captured_chars);
+                  // returns NULL
+                  literal_output = r.render(n);
+
+                  // if literal_output is NULL append_literal_output() does
+                  // nothing, otherwise it appends the given output to the
+                  // literal stack
+                  append_literal_output(literal_output, p, &captured_chars);
 
                   if (p->output_policy == MERGE_OUTPUTS) {
                       /* Then, if we are in merge mode, we push the tokens that have
@@ -1312,10 +1319,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                                                        captured_chars);
                   }
 
-                  // if we have at least two outputs we can apply the
+                  // if we have at least two remaining outputs we can apply the
                   // stop after policy
-                  if (count > 1 && r.stops_after->tab[0] !=
-                      STOP_AFTER_EXHAUSTIVELY_CHECK) {
+                  if (count - n > 1) {
                     // if the exploration of the grammar reached a final state
                     if (latest_match != p->match_cache_last) {
                       latest_match = p->match_cache_last;
@@ -1323,15 +1329,12 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                     } else {
                       loop_fails--;
                     }
-
-                    if (r.stops_after->tab[0] >= loop_fails ||
-                        r.stops_after->tab[0] >= loop_matches) {
-                      break;
-                    }
+                    // cut the
+                    r.cut(&count, &n, loop_matches, loop_fails);
                   }
 
                   // next literal output
-                  i++;
+                  n++;
                 } // while (i < count)
 
                 // we restore the stack
