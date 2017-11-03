@@ -293,17 +293,12 @@ struct extended_output_render {
     return stack_render;
   }
 
-  void cut(int* count, int* n, int* n_matches, int n_fails) {
-//    if(output_sets->nbelems == 1 &&
-//       cut_after_policy->tab[0] != CUT_AFTER_EXHAUSTIVELY_CHECK) {
-//    }
-
+  void cut(int* n, int* n_matches, int* n_fails) {
     // auxiliary variables
     int divisor = 0;
     int cardinal = 0;
-    int index = 0;
-    int has_changed = 0;
-    unichar* variable = NULL;
+    int n_matches_has_changed = 0;
+    int n_fails_has_changed = 0;
 
     // cut loop
     for (int i = output_sets->nbelems - 1 ; i >= 0 ; --i) {
@@ -313,55 +308,32 @@ struct extended_output_render {
           // get the index of the set i
           divisor = divisors->tab[i];
           cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
-          index = (int) (*n / divisor) % cardinal;
 
           if ((*n+1) >= divisor) {
-            *n = ((cardinal * divisor * ((int) (*n / cardinal) + 1)) ) - 1;
-            has_changed = 1;
+            *n = ((cardinal * divisor * ((int) (*n / (cardinal*divisor)) + 1)) ) - 1;
+            n_matches_has_changed = 1;
           }
-
-//          // get the output of the set i
-//          variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[index];
-//
-//          // keep only the current output of the set i
-//          vector_ptr* vector = (vector_ptr*) output_sets->tab[i];
-//          output_sets->tab[i] = new_vector_ptr(1);
-//          add_output(i, variable);
-//          free_vector_ptr(vector, (release_f) free);
-//
-//          // update the stop after policy
-//          cut_after_policy->tab[i] = CUT_AFTER_EXHAUSTIVELY_CHECK;
-//
-//          // it's necessary
-//          has_changed = 1;
        } else if (cut_after_policy->tab[i] <= CUT_AFTER_N_FAILURES &&
-                  cut_after_policy->tab[i] >= n_fails) {
-         // get the index of the set i
+                  cut_after_policy->tab[i] >= *n_fails) {
          divisor = divisors->tab[i];
          cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
-         index = (int) (*n / divisor) % cardinal;
 
-         // remove
-         for (int j=cardinal-1 ; j >= index; --j) {
-           variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[j];
-           (((vector_ptr*) output_sets->tab[i])->nbelems)--;
-           free(variable);
+         if ((*n+1) >= divisor) {
+           *n = ((cardinal * divisor * ((int) (*n / (cardinal* divisor)) + 1)) ) - 1;
+           n_fails_has_changed = 1;
          }
-
-         // update the stop after policy
-         cut_after_policy->tab[i] = CUT_AFTER_EXHAUSTIVELY_CHECK;
-
-         // it's necessary
-         has_changed = 1;
        }
       }
     }
 
-    if (has_changed) {
+    if (n_matches_has_changed) {
       *n_matches = 0;
-//      *count = prepare();
-//      *n = 0;
     }
+
+    if (n_fails_has_changed) {
+      *n_fails = 0;
+    }
+
   }
 
   extended_output_render()

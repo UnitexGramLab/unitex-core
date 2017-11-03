@@ -1330,7 +1330,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                       loop_fails--;
                     }
                     // try to cut the remaining outputs
-                    r.cut(&count, &n, &loop_matches, loop_fails);
+                    r.cut(&n, &loop_matches, &loop_fails);
                   }
 
                   // next literal output
