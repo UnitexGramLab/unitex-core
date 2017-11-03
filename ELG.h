@@ -171,14 +171,14 @@ struct extended_output_render {
   struct stack_unichar* stack_render;
   vector_int* placeholders;
   vector_int* divisors;
-  vector_int* stops_after;
+  vector_int* cut_after_policy;
   vector_ptr* output_sets;
 
   int new_output_set(int n_elements, int stop_after, int placeholder) const {
   ::push(stack_template, EXTENDED_OUTPUT_PLACEHOLDER);
     vector_int_add(placeholders,placeholder + 1);
     vector_int_add(divisors,0);
-    vector_int_add(stops_after,stop_after);
+    vector_int_add(cut_after_policy,stop_after);
     return vector_ptr_add(output_sets, new_vector_ptr(n_elements));
   }
 
@@ -293,7 +293,11 @@ struct extended_output_render {
     return stack_render;
   }
 
-  void cut(int* count, int* n, int n_matches, int n_fails) {
+  void cut(int* count, int* n, int* n_matches, int n_fails) {
+//    if(output_sets->nbelems == 1 &&
+//       cut_after_policy->tab[0] != CUT_AFTER_EXHAUSTIVELY_CHECK) {
+//    }
+
     // auxiliary variables
     int divisor = 0;
     int cardinal = 0;
@@ -302,42 +306,61 @@ struct extended_output_render {
     unichar* variable = NULL;
 
     // cut loop
-    for (int i = 0; i < output_sets->nbelems; ++i) {
-      if ( stops_after->tab[i] != STOP_AFTER_EXHAUSTIVELY_CHECK) {
-        //
-        if (stops_after->tab[i] >= STOP_AFTER_N_MATCHES  &&
-            n_matches >= stops_after->tab[i]) {
-          // get the current output of the set i
+    for (int i = output_sets->nbelems - 1 ; i >= 0 ; --i) {
+      if (cut_after_policy->tab[i] != CUT_AFTER_EXHAUSTIVELY_CHECK) {
+        if (cut_after_policy->tab[i] >= CUT_AFTER_N_MATCHES  &&
+            cut_after_policy->tab[i] <= *n_matches) {
+          // get the index of the set i
           divisor = divisors->tab[i];
           cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
           index = (int) (*n / divisor) % cardinal;
-          variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[index];
 
-          // keep only the current output of the set i
-          vector_ptr* vector = (vector_ptr*) output_sets->tab[i];
-          output_sets->tab[i] = new_vector_ptr(1);
-          add_output(i, variable);
-          free_vector_ptr(vector, (release_f) free);
+          if ((*n+1) >= divisor) {
+            *n = ((cardinal * divisor * ((int) (*n / cardinal) + 1)) ) - 1;
+            has_changed = 1;
+          }
 
-          // update the stop after policy
-          stops_after->tab[i] = STOP_AFTER_EXHAUSTIVELY_CHECK;
+//          // get the output of the set i
+//          variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[index];
+//
+//          // keep only the current output of the set i
+//          vector_ptr* vector = (vector_ptr*) output_sets->tab[i];
+//          output_sets->tab[i] = new_vector_ptr(1);
+//          add_output(i, variable);
+//          free_vector_ptr(vector, (release_f) free);
+//
+//          // update the stop after policy
+//          cut_after_policy->tab[i] = CUT_AFTER_EXHAUSTIVELY_CHECK;
+//
+//          // it's necessary
+//          has_changed = 1;
+       } else if (cut_after_policy->tab[i] <= CUT_AFTER_N_FAILURES &&
+                  cut_after_policy->tab[i] >= n_fails) {
+         // get the index of the set i
+         divisor = divisors->tab[i];
+         cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
+         index = (int) (*n / divisor) % cardinal;
 
-          // it's necessary
-          has_changed = 1;
-       }
+         // remove
+         for (int j=cardinal-1 ; j >= index; --j) {
+           variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[j];
+           (((vector_ptr*) output_sets->tab[i])->nbelems)--;
+           free(variable);
+         }
 
-       if (stops_after->tab[i] <= STOP_AFTER_N_FAILURES &&
-           n_fails  >= stops_after->tab[i]) {
-         *n = *count;
          // update the stop after policy
-         stops_after->tab[i] = STOP_AFTER_EXHAUSTIVELY_CHECK;
+         cut_after_policy->tab[i] = CUT_AFTER_EXHAUSTIVELY_CHECK;
+
+         // it's necessary
+         has_changed = 1;
        }
       }
     }
 
     if (has_changed) {
-      *count = prepare();
-      *n = 0;
+      *n_matches = 0;
+//      *count = prepare();
+//      *n = 0;
     }
   }
 
@@ -347,7 +370,7 @@ struct extended_output_render {
         stack_render(new_stack_unichar(EXTENDED_OUTPUT_STACK_SIZE)),
         placeholders(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
         divisors(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
-        stops_after(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
+        cut_after_policy(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
         output_sets(new_vector_ptr(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)) {
   }
 
@@ -356,7 +379,7 @@ struct extended_output_render {
     free_stack_unichar(stack_render);
     free_vector_int(placeholders);
     free_vector_int(divisors);
-    free_vector_int(stops_after);
+    free_vector_int(cut_after_policy);
     free_vector_ptr_element(output_sets,
                             (release_p) free_vector_ptr,
                             (release_f) free);

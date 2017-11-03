@@ -1329,8 +1329,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                     } else {
                       loop_fails--;
                     }
-                    // cut the
-                    r.cut(&count, &n, loop_matches, loop_fails);
+                    // try to cut the remaining outputs
+                    r.cut(&count, &n, &loop_matches, loop_fails);
                   }
 
                   // next literal output

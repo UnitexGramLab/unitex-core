@@ -697,15 +697,15 @@ for (;;) {
 
         // 30.10.17 add a stop-after operator to have the control over checking
         // the set of outputs of an extended function
-        int stop_after = STOP_AFTER_EXHAUSTIVELY_CHECK;
+        int stop_after = CUT_AFTER_EXHAUSTIVELY_CHECK;
 
         if (s[i1] == '!') {
           ++i1;
           if (s[i1] == '!') {
             ++i1;
-            stop_after = STOP_AFTER_N_FAILURES * 1;
+            stop_after = CUT_AFTER_N_FAILURES * 1;
           } else {
-            stop_after = STOP_AFTER_N_MATCHES * 1;
+            stop_after = CUT_AFTER_N_MATCHES * 1;
           }
         }
 
