@@ -1014,11 +1014,11 @@ U__DECLARE__ELG__FUNCTION__META_TEST__(is_space,match_meta(p, pos, 0, 0, META_SP
 
 int tag(lua_State * L) {
   // get locate params
-  struct locate_parameters* p = get_locate_params(L);
+//  struct locate_parameters* p = get_locate_params(L);
 
-  locate(p->optimized_states[p->fst2->initial_states[1]],
-         p->current_origin + p->last_tested_position + 1, NULL,
-         NULL, NULL, p);
+//  locate(p->optimized_states[p->fst2->initial_states[1]],
+//         p->current_origin + p->last_tested_position + 1, NULL,
+//         NULL, NULL, p);
 
 //  // get locate params
 //  struct locate_parameters* p = get_locate_params(L);

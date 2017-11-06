@@ -1420,7 +1420,7 @@ int state, /* current state in the grammar */
 int pos, /* position in the token buffer, relative to the current origin */
 //int depth, /* number of nested calls to 'locate' */
 struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
-int* n_matches_subgraph, /* number of sequences that have matched. It may be different from
+struct locate_n_matches* n_matches, /* number of sequences that have matched. It may be different from
  * the length of the 'matches' list if a given sequence can be
  * matched in several ways. It is used to detect combinatory
  * explosions due to bad written grammars. */
@@ -1500,7 +1500,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
              * because we are outside the morphological mode
              */
             locate(/*graph_depth, */p->optimized_states[L->state_number],
-                    L->pos_in_tokens, matches, n_matches_subgraph, ctx, p);
+                    L->pos_in_tokens, matches, n_matches, ctx, p);
             /*
             if ((p->max_count_call > 0) && (p->counting_step.count_call >= p->max_count_call)) {
                 u_printf("stop computing token %u after %u step computing\n",

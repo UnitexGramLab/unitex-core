@@ -123,6 +123,8 @@ struct locate_allocators {
 struct locate_n_matches {
   int maingraph;
   int subgraph;
+  float fail;
+  locate_n_matches(): maingraph(0), subgraph(0), fail(0){}
 };
 
 struct locate_parameters {
