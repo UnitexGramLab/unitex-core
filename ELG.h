@@ -297,6 +297,7 @@ struct extended_output_render {
     // auxiliary variables
     int divisor = 0;
     int cardinal = 0;
+    int index = 0;
     int n_matches_has_changed = 0;
     int n_fails_has_changed = 0;
 
@@ -308,8 +309,9 @@ struct extended_output_render {
           // get the index of the set i
           divisor = divisors->tab[i];
           cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
+          index = (int) (*n / divisor) % cardinal;
 
-          if ((*n+1) >= divisor) {
+          if ((*n + 1) >= (index + 1) * divisor) {
             *n = ((cardinal * divisor * ((int) (*n / (cardinal*divisor)) + 1)) ) - 1;
             n_matches_has_changed = 1;
           }
@@ -317,14 +319,15 @@ struct extended_output_render {
                   cut_after_policy->tab[i] >= *n_fails) {
          divisor = divisors->tab[i];
          cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
+         index = (int) (*n / divisor) % cardinal;
 
-         if ((*n+1) >= divisor) {
+          if ((*n + 1) >= (index + 1) * divisor) {
            *n = ((cardinal * divisor * ((int) (*n / (cardinal* divisor)) + 1)) ) - 1;
            n_fails_has_changed = 1;
          }
-       }
-      }
-    }
+       }  // CUT_AFTER_N_FAILURES
+      }  // (cut_after_policy->tab[i] != CUT_AFTER_EXHAUSTIVELY_CHECK)
+    }  // cut loop
 
     if (n_matches_has_changed) {
       *n_matches = 0;

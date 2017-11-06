@@ -407,7 +407,7 @@ static inline int at_text_end(struct locate_parameters* p,int pos) {
 void locate(OptimizedFst2State current_state,
              int pos,
              struct parsing_info** matches,
-             int *n_matches,
+             int* n_matches_subgraph,
              struct list_context* ctx,
              struct locate_parameters* p) {
   // put the arguments of the locate call on the global environment
@@ -417,7 +417,7 @@ void locate(OptimizedFst2State current_state,
   LocateMode locate_mode = p->locate_mode;
 
   // call locate
-  core_tokenized_locate(current_state, pos, matches, n_matches, ctx, p);
+  core_tokenized_locate(current_state, pos, matches, n_matches_subgraph, ctx, p);
 
   // restore the minimal unit of analysis
   p->locate_mode = locate_mode;
@@ -434,7 +434,7 @@ OptimizedFst2State current_state, /* current state in the grammar */
 int pos, /* position in the token buffer, relative to the current origin */
 //int depth, /* number of nested calls to 'locate' */
 struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
-int *n_matches_subgraph, /* number of sequences that have matched. It may be different from
+int* n_matches_subgraph, /* number of sequences that have matched. It may be different from
  * the length of the 'matches' list if a given sequence can be
  * matched in several ways. It is used to detect combinatorial
  * explosions due to bad written grammars. */
@@ -1248,10 +1248,10 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 }
 
                 // when we're capturing output variables in debug mode,
-                // deal_with_extended_output() can push characters to the
-                // literal stack, we use this variable to keep the current
-                // stack top during processing an extended output with
-                // with multiple values ​​returned
+                // deal_with_extended_output() push some control characters
+                // to the literal stack. We use the following variable
+                // to keep the current stack while processing an extended
+                // output which returns multiple values
                 int stack_top_extended_output = p->literal_output->top;
 
                 // if the cardinality is equal to zero this means no output,
@@ -1273,6 +1273,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 struct match_list* latest_match = p->match_cache_last;
 
                 // loop over all literal outputs
+                // the loop could be break using the cut operators:
+                // !  : break after first match
+                // !! : break after first fail
                 while (n < count) {
                   captured_chars=0;
 
