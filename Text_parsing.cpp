@@ -403,8 +403,9 @@ static inline int at_text_end(struct locate_parameters* p,int pos) {
 
 /**
  * This is the core function of the Locate program.
+ * Returns 1 if the exploration reaches a final state; 0 otherwise
  */
-void locate(OptimizedFst2State current_state,
+int locate(OptimizedFst2State current_state,
              int pos,
              struct parsing_info** matches,
              int* n_matches_subgraph,
@@ -416,6 +417,8 @@ void locate(OptimizedFst2State current_state,
   // save the minimal unit of analysis
   LocateMode locate_mode = p->locate_mode;
 
+  struct match_list* latest_match = p->match_cache_last;
+
   // call locate
   core_tokenized_locate(current_state, pos, matches, n_matches_subgraph, ctx, p);
 
@@ -424,6 +427,8 @@ void locate(OptimizedFst2State current_state,
 
   // put the arguments of the locate call on the global environment
   //p->elg->set_locate_call_params(current_state, pos, matches, n_matches, ctx, p);
+
+  return (latest_match != p->match_cache_last ? 1 : 0);
 }
 
 /**
@@ -1265,12 +1270,13 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
                 int loop_matches = 0;
                 int loop_fails = 0;
+                int locate_match = 0;
 
                 struct stack_unichar* literal_output = NULL;
 
                 // this is to track if the exploration of the grammar reaches
                 // a final state
-                struct match_list* latest_match = p->match_cache_last;
+                //struct match_list* latest_match = p->match_cache_last;
 
                 // loop over all literal outputs
                 // the loop could be break using the cut operators:
@@ -1279,9 +1285,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 while (n < count) {
                   captured_chars=0;
 
-                  // when output_policy == IGNORE_OUTPUTS r.cardinality is
-                  // equal to 0, if r.cardinality is 0 then r.render(i)
-                  // returns NULL
+                  // when the output_policy is equal to IGNORE_OUTPUTS, then
+                  // r.cardinality is always 0. If r.cardinality is 0 then
+                  // r.render(n) always returns NULL
                   literal_output = r.render(n);
 
                   // if literal_output is NULL append_literal_output() does
@@ -1301,7 +1307,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                   }
 
                   //  we continue the exploration of the grammar
-                  locate(p->optimized_states[t1->state_number],
+                  locate_match = locate(p->optimized_states[t1->state_number],
                          end,
                          matches,
                          n_matches_subgraph,
@@ -1326,8 +1332,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                   // stop after policy
                   if (count - n > 1) {
                     // if the exploration of the grammar reached a final state
-                    if (latest_match != p->match_cache_last) {
-                      latest_match = p->match_cache_last;
+                    if (locate_match) {
                       loop_matches++;
                     } else {
                       loop_fails--;

@@ -70,7 +70,7 @@ void launch_locate(U_FILE*,long int,U_FILE*,struct locate_parameters*);
 void core_tokenized_locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int*,struct list_context*,struct locate_parameters*);
 unichar* get_token_sequence(struct locate_parameters*, int, int);
 
-void locate(OptimizedFst2State,int,struct parsing_info**,int*,struct list_context*,struct locate_parameters*);
+int locate(OptimizedFst2State,int,struct parsing_info**,int*,struct list_context*,struct locate_parameters*);
 
 /**
  * The logical XOR.

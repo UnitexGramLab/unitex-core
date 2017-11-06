@@ -120,6 +120,11 @@ struct locate_allocators {
    Abstract_allocator prv_alloc_recycle_morphlogical_content_buffer;
 };
 
+struct locate_n_matches {
+  int maingraph;
+  int subgraph;
+};
+
 struct locate_parameters {
    struct locate_allocators al;
    /* The transduction variables of the fst2 */
