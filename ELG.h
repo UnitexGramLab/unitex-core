@@ -293,7 +293,7 @@ struct extended_output_render {
     return stack_render;
   }
 
-  void cut(int* n, int* n_matches) {
+  void cut(int* n, int* n_matches, int* n_count) {
     // auxiliary variables
     int divisor = 0;
     int cardinal = 0;
@@ -310,16 +310,17 @@ struct extended_output_render {
           cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
           index = (int) (*n / divisor) % cardinal;
 
-          if ((*n + 1) >= (index + 1) * divisor) {
+          if ((*n + 1) >= (index + (*n_count * cardinal) + 1) * divisor) {
             *n = ((cardinal * divisor * ((int) (*n / (cardinal*divisor)) + 1)) ) - 1;
             n_matches_has_changed = 1;
           }
-       }
-      }  // (cut_after_policy->tab[i] != CUT_AFTER_EXHAUSTIVELY_CHECK)
-    }  // cut loop
+       }  // cut_after_policy->tab[i] >= CUT_AFTER_N_MATCHES
+      }  // cut_after_policy->tab[i] != CUT_AFTER_EXHAUSTIVELY_CHECK)
+    }  // for int i
 
     if (n_matches_has_changed) {
       *n_matches = 0;
+      (*n_count)++;
     }
   }
 

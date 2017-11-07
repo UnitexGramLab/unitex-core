@@ -477,6 +477,7 @@ int extended_locate(unichar* output,
   int loop_matches = 0;
   int locate_matches = 0;
   int captured_chars = 0;
+  int n_count = 0;
 
   struct stack_unichar* literal_output = NULL;
 
@@ -535,7 +536,7 @@ int extended_locate(unichar* output,
     if (count - n > 1 && locate_matches) {
       loop_matches += locate_matches;
       // try to cut the remaining outputs
-      r.cut(&n, &loop_matches);
+      r.cut(&n, &loop_matches, &n_count);
     }
 
     // next literal output
