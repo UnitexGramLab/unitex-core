@@ -1285,14 +1285,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
                 struct stack_unichar* literal_output = NULL;
 
-                // this is to track if the exploration of the grammar reaches
-                // a final state
-                //struct match_list* latest_match = p->match_cache_last;
-
                 // loop over all literal outputs
-                // the loop could be break using the cut operators:
+                // the loop could be break using the cut operator:
                 // !  : break after first match
-                // !! : break after first fail
                 while (n < count) {
                   captured_chars=0;
 
