@@ -403,7 +403,7 @@ static inline int at_text_end(struct locate_parameters* p,int pos) {
 
 /**
  * This is the core function of the Locate program.
- * Returns 1 if the exploration reaches a final state; 0 otherwise
+ * Returns the number of times the exploration reaches a final state and adds a match
  */
 int locate(OptimizedFst2State current_state,
              int pos,
@@ -1281,7 +1281,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 int n = 0;
 
                 int loop_matches = 0;
-                int loop_fails = 0;
                 int locate_matches = 0;
 
                 struct stack_unichar* literal_output = NULL;
@@ -1340,17 +1339,13 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                                                        captured_chars);
                   }
 
-                  // if we have at least two remaining outputs we can apply the
+                  // if we have at least two remaining outputs and the exploration
+                  // of the grammar reached a final state, then we can apply the
                   // stop after policy
-                  if (count - n > 1) {
-                    // if the exploration of the grammar reached a final state
-                    if (locate_matches) {
-                      loop_matches += locate_matches;
-                    } else {
-                      loop_fails--;
-                    }
+                  if (count - n > 1 && locate_matches) {
+                    loop_matches += locate_matches;
                     // try to cut the remaining outputs
-                    r.cut(&n, &loop_matches, &loop_fails);
+                    r.cut(&n, &loop_matches);
                   }
 
                   // next literal output

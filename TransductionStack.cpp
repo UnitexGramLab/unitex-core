@@ -695,18 +695,14 @@ for (;;) {
         goto read_script_param;
         script_call:
 
-        // 30.10.17 add a stop-after operator to have the control over checking
-        // the set of outputs of an extended function
+        // 30.10.17 add a cut operator to have the control over the number of
+        // outputs to process on an extended function which returns multiple
+        // values
         int stop_after = CUT_AFTER_EXHAUSTIVELY_CHECK;
 
         if (s[i1] == '!') {
           ++i1;
-          if (s[i1] == '!') {
-            ++i1;
-            stop_after = CUT_AFTER_N_FAILURES * 1;
-          } else {
-            stop_after = CUT_AFTER_N_MATCHES * 1;
-          }
+          stop_after = CUT_AFTER_N_MATCHES * 1;
         }
 
         // 25.08.17 check before execute
