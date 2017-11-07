@@ -430,6 +430,124 @@ int locate(OptimizedFst2State current_state,
   return n_matches->maingraph - locate_matches;
 }
 
+int extended_locate(unichar* output,
+                    int start,
+                    int end,
+                    int previous_stack_top,
+                    int previous_weight,
+                    int append_space_on_merge_mode,
+                    OptimizedFst2State current_state,
+                    int pos,
+                    struct parsing_info** matches,
+                    struct locate_n_matches* n_matches,
+                    struct list_context* ctx,
+                    struct locate_parameters* p) {
+  if (p->output_policy == MERGE_OUTPUTS && append_space_on_merge_mode) {
+      push_input_char(p->literal_output, ' ', p->protect_dic_chars);
+  }
+
+  // to store extended outputs and render literal outputs
+  extended_output_render r;
+
+  // when outputs are not ignored the current extended output
+  // is processed
+  if (p->output_policy != IGNORE_OUTPUTS) {
+      /* We process its output */
+      if (!deal_with_extended_output(output,p,&r)) {
+          return 0;
+      }
+  }
+
+  // when we're capturing output variables in debug mode,
+  // deal_with_extended_output() push some control characters
+  // to the literal stack. We use the following variable
+  // to keep the current stack while processing an extended
+  // output which returns multiple values
+  int stack_top_extended_output = p->literal_output->top;
+
+  // if the cardinality is equal to zero this means no output,
+  // this happens, e.g., when the p->output_policy is equal
+  // to IGNORE_OUTPUTS or when the current output is empty,
+  // a cardinality equal or greater than 1 means that there
+  // are at least n literals outputs associated to the
+  // current extended output
+  int count = r.cardinality == 0 ? 1 : r.cardinality;
+  int n = 0;
+
+  int loop_matches = 0;
+  int locate_matches = 0;
+  int captured_chars = 0;
+
+  struct stack_unichar* literal_output = NULL;
+
+  // loop over all literal outputs
+  // the loop could be break using the cut operator:
+  // !  : break after first match
+  while (n < count) {
+    captured_chars=0;
+
+    // when the output_policy is equal to IGNORE_OUTPUTS, then
+    // r.cardinality is always 0. If r.cardinality is 0 then
+    // r.render(n) always returns NULL
+    literal_output = r.render(n);
+
+    // if literal_output is NULL append_literal_output() does
+    // nothing, otherwise it appends the given output to the
+    // literal stack
+    append_literal_output(literal_output, p, &captured_chars);
+
+    if (p->output_policy == MERGE_OUTPUTS) {
+        /* Then, if we are in merge mode, we push the tokens that have
+         * been read to the output */
+        for (int y = start; y < end; y++) {
+          push_input_string(
+              p->literal_output,
+              p->tokens->value[p->buffer[y + p->current_origin]],
+              p->protect_dic_chars);
+        }
+    }
+
+    //  we continue the exploration of the grammar
+    locate_matches = locate(current_state,
+                            end,
+                            matches,
+                            n_matches,
+                            ctx,
+                            p);
+
+    // once we have finished, we restore to the previous status
+
+    // we restore the weight
+    p->weight = previous_weight;
+
+    // we restore the current output stack
+    p->literal_output->top = stack_top_extended_output;
+
+    // we restore the output variables
+    if (p->nb_output_variables != 0) {
+      remove_chars_from_output_variables(p->output_variables,
+                                         captured_chars);
+    }
+
+    // if we have at least two remaining outputs and the exploration
+    // of the grammar reached a final state, then we can apply the
+    // stop after policy
+    if (count - n > 1 && locate_matches) {
+      loop_matches += locate_matches;
+      // try to cut the remaining outputs
+      r.cut(&n, &loop_matches);
+    }
+
+    // next literal output
+    n++;
+  } // while (i < count)
+
+  // we restore the stack
+  p->literal_output->top = previous_stack_top;
+
+  return 1;
+}
+
 /**
  * This is the core function of the Locate program.
  */
@@ -1248,107 +1366,21 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
             // if the transition has matched
             if (start != -1) {
-                if (p->output_policy == MERGE_OUTPUTS && start == pos2 && pos2!=pos) {
-                    push_input_char(p->literal_output, ' ', p->protect_dic_chars);
-                }
-
-                // to store extended outputs and render literal outputs
-                extended_output_render r;
-
-                // when outputs are not ignored the current extended output
-                // is processed
-                if (p->output_policy != IGNORE_OUTPUTS) {
-                    /* We process its output */
-                    if (!deal_with_extended_output(output,p,&r)) {
-                        goto next;
-                    }
-                }
-
-                // when we're capturing output variables in debug mode,
-                // deal_with_extended_output() push some control characters
-                // to the literal stack. We use the following variable
-                // to keep the current stack while processing an extended
-                // output which returns multiple values
-                int stack_top_extended_output = p->literal_output->top;
-
-                // if the cardinality is equal to zero this means no output,
-                // this happens, e.g., when the p->output_policy is equal
-                // to IGNORE_OUTPUTS or when the current output is empty,
-                // a cardinality equal or greater than 1 means that there
-                // are at least n literals outputs associated to the
-                // current extended output
-                int count = r.cardinality == 0 ? 1 : r.cardinality;
-                int n = 0;
-
-                int loop_matches = 0;
-                int locate_matches = 0;
-
-                struct stack_unichar* literal_output = NULL;
-
-                // loop over all literal outputs
-                // the loop could be break using the cut operator:
-                // !  : break after first match
-                while (n < count) {
-                  captured_chars=0;
-
-                  // when the output_policy is equal to IGNORE_OUTPUTS, then
-                  // r.cardinality is always 0. If r.cardinality is 0 then
-                  // r.render(n) always returns NULL
-                  literal_output = r.render(n);
-
-                  // if literal_output is NULL append_literal_output() does
-                  // nothing, otherwise it appends the given output to the
-                  // literal stack
-                  append_literal_output(literal_output, p, &captured_chars);
-
-                  if (p->output_policy == MERGE_OUTPUTS) {
-                      /* Then, if we are in merge mode, we push the tokens that have
-                       * been read to the output */
-                      for (int y = start; y < end; y++) {
-                        push_input_string(
-                            p->literal_output,
-                            p->tokens->value[p->buffer[y + p->current_origin]],
-                            p->protect_dic_chars);
-                      }
-                  }
-
-                  //  we continue the exploration of the grammar
-                  locate_matches = locate(p->optimized_states[t1->state_number],
-                                          end,
-                                          matches,
-                                          n_matches,
-                                          ctx,
-                                          p);
-
-                  // once we have finished, we restore to the previous status
-
-                  // we restore the weight
-                  p->weight = old_weight1;
-
-                  // we restore the stack
-                  p->literal_output->top = stack_top_extended_output;
-
-                  // we restore the output variables
-                  if (p->nb_output_variables != 0) {
-                    remove_chars_from_output_variables(p->output_variables,
-                                                       captured_chars);
-                  }
-
-                  // if we have at least two remaining outputs and the exploration
-                  // of the grammar reached a final state, then we can apply the
-                  // stop after policy
-                  if (count - n > 1 && locate_matches) {
-                    loop_matches += locate_matches;
-                    // try to cut the remaining outputs
-                    r.cut(&n, &loop_matches);
-                  }
-
-                  // next literal output
-                  n++;
-                } // while (i < count)
-
-                // we restore the stack
-                p->literal_output->top = stack_top;
+              if(!(extended_locate(
+                     output,
+                     start,
+                     end,
+                     stack_top,
+                     old_weight1,
+                     start == pos2 && pos2!=pos,
+                     p->optimized_states[t1->state_number],
+                     end,
+                     matches,
+                     n_matches,
+                     ctx,
+                     p))) {
+                goto next;
+              }
             }
             next: t1 = t1->next;
         }
@@ -1469,6 +1501,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
     struct opt_contexts* contexts = current_state->contexts;
     if (contexts != NULL) {
         Transition* t2;
+        locate_n_matches context_matches;
         for (int n_ctxt = 0; n_ctxt < contexts->size_positive; n_ctxt = n_ctxt
                 + 2) {
             t2 = contexts->positive_mark[n_ctxt];
@@ -1476,10 +1509,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 /* The optimization may have nulled transitions in this array */
                 continue;
             }
+
             /* We look for a positive context from the current position */
             struct list_context* c = new_list_context(0, ctx, p->al.prv_alloc_context);
             locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
-                    NULL, 0, c, p);
+                    NULL, &context_matches, c, p);
             p->weight=old_weight1;
             /* Note that there is no match to free since matches cannot be built within a context */
             p->literal_output->top = stack_top;
@@ -1521,7 +1555,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
             /* We look for a negative context from the current position */
             struct list_context* c = new_list_context(0, ctx, p->al.prv_alloc_context);
             locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
-                    NULL, 0, c, p);
+                    NULL, &context_matches, c, p);
             p->weight=old_weight1;
             /* Note that there is no matches to free since matches cannot be built within a context */
             p->literal_output->top = stack_top;
