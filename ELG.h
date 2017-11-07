@@ -1601,7 +1601,7 @@ class vm {
   // returns:
   //  0 : step back
   //  1 : step forward
-  int call(const char* function_name, int nargs, int stop_after, struct extended_output_render* r) {
+  int call(const char* function_name, int nargs, int cut_after, struct extended_output_render* r) {
     elg_stack_dump(L);
 
     int m_refkey = 0;
@@ -1633,25 +1633,30 @@ class vm {
     int retval =  0;
     int type = lua_type(M, -1);
 
-    // the extened function did not return an array
+    // the extended function did not return an array
     if (type != LUA_TTABLE) {
+      if(cut_after) {
+        luaL_error(L,
+            "Error: function @%s uses the cut operator (!) but it does not return a table\n",
+            function_name);
+      }
       retval = unitex::details::process_extended_function_return_type(type, -1, M, r, function_name);
     } else {
-    // the extended function returned an array
+      // the extended function returned an array
       int n_elements = lua_objlen(M, -1);
       // only if the array isn't empty
       if (n_elements) {
-        int set_number  = r->new_output_set(n_elements, stop_after, r->stack_template->top);
-        retval = 1;
+        int set_number  = r->new_output_set(n_elements, cut_after, r->stack_template->top);
         // iterate through the table
         elg_stack_dump(M);
         // first key
         lua_pushnil(M);
 
+        retval = 1;
         while (retval && lua_next(M, -2) != 0) {
           elg_stack_dump(M);
-          // check if the key is an integer
-          // arrays in Lua are indexing with integers
+          // check if the key is an integer,
+          // notice that arrays in Lua are indexing with integers
           if (lua_type(M, -2) != LUA_TNUMBER) {
             luaL_error(L,
                 "Error: function @%s must return a table indexed only by integers\n",
@@ -1671,13 +1676,11 @@ class vm {
 
         elg_stack_dump(M);
 
-        // if the loop above was broken by a retval equal to 0,
-        // then the last key
+        // if the while() above was broken by a retval equal to 0,
+        // then pop the last key
         if(!retval) {
-          // pop the last key
           lua_pop(M, 1);
         }
-
       }
     }
 

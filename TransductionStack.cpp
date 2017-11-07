@@ -696,13 +696,14 @@ for (;;) {
         script_call:
 
         // 30.10.17 add a cut operator to have the control over the number of
-        // outputs to process on an extended function which returns multiple
+        // outputs to process from an extended function which returns multiple
         // values
-        int stop_after = CUT_AFTER_EXHAUSTIVELY_CHECK;
+        int cut_after = CUT_AFTER_EXHAUSTIVELY_CHECK;
 
+        // the cut operator: @func()!
         if (s[i1] == '!') {
           ++i1;
-          stop_after = CUT_AFTER_N_MATCHES * 1;
+          cut_after = CUT_AFTER_N_MATCHES * 1;
         }
 
         // 25.08.17 check before execute
@@ -721,7 +722,7 @@ for (;;) {
 //        ++script_params_count;
 //        p->elg->push(p->graph_filename);
 //        p->elg->setglobal("stack_pointer");
-        if(!p->elg->call(char_function_name,script_params_count,stop_after,r)) {
+        if(!p->elg->call(char_function_name,script_params_count,cut_after,r)) {
           r->stack_template->top=old_stack_pointer;
           p->elg->restore_local_environment();
 //          p->elg->setup_local_environment();

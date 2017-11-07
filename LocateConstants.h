@@ -51,7 +51,6 @@ typedef enum {
 
 /* Loop stop policy for extended functions with multiple outputs */
 typedef enum {
-  CUT_AFTER_N_FAILURES = -1,
   CUT_AFTER_EXHAUSTIVELY_CHECK = 0,
   CUT_AFTER_N_MATCHES = 1
 } CutAfterPolicy;
