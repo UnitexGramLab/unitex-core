@@ -161,8 +161,8 @@ static const char *StrMemLack = "allocation of memory for cycle data failed";
  * in a queue
  */
 struct pathAndEti {
-  int autoNo;	// automaton's number
-  int stateNo;	// state's number
+  int autoNo;        // automaton's number
+  int stateNo;        // state's number
   int eti;
 };
 
@@ -362,7 +362,7 @@ public:
         for (i = 0; i < count; i++) {
           if (fPtr->list[i] != cmap[i].tran) {
             break;
-	  }
+          }
         }
         if (i == count) {
           return id;
@@ -533,7 +533,7 @@ public:
               && (pathEtiQ[offset].eti
                   == (*h)->pathEtiQueue[i].eti)) {
             break;
-	  }
+          }
         }
         if (i != numOfPath) { // find first the position in cycle ring
           for (j = 0; j < numOfPath; j++) {
@@ -544,14 +544,14 @@ public:
                 || (pathEtiQ[offset + j].autoNo
                     != (*h)->pathEtiQueue[i].autoNo)) {
               break;
-	    }
+            }
             if (++i >= numOfPath) {
               i = 0;
-	    }
+            }
           }
           if (j == numOfPath) {
             return ((*h));
-	  }
+          }
         }
       }
       if ((*h)->pathCnt < numOfPath) {
@@ -665,7 +665,7 @@ public:
         case SYMBOL:
           if (!listOut) {
             setIdentifyValue(scanner, pathEtiQidx);
-	  }
+          }
           break;
         case STOP:
           if (listOut) {
@@ -718,7 +718,7 @@ public:
             EOUTLINE[EOutCnt++] = *wp;
             if (automateMode == TRANMODE) {
               SOUTLINE[SOutCnt++] = *wp;
-	    }
+            }
             wp++;
           }
           for (i = 0; i < ePtrCnt; i++)
@@ -726,39 +726,39 @@ public:
           if (automateMode == TRANMODE) {
             for (i = 0; i < tPtrCnt; i++) {
               SOUTLINE[SOutCnt++] = TBuff[i];
-	    }
-	  }
+            }
+          }
           wp = sepR;
           while (*wp) {
             if (ePtrCnt) {
               EOUTLINE[EOutCnt++] = *wp;
-	    }
+            }
             if (automateMode == TRANMODE) {
               SOUTLINE[SOutCnt++] = *wp;
-	    }
+            }
             wp++;
           }
         } else {
           wp = sepL;
           while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
-	  }
+          }
           for (i = 0; i < ePtrCnt; i++) {
             EOUTLINE[EOutCnt++] = EBuff[i];
-	  }
+          }
           wp = saveSep;
           while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
-	  }
+          }
           if (automateMode == TRANMODE) {
             for (i = 0; i < tPtrCnt; i++) {
               EOUTLINE[EOutCnt++] = TBuff[i];
-	    }
-	  }
+            }
+          }
           wp = sepR;
           while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
-	  }
+          }
         }
       } // condition de out
       if ((recursiveMode == LABEL) && setOut) {
@@ -766,20 +766,20 @@ public:
           wp = entreGO;
           while (*wp) {
             SOUTLINE[SOutCnt++] = *wp++;
-	  }
+          }
           wp = suf;
           while (*wp) {
             SOUTLINE[SOutCnt++] = *wp++;
-	  }
+          }
         } else {
           wp = entreGO;
           while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
-	  }
+          }
           wp = suf;
           while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
-	  }
+          }
         }
       }
       EOUTLINE[EOutCnt] = 0;
@@ -802,17 +802,17 @@ public:
             EOUTLINE[EOutCnt++] = *wp;
             if (automateMode == TRANMODE) {
               SOUTLINE[SOutCnt++] = *wp;
-	    }
+            }
             wp++;
           }
           for (i = 0; i < ePtrCnt; i++) {
             EOUTLINE[EOutCnt++] = EBuff[i];
-	  }
+          }
           if (automateMode == TRANMODE) {
             for (i = 0; i < tPtrCnt; i++) {
               SOUTLINE[SOutCnt++] = TBuff[i];
-	    }
-	  }
+            }
+          }
           //        if(recursiveMode == LABEL){
           //          wp = entreGO;while(*wp)  EOUTLINE[EOutCnt++] = *wp++;
           //          }
@@ -821,7 +821,7 @@ public:
             EOUTLINE[EOutCnt++] = *wp;
             if (automateMode == TRANMODE) {
               SOUTLINE[SOutCnt++] = *wp;
-	    }
+            }
             wp++;
           }
         } else {
@@ -836,18 +836,18 @@ public:
           if (automateMode == TRANMODE) {
             for (i = 0; i < tPtrCnt; i++) {
               EOUTLINE[EOutCnt++] = TBuff[i];
-	    }
-	  }
+            }
+          }
           if (recursiveMode == LABEL) {
             wp = entreGO;
             while (*wp) {
               EOUTLINE[EOutCnt++] = *wp++;
-	    }
+            }
           }
           wp = sepR;
           while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
-	  }
+          }
         }
         count_in_line++;
       }
@@ -915,7 +915,7 @@ public:
           //          wwp = saveSep;while(*wwp) EBuff[ePtrCnt++] = *wwp++;
           while (*wp) {
             EBuff[ePtrCnt++] = *wp++;
-	  }
+          }
         }
         wp = (unichar *) Eti->output;
         if ((automateMode == TRANMODE) && wp && u_strcmp(wp,
@@ -923,7 +923,7 @@ public:
           //            wwp = saveSep;while(*wwp) EBuff[ePtrCnt++] = *wwp++;
           while (*wp) {
             TBuff[tPtrCnt++] = *wp++;
-	  }
+          }
         }
       }
       if (outOneWord(entreGF) != 0) {
@@ -968,30 +968,30 @@ public:
         tmp = h->pathEtiQueue[i].stateNo;
         if (tmp & FILE_PATH_MARK) {
           tmp = a->initial_states[tmp & SUB_ID_MASK];
-	}
+        }
         if ((tmp < st) || (tmp >= ed)) {
           break;
-	}
+        }
 
         Eti = a->tags[h->pathEtiQueue[i].eti];
         wp = (unichar *) Eti->input;
         if (u_strcmp(wp, u_epsilon_string) && *wp) {
           while (*wp) {
             EBuff[ePtrCnt++] = *wp++;
-	  }
+          }
         }
         wp = (unichar *) Eti->output;
         if ((automateMode == TRANMODE) && wp && u_strcmp(wp,
             u_epsilon_string) && *wp) {
           while (*wp) {
             TBuff[tPtrCnt++] = *wp++;
-	  }
+          }
         }
       }
       if (i == h->pathCnt) {
         if (outOneWord(u_null_string) != 0) {
           return 1;
-	}
+        }
       } else
         resetBuffs();
       h = h->next;
@@ -1190,7 +1190,7 @@ void CFstApp::loadGraph(int& changeStrToIdx,
       for (j_1 = 1; j_1 <= a->number_of_graphs; j_1++) {
         if (!u_strcmp((unichar *) a->graph_names[j_1], arretSubList[i_1])) {
           break;
-	}
+        }
       }
       if (j_1 > a->number_of_graphs) {
         char charBuffOut[1024];
@@ -1237,16 +1237,16 @@ void CFstApp::loadGraph(int& changeStrToIdx,
           for (l = 0; wp[l]; l++) {
             if (!temp[k + l] || (temp[k + l] != wp[l])) {
               break;
-	    }
+            }
           }
           if (wp[l]) {
             continue;
-	  }
+          }
           temp[k] = changeStrTo[j][0];
           l--;
           for (m = k + 1; temp[m + l]; m++) {
             temp[m] = temp[m + l];
-	  }
+          }
           temp[m] = 0;
         }
       }
@@ -1257,7 +1257,7 @@ void CFstApp::loadGraph(int& changeStrToIdx,
         u_printf("%dth index, %s==>%s\n", i, getUtoChar(charBuffOut1,wp), getUtoChar(charBuffOut2, temp));
         for (j = 0; temp[j]; j++) {
           *wp++ = temp[j];
-	}
+        }
         *wp = 0;
       }
 
@@ -1404,7 +1404,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
       for (sui = a->states[0]->transitions; sui != 0; sui = sui->next) {
         if (!(sui->tag_number & FILE_PATH_MARK)) {
           continue;
-	}
+        }
         ignoreTable[sui->tag_number & SUB_ID_MASK] = 1;
         i++;
       }
@@ -1412,7 +1412,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
       for (sui = a->states[0]->transitions; sui != 0; sui = sui->next) {
         if (!(sui->tag_number & FILE_PATH_MARK)) {
           continue;
-	}
+        }
         cleanCyclePath();
 
         wp = (unichar *) a->graph_names[sui->tag_number & SUB_ID_MASK];
@@ -1557,14 +1557,14 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo, int s
       for (i = CautoDepth; i >= 0; --i) {
         if (CautoQueue[i].aId == -1) {
           skipCnt++;
-	}
+        }
         else {
           if (skipCnt != 0) {
             skipCnt--;
-	  }
+          }
           else {
             break;
-	  }
+          }
         }
       }
 
@@ -1597,7 +1597,7 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo, int s
         pathEtiQidx++;
         if (outWordsOfGraph(pathEtiQidx) != 0) {
           return 1;
-	}
+        }
         pathEtiQidx--;
       }
     }
@@ -1613,7 +1613,7 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo, int s
         pathEtiQidx++;
         if (outWordsOfGraph(pathEtiQidx) != 0) {
           return 1;
-	}
+        }
         pathEtiQidx--;
       }
       continue;
@@ -1626,7 +1626,7 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo, int s
         pathEtiQidx++;
         if (findCycleSubGraph(automateNo, autoDepth, sui->state_number, stateDepth + 1) != 0) {
           return 1;
-	}
+        }
         pathEtiQidx--;
       }
       continue;
@@ -1646,7 +1646,7 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo, int s
           pathEtiQidx++;
           if (outWordsOfGraph(pathEtiQidx) != 0) {
             return 1;
-	  }
+          }
           pathEtiQidx--;
         }
         continue;
@@ -1657,10 +1657,10 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo, int s
       tmp = sui->tag_number & SUB_ID_MASK;
       // scanning the autoStackMap
       for (scanner = 0; scanner < autoDepth; scanner++) {
-	// break if the tag number in the stack equals 
+        // break if the tag number in the stack equals 
         if (autoStackMap[scanner].tran->tag_number == sui->tag_number) {
           break;
-	}
+        }
       }
       autoStackMap[autoDepth].tran = sui;
       if (scanner == autoDepth) {
@@ -1675,7 +1675,7 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo, int s
         ++pathEtiQidx;
         if (!IsCyclePath(stateDepth)) {
           fatal_error("recursive find fail");
-	}
+        }
         --pathEtiQidx;
         continue;
       }
@@ -1786,10 +1786,10 @@ int CFstApp::outWordsOfGraph(int depth) {
     } else {
       Eti = a->tags[pathEtiQ[s].eti & SUB_ID_MASK];
       ep = (u_strcmp(Eti->input, u_epsilon_string)) ? 
-	      Eti->input : u_null_string;
+              Eti->input : u_null_string;
       if (Eti->output != NULL) {
         tp = (u_strcmp(Eti->output, u_epsilon_string)) ? 
-		Eti->output : u_null_string;
+                Eti->output : u_null_string;
       } else {
         tp = u_null_string;
       }
@@ -1822,26 +1822,26 @@ int CFstApp::outWordsOfGraph(int depth) {
           if (tPtrCnt) {
             if (outOneWord(0) != 0) {
               return 1;
-	    }
+            }
           }
           if (markPreCtlChar && *ep) {
             if (outOneWord(0) != 0) {
               return 1;
-	    }
+            }
           }
           while (*ep)
             EBuff[ePtrCnt++] = *ep++;
           if (automateMode == TRANMODE) {
             while (*tp) {
               TBuff[tPtrCnt++] = *tp++;
-	    }
-	  }
+            }
+          }
 
           if (niveau_traite_mot) {
             if (ePtrCnt || tPtrCnt) {
               if (outOneWord(0) != 0) {
                 return 1;
-	      }
+              }
             }
           }
           //                    else {
@@ -1854,7 +1854,7 @@ int CFstApp::outWordsOfGraph(int depth) {
               indicateFirstUsed, s, 0);
           if (outOneWord(sp) != 0) {
             return 1;
-	  }
+          }
           break;
         }
         sp = getLabelNumber(aaBuffer_for_getLabelNumber, s,
@@ -1862,7 +1862,7 @@ int CFstApp::outWordsOfGraph(int depth) {
         if (!indicateFirstUsed) { // first print out
           if (outOneWord(sp) != 0) {
             return 1;
-	  }
+          }
         } else {
           resetBuffs();
         }
@@ -1877,13 +1877,13 @@ int CFstApp::outWordsOfGraph(int depth) {
         if (tPtrCnt && niveau_traite_mot) {
           if (outOneWord(0) != 0) {
             return 1;
-	  }
+          }
         }
         wp = entreGO;
         while (*wp) {
           if (automateMode == TRANMODE) {
             TBuff[tPtrCnt++] = *wp;
-	  }
+          }
           EBuff[ePtrCnt++] = *wp;
           wp++;
         }
@@ -1901,7 +1901,7 @@ int CFstApp::outWordsOfGraph(int depth) {
           for (i = 0; i < h->pathCnt; i++) {
             if (h->pathEtiQueue[i].stateNo == findId) {
               break;
-	    }
+            }
           }
           if (i != h->pathCnt) {
             if (automateMode == TRANMODE) {
@@ -1920,25 +1920,25 @@ int CFstApp::outWordsOfGraph(int depth) {
         }
         if (automateMode == TRANMODE) {
           --tPtrCnt;
-	}
+        }
         --ePtrCnt;
         wp = entreGF;
         while (*wp) {
           if (automateMode == TRANMODE) {
             TBuff[tPtrCnt++] = *wp;
-	  }
+          }
           EBuff[ePtrCnt++] = *wp;
           wp++;
         }
         if (outOneWord(0) != 0) {
           return 1;
-	}
+        }
 
         continue;
       } else { // STOP
         if (outOneWord(0) != 0) {
           return 1;
-	}
+        }
         if (!(pathEtiQ[s].stateNo & STOP_PATH_MARK)) {
           // mark the stop
           wp = entreGO;
@@ -1947,18 +1947,18 @@ int CFstApp::outWordsOfGraph(int depth) {
             if ((automateMode == TRANMODE) && (prMode
                 == PR_SEPARATION)) {
               SOUTLINE[SOutCnt++] = *wp;
-	    }
+            }
             wp++;
           }
         }
         while (*ep) {
           EBuff[ePtrCnt++] = *ep++;
-	}
+        }
         if (automateMode == TRANMODE) {
           while (*tp) {
             TBuff[tPtrCnt++] = *tp++;
-	  }
-	}
+          }
+        }
         if (pathEtiQ[s].stateNo & STOP_PATH_MARK) {
           wp = entreGF;
           while (*wp) {
@@ -1966,28 +1966,28 @@ int CFstApp::outWordsOfGraph(int depth) {
               TBuff[tPtrCnt++] = *wp;
               if (prMode == PR_SEPARATION) {
                 EBuff[ePtrCnt++] = *wp;
-	      }
+              }
             } else {
               EBuff[ePtrCnt++] = *wp;
-	    }
+            }
 
             wp++;
           }
           if (outOneWord(u_null_string) != 0) {
             return 1;
-	  }
+          }
         } else {
           if (niveau_traite_mot) {
             if (ePtrCnt || tPtrCnt) {
               if (outOneWord(0) != 0) {
                 return 1;
-	      }
+              }
             }
           } else {
             if (markPreCtlChar) {
               if (outOneWord(0) != 0) {
                 return 1;
-	      }
+              }
             }
           }
         }
@@ -2001,27 +2001,27 @@ int CFstApp::outWordsOfGraph(int depth) {
       if (markPreCtlChar && markCtlChar) {
         if (outOneWord(0) != 0) {
           return 1;
-	}
+        }
       }
       if ((automateMode == TRANMODE) && *tp) { // current
         if (tPtrCnt) {
           if (outOneWord(0) != 0) {
             return 1;
-	  }
+          }
         }
         while (*tp) {
           TBuff[tPtrCnt++] = *tp++;
-	}
+        }
       }
       if (pathEtiQ[s].eti & FILE_PATH_MARK) {
         if (outOneWord((unichar *) a->graph_names[pathEtiQ[s].eti
             & SUB_ID_MASK]) != 0) {
           return 1;
-	}
+        }
       } else {
         if (outOneWord(u_null_string) != 0) {
           return 1;
-	}
+        }
       }
       break;
     }
@@ -2029,7 +2029,7 @@ int CFstApp::outWordsOfGraph(int depth) {
       if (tPtrCnt || (markPreCtlChar && *ep)) {
         if (outOneWord(0) != 0) {
           return 1;
-	}
+        }
       }
 
       switch (display_control) {
@@ -2040,7 +2040,7 @@ int CFstApp::outWordsOfGraph(int depth) {
         EBuff[ePtrCnt++] = (unichar) '}';
         if (outOneWord(0) != 0) {
           return 1;
-	}
+        }
         break;
       case FST2LIST_DEBUG:
       case FULL:
@@ -2071,7 +2071,7 @@ int CFstApp::outWordsOfGraph(int depth) {
       if (ePtrCnt || tPtrCnt) {
         if (outOneWord(0) != 0) {
           return 1;
-	}
+        }
       }
     }
     //         else {
@@ -2091,7 +2091,6 @@ int CFstApp::outWordsOfGraph(int depth) {
 // FIXME(jhondoe) Use malloc to allocate chars' memory
 // FIXME(jhondoe) Full of possible memory leaks: aa.saveEntre, wp2...
 int main_Fst2List(int argc, char* const argv[]) {
-
   char* ofilename = 0;
   int iargIndex = 1;
 
@@ -2109,13 +2108,12 @@ int main_Fst2List(int argc, char* const argv[]) {
   VersatileEncodingConfig vec = VEC_DEFAULT;
   bool only_verify_arguments = false;
   while (iargIndex < argc) {
-    if (*argv[iargIndex] != '-') {
+    if (*argv[iargIndex] != '-')
       break;
-    }
     switch (argv[iargIndex][1]) {
-      case 'f':
-        iargIndex++;
-        switch (argv[iargIndex][0]) {
+    case 'f':
+      iargIndex++;
+      switch (argv[iargIndex][0]) {
         case 's':
           aa.prMode = PR_SEPARATION;
           break;
@@ -2125,240 +2123,205 @@ int main_Fst2List(int argc, char* const argv[]) {
         default:
           error("Invalid arguments: rerun with --help\n");
           return USAGE_ERROR_CODE;
-        }
+      }
+      break;
+    case 'd':
+      aa.enableLoopCheck = false;
+    case 'S':
+      ofilename = new char[strlen(MAGIC_OUT_STDOUT) + 1];
+      strcpy(ofilename, MAGIC_OUT_STDOUT);
+      break;
+    case 'o':
+      iargIndex++;
+      ofilename = new char[strlen(argv[iargIndex]) + 1];
+      strcpy(ofilename, argv[iargIndex]);
+      break;
+    case 'l':
+      iargIndex++;
+      aa.outLineLimit = atoi(argv[iargIndex]);
+      break;
+    case 'i':
+      iargIndex++; // stop the exploitation
+      aa.arretExpoList(argv[iargIndex]);
+      break;
+    case 'I':
+      iargIndex++; // stop the exploitation
+      aa.arretExpoListFile(argv[iargIndex]);
+      break;
+    case 'p':
+      iargIndex++;
+      switch (argv[iargIndex][0]) {
+      case 's':
+        aa.display_control = GRAPH;
+        break;
+      case 'f':
+        aa.display_control = FULL;
         break;
       case 'd':
-        aa.enableLoopCheck = false;
-      case 'S':
-        ofilename = new char[strlen(MAGIC_OUT_STDOUT) + 1];
-        strcpy(ofilename, MAGIC_OUT_STDOUT);
+        aa.display_control = FST2LIST_DEBUG;
         break;
-      case 'o':
-        iargIndex++;
-        ofilename = new char[strlen(argv[iargIndex]) + 1];
-        strcpy(ofilename, argv[iargIndex]);
-        break;
-      case 'l':
-        iargIndex++;
-        aa.outLineLimit = atoi(argv[iargIndex]);
-        break;
-      case 'i':
-        iargIndex++; // stop the exploitation
-        aa.arretExpoList(argv[iargIndex]);
-        break;
-      case 'I':
-        iargIndex++; // stop the exploitation
-        aa.arretExpoListFile(argv[iargIndex]);
-        break;
-      case 'p':
-        iargIndex++;
-        switch (argv[iargIndex][0]) {
-        case 's':
-          aa.display_control = GRAPH;
-          break;
-        case 'f':
-          aa.display_control = FULL;
-          break;
-        case 'd':
-          aa.display_control = FST2LIST_DEBUG;
-          break;
-        default:
-          error("Invalid arguments: rerun with --help\n");
-          return USAGE_ERROR_CODE;
-        }
-        break;
-      case 'a':
-      case 't':
-        aa.automateMode = (argv[iargIndex][1] == 't') ? TRANMODE : AUTOMODE;
-        iargIndex++;
-        switch (argv[iargIndex][0]) {
-        case 's':
-          aa.traitAuto = SINGLE;
-          break;
-        case 'm':
-          aa.traitAuto = MULTI;
-          break;
-        default:
-          error("Invalid arguments: rerun with --help\n");
-          return USAGE_ERROR_CODE;
-        }
-        break;
-      case 'v':
-        aa.verboseMode = 1;
+      default:
+        error("Invalid arguments: rerun with --help\n");
+        return USAGE_ERROR_CODE;
+      }
+      break;
+    case 'a':
+    case 't':
+      aa.automateMode = (argv[iargIndex][1] == 't') ? TRANMODE : AUTOMODE;
+      iargIndex++;
+      switch (argv[iargIndex][0]) {
+      case 's':
+        aa.traitAuto = SINGLE;
         break;
       case 'm':
-        aa.niveau_traite_mot = 0;
+        aa.traitAuto = MULTI;
         break;
-      case 'r':
-        switch (argv[iargIndex][2]) {
-        case 's':
-          aa.recursiveMode = SYMBOL;
-          break;
-        case 'l':
-          aa.recursiveMode = LABEL;
-          break;
-        case 'x':
-          aa.recursiveMode = STOP;
-          break;
-        default:
-          error("Invalid arguments: rerun with --help\n");
-          return USAGE_ERROR_CODE;
+      default:
+        error("Invalid arguments: rerun with --help\n");
+        return USAGE_ERROR_CODE;
+      }
+      break;
+    case 'v':
+      aa.verboseMode = 1;
+      break;
+    case 'm':
+      aa.niveau_traite_mot = 0;
+      break;
+    case 'r':
+      switch (argv[iargIndex][2]) {
+      case 's':
+        aa.recursiveMode = SYMBOL;
+        break;
+      case 'l':
+        aa.recursiveMode = LABEL;
+        break;
+      case 'x':
+        aa.recursiveMode = STOP;
+        break;
+      default:
+        error("Invalid arguments: rerun with --help\n");
+        return USAGE_ERROR_CODE;
+      }
+      iargIndex++;
+      aa.saveEntre = new unichar[strlen(argv[iargIndex]) + 1];
+      wp = argv[iargIndex];
+      wp2 = aa.saveEntre;
+      wp3 = 0;
+      while (*wp) {
+        if ((*wp < 0x20) || (*wp > 0x7e)) {
+          error("Use a separator in ASC code\r\n");
+          return DEFAULT_ERROR_CODE;
         }
-        iargIndex++;
-        aa.saveEntre = new unichar[strlen(argv[iargIndex]) + 1];
-        wp = argv[iargIndex];
-        wp2 = aa.saveEntre;
+        if (*wp == '\\')
+          wp++;
+        else if (*wp == ',')
+          wp3 = wp2;
+        if (*wp != '"')
+          *wp2++ = (unichar) *wp++;
+        else
+          wp++;
+      }
+      *wp2 = 0;
+
+      aa.entreGO = aa.saveEntre;
+      if (wp3) {
+        *wp3++ = 0;
+        aa.entreGF = wp3;
+      } else
+        aa.entreGF = wp2;
+      break;
+    case 'c':
+      iargIndex++;
+      if (!changeStrToVal(changeStrToIdx, changeStrTo, argv[iargIndex])) {
+        break;
+      }
+      error("Invalid arguments: rerun with --help\n");
+      return USAGE_ERROR_CODE;
+    case 's': {
+      char cc = argv[iargIndex][2];
+      iargIndex++;
+      wp = argv[iargIndex];
+      wp3 = 0;
+      switch (cc) {
+      case 0:
+        wp2 = aa.sep1 = new unichar[strlen(wp) + 1];
         wp3 = 0;
         while (*wp) {
           if ((*wp < 0x20) || (*wp > 0x7e)) {
             error("Use a separator in ASCII code\r\n");
             return DEFAULT_ERROR_CODE;
           }
-          if (*wp == '\\') {
+          switch (*wp) {
+          case '\\':
             wp++;
-          }
-          else if (*wp == ',') {
+            if (*wp == '\0') {
+                // TODO(jhondoe) Put an error message here
+              error("");
+              return DEFAULT_ERROR_CODE;
+            }
+            if (*wp != '"')
+              break;
+          case '"':
+            wp++;
+            continue;
+          case ',':
             wp3 = wp2;
-          } 
-          if (*wp != '"') {
-            *wp2++ = (unichar) *wp++;
+            break;
+          default:
+            break;
           }
-          else {
-            wp++;
-          }
+          *wp2++ = (unichar) *wp++;
         }
         *wp2 = 0;
-
-        aa.entreGO = aa.saveEntre;
+        aa.sepL = aa.sep1;
         if (wp3) {
           *wp3++ = 0;
-          aa.entreGF = wp3;
-        } else
-          aa.entreGF = wp2;
-        break;
-      case 'c':
-        iargIndex++;
-        if (!changeStrToVal(changeStrToIdx, changeStrTo, argv[iargIndex])) {
-          break;
+          aa.sepR = wp3;
+        } else {
+          aa.sepR = wp2;
         }
-        error("Invalid arguments: rerun with --help\n");
-        return USAGE_ERROR_CODE;
-      case 's': {
-        char cc = argv[iargIndex][2];
-        iargIndex++;
-        wp = argv[iargIndex];
-        wp3 = 0;
-        switch (cc) {
-        case 0:
-          wp2 = aa.sep1 = new unichar[strlen(wp) + 1];
-          wp3 = 0;
-          while (*wp) {
-            if ((*wp < 0x20) || (*wp > 0x7e)) {
-              error("Use a separator in ASCII code\r\n");
-              return DEFAULT_ERROR_CODE;
-            }
-            switch (*wp) {
-            case '\\':
-              wp++;
-              if (*wp == '\0') {
-                  // TODO(jhondoe) Put an error message here
-                error("");
-                return DEFAULT_ERROR_CODE;
-              }
-              if (*wp != '"') {
-                break;
-              }
-            case '"':
-              wp++;
-              continue;
-            case ',':
-              wp3 = wp2;
-              break;
-            default:
-              break;
-            }
-            *wp2++ = (unichar) *wp++;
-          }
-          *wp2 = 0;
-          aa.sepL = aa.sep1;
-          if (wp3) {
-            *wp3++ = 0;
-            aa.sepR = wp3;
-          } else {
-            aa.sepR = wp2;
-          }
 
-          break;
-        case '0':
-          wp2 = aa.saveSep = new unichar[strlen(wp) + 1];
-          while (*wp) {
-            if ((*wp < 0x20) || (*wp > 0x7e)) {
-              error("Use a separator in ASC code\r\n");
+        break;
+      case '0':
+        wp2 = aa.saveSep = new unichar[strlen(wp) + 1];
+        while (*wp) {
+          if ((*wp < 0x20) || (*wp > 0x7e)) {
+            error("Use a separator in ASC code\r\n");
+            return DEFAULT_ERROR_CODE;
+          }
+          if (*wp == '\\') {
+            wp++;
+            if (*wp == '\0') {
+                // TODO(jhondoe) Put an error message here
+              error("");
               return DEFAULT_ERROR_CODE;
             }
-            if (*wp == '\\') {
-              wp++;
-              if (*wp == '\0') {
-                  // TODO(jhondoe) Put an error message here
-                error("");
-                return DEFAULT_ERROR_CODE;
-              }
-            }
-            if (*wp == '"') {
-              continue;
-            }
-            *wp2++ = (unichar) *wp++;
           }
-          *wp2 = 0;
-          break;
-        case 's':
-          wp2 = aa.stopSignal = new unichar[strlen(wp) + 3];
-          ;
-          *wp2++ = (unichar) '<';
-          while (*wp) {
-            if (*wp == '"') {
-              continue;
-            }
-            *wp2++ = (unichar) *wp++;
-          }
-          *wp2++ = (unichar) '>';
-          *wp2 = 0;
-          break;
+          if (*wp == '"')
+            continue;
+          *wp2++ = (unichar) *wp++;
         }
         *wp2 = 0;
         break;
-      }
-      case 'k':
-        iargIndex++;
-        if (argv[iargIndex][0] == '\0') {
-          error("Empty input_encoding argument\n");
-          return USAGE_ERROR_CODE;
+      case 's':
+        wp2 = aa.stopSignal = new unichar[strlen(wp) + 3];
+        ;
+        *wp2++ = (unichar) '<';
+        while (*wp) {
+          if (*wp == '"')
+            continue;
+          *wp2++ = (unichar) *wp++;
         }
-        decode_reading_encoding_parameter(
-            &(vec.mask_encoding_compatibility_input), argv[iargIndex]);
-        break;
-      case 'V': only_verify_arguments = true;
-                break;
-      case 'h': usage();
-                return SUCCESS_RETURN_CODE;
-      case 'q': {
-        char* arg;
-        if (argv[iargIndex][2] == '\0') {
-          iargIndex++;
-          arg = argv[iargIndex];
-        } else {
-          arg = &(argv[iargIndex][2]);
-        }
-        if (arg[0] == '\0') {
-          error("Empty output_encoding argument\n");
-          return USAGE_ERROR_CODE;
-        }
-        decode_writing_encoding_parameter(&(vec.encoding_output),
-            &(vec.bom_output), arg);
+        *wp2++ = (unichar) '>';
+        *wp2 = 0;
         break;
       }
-      default:
-        error("Invalid arguments: rerun with --help\n");
+      break;
+    }
+    case 'k':
+      iargIndex++;
+      if (argv[iargIndex][0] == '\0') {
+        error("Empty input_encoding argument\n");
         return USAGE_ERROR_CODE;
       }
       decode_reading_encoding_parameter(
@@ -2384,8 +2347,12 @@ int main_Fst2List(int argc, char* const argv[]) {
           &(vec.bom_output), arg);
       break;
     }
+    default:
+      error("Invalid arguments: rerun with --help\n");
+      return USAGE_ERROR_CODE;
+    }
     iargIndex++;
-  } // end while iargIndex<argc
+  }
   if (iargIndex != (argc - 1)) {
     error("Invalid arguments: rerun with --help\n");
     return USAGE_ERROR_CODE;
@@ -2399,10 +2366,10 @@ int main_Fst2List(int argc, char* const argv[]) {
   }
   
   aa.fileNameSet(argv[iargIndex], ofilename);
-  aa.vec = vec;	// sets config file
+  aa.vec = vec;
   aa.getWordsFromGraph(changeStrToIdx, changeStrTo, argv[iargIndex]);
   delete ofilename;
   return SUCCESS_RETURN_CODE;
-} // end main function
+}// end main function
 
 } // namespace unitex
