@@ -81,13 +81,13 @@ static char *getUtoChar(char charBuffOut[], unichar *s) {
 }
 enum ModeOut {
   PR_SEPARATION, PR_TOGETHER
-}; // make word and output separe ou together
+}; // make word and output separated or together
 enum printOutType {
   GRAPH, FULL, FST2LIST_DEBUG
 };
 enum initialType {
   SINGLE, MULTI
-};
+}; // 'multi' is used for graph with several starting state
 enum presentCycleValue {
   SYMBOL, LABEL, STOP
 };
@@ -108,8 +108,7 @@ static unichar *uascToNum(unichar *uasc, int *val);
 #define MAX_CHANGE_SYMBOL_SIZE 32
 #define MAGIC_OUT_STDOUT "<WRITE_U_STDOUT>"
 
-static int changeStrToVal(int &changeStrToIdx,
-    unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *src) {
+static int changeStrToVal(int &changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *src) {
   char *wp = src;
 
   int ptLoc = 0;
@@ -125,7 +124,7 @@ static int changeStrToVal(int &changeStrToIdx,
   if (*wp != (unichar) '=')
     return (1);
   if (i > (MAX_CHANGE_SYMBOL_SIZE - 2)) {
-    u_printf("the name of the variable too long %s", src);
+    u_printf("the name of the variable is too long %s", src);
     return 1;
   }
   changeStrTo[changeStrToIdx][i++] = (unichar) '>';
@@ -135,32 +134,35 @@ static int changeStrToVal(int &changeStrToIdx,
     usage();
     return 1;
   }
-  for (wp++; i < MAX_CHANGE_SYMBOL_SIZE && (*wp); i++)
+  for (wp++; i < MAX_CHANGE_SYMBOL_SIZE && (*wp); i++) {
     changeStrTo[changeStrToIdx][i] = (unsigned short) *wp++;
-  if (*wp != (unichar) '\0')
+  }
+  if (*wp != (unichar) '\0') {
     return (1);
+  }
   changeStrTo[changeStrToIdx][i++] = (unichar) '\0';
   uascToNum(&changeStrTo[changeStrToIdx][ptLoc], &i);
   changeStrTo[changeStrToIdx][0] = (unsigned short) i;
 
-  {
-    char charBuffOut[1024];
-    u_printf("Change symbol %s --> %x\n", getUtoChar(charBuffOut,
-        &changeStrTo[changeStrToIdx][1]),
-        changeStrTo[changeStrToIdx][0]);
-  }
+  char charBuffOut[1024];
+  u_printf("Change symbol %s --> %x\n", getUtoChar(charBuffOut,&changeStrTo[changeStrToIdx][1]),changeStrTo[changeStrToIdx][0]);
+
   changeStrToIdx++;
   return (0);
 }
 static unichar u_null_string[] = { (unichar) '\0', (unichar) '\0' };
-static unichar u_epsilon_string[] = { (unichar) '<', (unichar) 'E',
-    (unichar) '>', (unichar) '\0' };
+static unichar u_epsilon_string[] = { (unichar) '<', (unichar) 'E',(unichar) '>', (unichar) '\0' };
 
-static const char *StrMemLack = "allocation of memory for cycle data is fail";
+static const char *StrMemLack = "allocation of memory for cycle data failed";
 
+/**
+ * struct to keep track 
+ * of the path and label
+ * in a queue
+ */
 struct pathAndEti {
-  int autoNo;
-  int etatNo;
+  int autoNo;	// automaton's number
+  int stateNo;	// state's number
   int eti;
 };
 
@@ -188,23 +190,18 @@ public:
 
   //
   // print out all path in the .fst2
-  //    first : check and mark all close paths in each sous-automate
+  //    first : check and mark all close paths in each sub-automaton
   //        print out to the file [filename]LstAuto.txt
-  //   seconde: print out all open paths
+  //   second : print out all open paths
   //        at [filename]L.txt
   //
-  void loadGraph(int &changeStrToIdx,
-      unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fname);
-  int exploirerSubAuto(int startSubAutoNum);
-  int
-      getWordsFromGraph(int &changeStrToIdx,
-          unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE],
-          char *fst2_file_name);
-  int
-  findCycleSubGraph(int autoNo, int autodep, int testEtat, int depthState);
+  void loadGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fname);
+  int exploreSubAuto(int startSubAutoNum);
+  int getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fst2_file_name);
+  int findCycleSubGraph(int autoNo, int autodep, int testState, int depthState);
   int outWordsOfGraph(int depth);
 
-  // the stack which keep the path and called sous-graphe
+  // the stack which keeps the path and called sub graph
   struct stackAuto {
     int aId;
     int next;
@@ -213,7 +210,7 @@ public:
 
   void CqueuePathPr(U_FILE *f);
 
-  int *ignoreTable;
+  int *ignoreTable;  // 1 where the automaton is ignored, else 0
   int *numOfIgnore;
 
   int outLineLimit;
@@ -222,7 +219,7 @@ public:
 
 
   int totalPath;
-  int totalLoop;
+  int totalLoop; // number of loops present in the automaton
   int stopPath;
   int errPath;
 
@@ -240,8 +237,8 @@ public:
   VersatileEncodingConfig vec;
   char ofdirName[1024];
   char ofExt[16];
-  char ofnameOnly[512];
-  char defaultIgnoreName[512]; // input filename
+  char ofnameOnly[512];        // output file name
+  char defaultIgnoreName[512]; // input file name
   void fileNameSet(char *ifn, char *ofn) {
     char tmp[512];
     remove_path(ifn, tmp);
@@ -257,10 +254,14 @@ public:
       remove_extension(tmp, ofnameOnly);
       get_extension(tmp, ofExt);
     }
-    if (ofnameOnly[0] == 0)
+    if (ofnameOnly[0] == 0) {
       fatal_error("ofile name not correct");
+    }
   }
 
+  /**
+   * builds the output file's name
+   */
   void makeOfileName(char *des, const char *fn, const char *ext) {
     strcpy(des, ofdirName);
     if (fn)
@@ -358,9 +359,11 @@ public:
     fPtr = mapOfCallHead;
     while (fPtr) {
       if (fPtr->cnt == count) {
-        for (i = 0; i < count; i++)
-          if (fPtr->list[i] != cmap[i].tran)
+        for (i = 0; i < count; i++) {
+          if (fPtr->list[i] != cmap[i].tran) {
             break;
+	  }
+        }
         if (i == count) {
           return id;
         }
@@ -372,8 +375,9 @@ public:
     fPtr->cnt = count;
     fPtr->next = 0;
     fPtr->list = new Transition*[count];
-    for (i = 0; i < count; i++)
+    for (i = 0; i < count; i++) {
       fPtr->list[i] = cmap[i].tran;
+    }
 
     if (mapOfCallTail) {
       mapOfCallTail->next = fPtr;
@@ -413,7 +417,7 @@ public:
   //
   //  save all node which has the cycle path
   //  the path from initial to the node is used to identify the node
-  //  in sous graphe
+  //  in sub graph
   //
   struct linkCycle {
     struct cyclePathMark *cyc;
@@ -423,7 +427,7 @@ public:
   struct cycleNodeId {
     int index;
     int autoNo;
-    int etatNo;
+    int stateNo;
     int eti;
     struct linkCycle *cycInfos;
     int flag;
@@ -434,24 +438,23 @@ public:
   struct cycleNodeId *headCycNodes;
   int cycNodeCnt;
 
-  unichar *getLabelNumber(unichar*aa, int numOfPath, int &flag, int curidx,
-      int setflag) {
+  unichar *getLabelNumber(unichar*aa, int numOfPath, int &flag, int curidx, int setflag) {
     struct cycleNodeId *cnode = headCycNodes;
     int i;
-    int searchEtat = pathEtiQ[curidx].etatNo & PATHID_MASK;
-    int searchEtatAuto = pathEtiQ[curidx].autoNo;
+    int searchState = pathEtiQ[curidx].stateNo & PATHID_MASK;
+    int searchStateAuto = pathEtiQ[curidx].autoNo;
     int searchEti = pathEtiQ[curidx].eti;
     while (cnode) {
-      if ((searchEtatAuto == cnode->autoNo) && (searchEtat
-          == cnode->etatNo) && (searchEti == cnode->eti))
+      if ((searchStateAuto == cnode->autoNo) && (searchState == cnode->stateNo) && (searchEti == cnode->eti)) {
         break;
+      }
       cnode = cnode->next;
     }
     if (!cnode) {
       error("%d/%d stack\n", numOfPath, curidx);
-      for (i = 0; i < pathEtiQidx; i++)
-        error("%d : (%08x:%08x) : %08x\n", i, pathEtiQ[i].autoNo,
-            pathEtiQ[i].etatNo, pathEtiQ[i].eti);
+      for (i = 0; i < pathEtiQidx; i++) {
+        error("%d : (%08x:%08x) : %08x\n", i, pathEtiQ[i].autoNo, pathEtiQ[i].stateNo, pathEtiQ[i].eti);
+      }
 
       CqueuePathPr(U_STDERR);
       fatal_error("eu~ak\n");
@@ -463,51 +466,53 @@ public:
       }
     }
 
-    {
-      //unichar aa[64];
-      u_sprintf(aa, "Loc%d", cnode->index);
-      return ((unichar *) aa);
-    }
+    //unichar aa[64];
+    u_sprintf(aa, "Loc%d", cnode->index);
+    return ((unichar *) aa);
   }
 
   void setIdentifyValue(int offset, int cntNode) {
     struct cycleNodeId **cnode = &headCycNodes;
 
-    int cycEtatNo = pathEtiQ[cntNode - 1].etatNo & PATHID_MASK;
-    int cycEtatAutoNo = pathEtiQ[cntNode - 1].autoNo;
-    int cycEtatEti = pathEtiQ[cntNode - 1].eti;
+    int cycStateNo = pathEtiQ[cntNode - 1].stateNo & PATHID_MASK;
+    int cycStateAutoNo = pathEtiQ[cntNode - 1].autoNo;
+    int cycStateEti = pathEtiQ[cntNode - 1].eti;
     while (*cnode) {
-      if (((*cnode)->autoNo == cycEtatAutoNo) && ((*cnode)->etatNo
-          == cycEtatNo) && ((*cnode)->eti == cycEtatEti)) {
+      if (((*cnode)->autoNo == cycStateAutoNo) && ((*cnode)->stateNo
+          == cycStateNo) && ((*cnode)->eti == cycStateEti)) {
         break;
       }
       cnode = &((*cnode)->next);
     }
     if (!*cnode) {
       *cnode = new struct cycleNodeId;
-      if (!(*cnode))
+      if (!(*cnode)) {
         fatal_error(StrMemLack);
+      }
       (*cnode)->next = 0;
       (*cnode)->cycInfos = 0;
       (*cnode)->index = cycNodeCnt++;
-      (*cnode)->autoNo = cycEtatAutoNo;
-      (*cnode)->etatNo = cycEtatNo;
-      (*cnode)->eti = cycEtatEti;
+      (*cnode)->autoNo = cycStateAutoNo;
+      (*cnode)->stateNo = cycStateNo;
+      (*cnode)->eti = cycStateEti;
       (*cnode)->flag = 0;
     }
 
     struct cyclePathMark *pCyc = getLoopId(offset);
     struct linkCycle **alc = &((*cnode)->cycInfos);
     while (*alc) {
-      if (pCyc->index == (*alc)->cyc->index)
+      if (pCyc->index == (*alc)->cyc->index) {
         return;
-      if ((*alc)->cyc->index < pCyc->index)
+      }
+      if ((*alc)->cyc->index < pCyc->index) {
         break;
+      }
       alc = &((*alc)->next);
     }
     *alc = new struct linkCycle;
-    if (!(*alc))
+    if (!(*alc)) {
       fatal_error(StrMemLack);
+    }
     (*alc)->next = 0;
     (*alc)->cyc = pCyc;
 
@@ -523,30 +528,35 @@ public:
         for (i = 0; i < numOfPath; i++) {
           if ((pathEtiQ[offset].autoNo
               == (*h)->pathEtiQueue[i].autoNo)
-              && ((pathEtiQ[offset].etatNo & PATHID_MASK)
-                  == (*h)->pathEtiQueue[i].etatNo)
+              && ((pathEtiQ[offset].stateNo & PATHID_MASK)
+                  == (*h)->pathEtiQueue[i].stateNo)
               && (pathEtiQ[offset].eti
-                  == (*h)->pathEtiQueue[i].eti))
+                  == (*h)->pathEtiQueue[i].eti)) {
             break;
+	  }
         }
         if (i != numOfPath) { // find first the position in cycle ring
           for (j = 0; j < numOfPath; j++) {
-            if (((pathEtiQ[offset + j].etatNo & PATHID_MASK)
-                != (*h)->pathEtiQueue[i].etatNo)
+            if (((pathEtiQ[offset + j].stateNo & PATHID_MASK)
+                != (*h)->pathEtiQueue[i].stateNo)
                 || (pathEtiQ[offset + j].eti
                     != (*h)->pathEtiQueue[i].eti)
                 || (pathEtiQ[offset + j].autoNo
-                    != (*h)->pathEtiQueue[i].autoNo))
+                    != (*h)->pathEtiQueue[i].autoNo)) {
               break;
-            if (++i >= numOfPath)
+	    }
+            if (++i >= numOfPath) {
               i = 0;
+	    }
           }
-          if (j == numOfPath)
+          if (j == numOfPath) {
             return ((*h));
+	  }
         }
       }
-      if ((*h)->pathCnt < numOfPath)
+      if ((*h)->pathCnt < numOfPath) {
         break;
+      }
       h = &((*h)->next);
     }
     struct cyclePathMark *tmp = new struct cyclePathMark;
@@ -555,13 +565,15 @@ public:
     tmp->pathCnt = 0;
     tmp->next = *h;
     *h = tmp;
-    if (!(*h))
+    if (!(*h)) {
       fatal_error(StrMemLack);
+    }
     (*h)->pathEtiQueue = new struct pathAndEti[numOfPath];
-    if (!((*h)->pathEtiQueue))
+    if (!((*h)->pathEtiQueue)) {
       fatal_error(StrMemLack);
+    }
     for (i = 0; i < numOfPath; i++) {
-      (*h)->pathEtiQueue[i].etatNo = pathEtiQ[i + offset].etatNo
+      (*h)->pathEtiQueue[i].stateNo = pathEtiQ[i + offset].stateNo
           & PATHID_MASK;
       (*h)->pathEtiQueue[i].eti = pathEtiQ[i + offset].eti;
       (*h)->pathEtiQueue[i].autoNo = pathEtiQ[i + offset].autoNo;
@@ -602,7 +614,7 @@ public:
     cyclePathCnt = 0;
     if (a != NULL) {
       for (i = 0; i < a->number_of_states; i++) {
-        a->states[i]->control &= 0x7f;
+        a->states[i]->control &= 0x7f; // clean to mark recursive. 0x7f=0b0111_1111
       }
     }
   }
@@ -611,33 +623,39 @@ public:
     u_fprintf(foutput, "cycle Nodes %d\n", cyclePathCnt);
     while (cnode) {
       u_fprintf(foutput, "%d (%d:%d)\n", cnode->index, cnode->autoNo,
-          cnode->etatNo);
+          cnode->stateNo);
       cnode = cnode->next;
     }
   }
-  int WasCycleNode(int cauto, int cetat) {
+  int WasCycleNode(int cauto, int cstate) {
     struct cycleNodeId **cnode = &headCycNodes;
 
     while (*cnode) {
-      if (((*cnode)->autoNo == cauto) && ((*cnode)->etatNo == cetat)) {
+      if (((*cnode)->autoNo == cauto) && ((*cnode)->stateNo == cstate)) {
         return 1;
       }
       cnode = &((*cnode)->next);
     }
     return 0;
   }
+
+  /**
+   * detect a recursive call
+   * increment 'totalLoop' if a loop is found
+   * return 0 if a recursive call is found, else 1
+   */
   int IsCyclePath(int depth) {
-    int scanner;
-    int curId = pathEtiQ[pathEtiQidx - 1].etatNo & PATHID_MASK;
+    int scanner; 
+    int curId = pathEtiQ[pathEtiQidx - 1].stateNo & PATHID_MASK;
     int curAutoId = pathEtiQ[pathEtiQidx - 1].autoNo;
 
     for (scanner = 0; scanner < pathEtiQidx - 1; scanner++) {
-      if (((pathEtiQ[scanner].etatNo & PATHID_MASK) == curId)
-          && (pathEtiQ[scanner].autoNo == curAutoId)) { // find recusive path
+      if (((pathEtiQ[scanner].stateNo & PATHID_MASK) == curId)
+          && (pathEtiQ[scanner].autoNo == curAutoId)) { // find recursive path
         switch (recursiveMode) {
         case LABEL:
           if (listOut) {
-            pathEtiQ[pathEtiQidx - 1].etatNo |= STOP_PATH_MARK;
+            pathEtiQ[pathEtiQidx - 1].stateNo |= STOP_PATH_MARK;
             outWordsOfGraph(scanner);
           } else {
             //          saveNodeIndex(scanner);
@@ -645,16 +663,17 @@ public:
           }
           break;
         case SYMBOL:
-          if (!listOut)
+          if (!listOut) {
             setIdentifyValue(scanner, pathEtiQidx);
+	  }
           break;
         case STOP:
           if (listOut) {
-            pathEtiQ[scanner].etatNo |= LOOP_PATH_MARK;
-            pathEtiQ[pathEtiQidx - 1].etatNo |= LOOP_PATH_MARK
+            pathEtiQ[scanner].stateNo |= LOOP_PATH_MARK;
+            pathEtiQ[pathEtiQidx - 1].stateNo |= LOOP_PATH_MARK
                 | STOP_PATH_MARK;
             outWordsOfGraph(depth);
-            pathEtiQ[scanner].etatNo &= ~LOOP_PATH_MARK;
+            pathEtiQ[scanner].stateNo &= ~LOOP_PATH_MARK;
           }
           break;
         default:
@@ -685,8 +704,9 @@ public:
     int setOut;
     unichar *wp;
     EBuff[ePtrCnt] = TBuff[tPtrCnt] = 0;
-    if (!ePtrCnt && !tPtrCnt && !suf)
+    if (!ePtrCnt && !tPtrCnt && !suf) {
       return 0;
+    }
     if (suf) {
       setOut = 0;
       //printf("%d %d %d %d \n",ePtrCnt,tPtrCnt,*suf,count_in_line);
@@ -696,55 +716,70 @@ public:
           wp = sepL;
           while (*wp) {
             EOUTLINE[EOutCnt++] = *wp;
-            if (automateMode == TRANMODE)
+            if (automateMode == TRANMODE) {
               SOUTLINE[SOutCnt++] = *wp;
+	    }
             wp++;
           }
           for (i = 0; i < ePtrCnt; i++)
             EOUTLINE[EOutCnt++] = EBuff[i];
-          if (automateMode == TRANMODE)
-            for (i = 0; i < tPtrCnt; i++)
+          if (automateMode == TRANMODE) {
+            for (i = 0; i < tPtrCnt; i++) {
               SOUTLINE[SOutCnt++] = TBuff[i];
+	    }
+	  }
           wp = sepR;
           while (*wp) {
-            if (ePtrCnt)
+            if (ePtrCnt) {
               EOUTLINE[EOutCnt++] = *wp;
-            if (automateMode == TRANMODE)
+	    }
+            if (automateMode == TRANMODE) {
               SOUTLINE[SOutCnt++] = *wp;
+	    }
             wp++;
           }
         } else {
           wp = sepL;
-          while (*wp)
+          while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
-          for (i = 0; i < ePtrCnt; i++)
+	  }
+          for (i = 0; i < ePtrCnt; i++) {
             EOUTLINE[EOutCnt++] = EBuff[i];
+	  }
           wp = saveSep;
-          while (*wp)
+          while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
-          if (automateMode == TRANMODE)
-            for (i = 0; i < tPtrCnt; i++)
+	  }
+          if (automateMode == TRANMODE) {
+            for (i = 0; i < tPtrCnt; i++) {
               EOUTLINE[EOutCnt++] = TBuff[i];
+	    }
+	  }
           wp = sepR;
-          while (*wp)
+          while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
+	  }
         }
       } // condition de out
       if ((recursiveMode == LABEL) && setOut) {
         if ((automateMode == TRANMODE) && (prMode == PR_SEPARATION)) {
           wp = entreGO;
-          while (*wp)
+          while (*wp) {
             SOUTLINE[SOutCnt++] = *wp++;
+	  }
           wp = suf;
-          while (*wp)
+          while (*wp) {
             SOUTLINE[SOutCnt++] = *wp++;
+	  }
         } else {
           wp = entreGO;
-          while (*wp)
+          while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
+	  }
           wp = suf;
-          while (*wp)
+          while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
+	  }
         }
       }
       EOUTLINE[EOutCnt] = 0;
@@ -753,8 +788,9 @@ public:
       if ((automateMode == TRANMODE) && SOutCnt) {
         u_fprintf(foutput, "%S%S", saveSep, SOUTLINE);
       }
-      if (display_control == FST2LIST_DEBUG)
+      if (display_control == FST2LIST_DEBUG) {
         CqueuePathPr(foutput);
+      }
       u_fprintf(foutput, "\n");
       numberOfOutLine++;
       EOutCnt = SOutCnt = 0;
@@ -764,23 +800,28 @@ public:
           wp = sepL;
           while (*wp) {
             EOUTLINE[EOutCnt++] = *wp;
-            if (automateMode == TRANMODE)
+            if (automateMode == TRANMODE) {
               SOUTLINE[SOutCnt++] = *wp;
+	    }
             wp++;
           }
-          for (i = 0; i < ePtrCnt; i++)
+          for (i = 0; i < ePtrCnt; i++) {
             EOUTLINE[EOutCnt++] = EBuff[i];
-          if (automateMode == TRANMODE)
-            for (i = 0; i < tPtrCnt; i++)
+	  }
+          if (automateMode == TRANMODE) {
+            for (i = 0; i < tPtrCnt; i++) {
               SOUTLINE[SOutCnt++] = TBuff[i];
+	    }
+	  }
           //        if(recursiveMode == LABEL){
           //          wp = entreGO;while(*wp)  EOUTLINE[EOutCnt++] = *wp++;
           //          }
           wp = sepR;
           while (*wp) {
             EOUTLINE[EOutCnt++] = *wp;
-            if (automateMode == TRANMODE)
+            if (automateMode == TRANMODE) {
               SOUTLINE[SOutCnt++] = *wp;
+	    }
             wp++;
           }
         } else {
@@ -792,17 +833,21 @@ public:
           wp = saveSep;
           while (*wp)
             EOUTLINE[EOutCnt++] = *wp++;
-          if (automateMode == TRANMODE)
-            for (i = 0; i < tPtrCnt; i++)
+          if (automateMode == TRANMODE) {
+            for (i = 0; i < tPtrCnt; i++) {
               EOUTLINE[EOutCnt++] = TBuff[i];
+	    }
+	  }
           if (recursiveMode == LABEL) {
             wp = entreGO;
-            while (*wp)
+            while (*wp) {
               EOUTLINE[EOutCnt++] = *wp++;
+	    }
           }
           wp = sepR;
-          while (*wp)
+          while (*wp) {
             EOUTLINE[EOutCnt++] = *wp++;
+	  }
         }
         count_in_line++;
       }
@@ -817,7 +862,7 @@ public:
   }
 
   void dummyWordOut() {
-    unichar*wp;
+    unichar *wp;
     if ((recursiveMode == LABEL) && !count_in_line) {
       wp = sepL;
       while (*wp)
@@ -839,15 +884,17 @@ public:
   void putInt(int flag, int v) {
     if (v < 10) {
       EBuff[ePtrCnt] = v % 10 + (unichar) '0';
-      if (flag)
+      if (flag) {
         TBuff[tPtrCnt++] = EBuff[ePtrCnt];
+      }
       ePtrCnt++;
       return;
     }
     putInt(flag, v / 10);
     EBuff[ePtrCnt] = v % 10 + (unichar) '0';
-    if (flag)
+    if (flag) {
       TBuff[tPtrCnt++] = EBuff[ePtrCnt];
+    }
     ePtrCnt++;
   }
   int prOutCycle() {
@@ -866,19 +913,22 @@ public:
 
         if (u_strcmp(wp, u_epsilon_string)) {
           //          wwp = saveSep;while(*wwp) EBuff[ePtrCnt++] = *wwp++;
-          while (*wp)
+          while (*wp) {
             EBuff[ePtrCnt++] = *wp++;
+	  }
         }
         wp = (unichar *) Eti->output;
         if ((automateMode == TRANMODE) && wp && u_strcmp(wp,
             u_epsilon_string)) {
           //            wwp = saveSep;while(*wwp) EBuff[ePtrCnt++] = *wwp++;
-          while (*wp)
+          while (*wp) {
             TBuff[tPtrCnt++] = *wp++;
+	  }
         }
       }
-      if (outOneWord(entreGF) != 0)
+      if (outOneWord(entreGF) != 0) {
         return 1;
+      }
       h = h->next;
     }
     return 0;
@@ -900,9 +950,10 @@ public:
     }
 
     while (h) {
-      tmp = h->pathEtiQueue[h->pathCnt - 1].etatNo;
-      if (tmp & FILE_PATH_MARK)
+      tmp = h->pathEtiQueue[h->pathCnt - 1].stateNo;
+      if (tmp & FILE_PATH_MARK) {
         tmp = a->initial_states[tmp & SUB_ID_MASK];
+      }
       if ((tmp < st) || (tmp >= ed)) {
         h = h->next;
         continue;
@@ -914,28 +965,33 @@ public:
       EBuff[ePtrCnt++] = (unichar) ':';
 
       for (i = 0; i < h->pathCnt; i++) {
-        tmp = h->pathEtiQueue[i].etatNo;
-        if (tmp & FILE_PATH_MARK)
+        tmp = h->pathEtiQueue[i].stateNo;
+        if (tmp & FILE_PATH_MARK) {
           tmp = a->initial_states[tmp & SUB_ID_MASK];
-        if ((tmp < st) || (tmp >= ed))
+	}
+        if ((tmp < st) || (tmp >= ed)) {
           break;
+	}
 
         Eti = a->tags[h->pathEtiQueue[i].eti];
         wp = (unichar *) Eti->input;
         if (u_strcmp(wp, u_epsilon_string) && *wp) {
-          while (*wp)
+          while (*wp) {
             EBuff[ePtrCnt++] = *wp++;
+	  }
         }
         wp = (unichar *) Eti->output;
         if ((automateMode == TRANMODE) && wp && u_strcmp(wp,
             u_epsilon_string) && *wp) {
-          while (*wp)
+          while (*wp) {
             TBuff[tPtrCnt++] = *wp++;
+	  }
         }
       }
       if (i == h->pathCnt) {
-        if (outOneWord(u_null_string) != 0)
+        if (outOneWord(u_null_string) != 0) {
           return 1;
+	}
       } else
         resetBuffs();
       h = h->next;
@@ -949,21 +1005,22 @@ public:
     int i;
     for (i = 1; i <= a->number_of_graphs; i++) {
       char charBuffOut[1024];
-      if (a->states[a->initial_states[i]]->control & LOOP_NODE_MARK)
+      if (a->states[a->initial_states[i]]->control & LOOP_NODE_MARK) {
         error("the sub-graph %s has cycle path\n", getUtoChar(
             charBuffOut, a->graph_names[i]));
+      }
     }
   }
 
-#define MAX_IGONRE_SOUS_GRAPHE  256
-  unichar *arretSubList[MAX_IGONRE_SOUS_GRAPHE];
+#define MAX_IGNORE_SUB_GRAPH  256
+  unichar *arretSubList[MAX_IGNORE_SUB_GRAPH];
   int arretSubListIdx;
 
   void arretExpoList(char *src) {
     char *cp = src;
     unichar *wp;
-    if (arretSubListIdx == MAX_IGONRE_SOUS_GRAPHE) {
-      u_printf("too many igored sub-graph name igore%s\n", src);
+    if (arretSubListIdx == MAX_IGNORE_SUB_GRAPH) {
+      u_printf("too many ignored sub-graph name ignore%s\n", src);
       return;
     }
     wp = new unichar[strlen(src) + 1];
@@ -986,16 +1043,18 @@ public:
       fatal_error("Cannot open file %s\n", src);
     }
     while (af_fgets(fileLine, 256, uf->f)) {
-      if (fileLine[0] == ' ')
+      if (fileLine[0] == ' ') {
         continue;
+      }
       for (i = 0; (i < 128) && (fileLine[i] != ' ') && (fileLine[i]
           != '.') && (fileLine[i] != 0) && (fileLine[i] != 0xa)
-          && (fileLine[i] != 0xd); i++)
+          && (fileLine[i] != 0xd); i++) {
         EBuff[i] = (unichar) (fileLine[i] & 0xff);
+      }
       EBuff[i++] = 0;
 
-      if (arretSubListIdx == MAX_IGONRE_SOUS_GRAPHE) {
-        u_printf("too many igored sub-graph name igore%s\n", src);
+      if (arretSubListIdx == MAX_IGNORE_SUB_GRAPH) {
+        u_printf("too many igored sub-graph name ignore%s\n", src);
         return;
       }
       arretSubList[arretSubListIdx] = new unichar[i];
@@ -1013,12 +1072,15 @@ public:
   }
 
   void arretExpoDel() {
-    for (int i = 0; i < arretSubListIdx; i++)
+    for (int i = 0; i < arretSubListIdx; i++){
       delete arretSubList[i];
+    }
   }
-  //
-  //
-  //
+
+  /**
+   * prints the automaton stack
+   * state queue and automaton queue
+   */
   void prAutoStack(int depStack) {
     int i;
     u_printf("===== AutoQueue\n");
@@ -1026,10 +1088,10 @@ public:
       u_printf("%d :: %d :: %d\n", i, CautoQueue[i].aId,
           CautoQueue[i].next);
     }
-    u_printf("===== etatQueue\n");
+    u_printf("===== stateQueue\n");
     for (i = 0; i < pathEtiQidx; i++) {
       u_printf("%d (%d ::%d)%d\n", i, pathEtiQ[i].autoNo,
-          pathEtiQ[i].etatNo, pathEtiQ[i].eti);
+          pathEtiQ[i].stateNo, pathEtiQ[i].eti);
     }
     u_printf("===== AutoStack\n");
     Transition *k;
@@ -1038,12 +1100,12 @@ public:
       u_printf("%d %d(%d ::%d)\n", i, autoStackMap[i].autoId,
           k->state_number, k->tag_number);
     }
-
   }
+
   void prAutoStackOnly() {
     for (int i = 0; i < pathEtiQidx; i++)
       u_fprintf(foutput, "%d (%d ::%d)%d\n", i, pathEtiQ[i].autoNo,
-          pathEtiQ[i].etatNo, pathEtiQ[i].eti);
+          pathEtiQ[i].stateNo, pathEtiQ[i].eti);
   }
 
 private:
@@ -1106,9 +1168,9 @@ void CFstApp::loadGraph(int& changeStrToIdx,
     if (a->states[i_1]->control & 0x80) {
       fatal_error("Not null control bit");
     }
-    a->states[i_1]->control &= 0x7f; // clean for mark recusive
+    a->states[i_1]->control &= 0x7f; // clean to mark recursive. 0x7f=0b0111_1111
     while (strans) {
-      if (strans->tag_number < 0) {
+      if (strans->tag_number < 0) {   // transition invokes subgraph
         strans->tag_number = FILE_PATH_MARK | -strans->tag_number;
       }
       strans = strans->next;
@@ -1126,29 +1188,27 @@ void CFstApp::loadGraph(int& changeStrToIdx,
 
     for (i_1 = 0; i_1 < arretSubListIdx; i_1++) {
       for (j_1 = 1; j_1 <= a->number_of_graphs; j_1++) {
-        if (!u_strcmp((unichar *) a->graph_names[j_1],
-            arretSubList[i_1]))
+        if (!u_strcmp((unichar *) a->graph_names[j_1], arretSubList[i_1])) {
           break;
+	}
       }
       if (j_1 > a->number_of_graphs) {
         char charBuffOut[1024];
-        u_printf("Warning : Not exist the sub-graph %s\n", getUtoChar(
-            charBuffOut, arretSubList[i_1]));
+        u_printf("Warning : Not exist the sub-graph %s\n", getUtoChar(charBuffOut, arretSubList[i_1]));
         continue;
       }
-      {
-        char charBuffOut[1024];
-        u_printf("%s %d graphe ignore the exploitation\n", getUtoChar(
-            charBuffOut, a->graph_names[j_1]), j_1);
-      }
+      char charBuffOut[1024];
+      u_printf("%s %d graph ignore the exploitation\n", getUtoChar(charBuffOut, a->graph_names[j_1]), j_1);
+
       ignoreTable[j_1] = 1;
     }
   }
   if (stopSignal) {
 
     for (i_1 = 0; i_1 < a->number_of_tags; i_1++) {
-      if (u_strcmp((unichar *) a->tags[i_1]->input, stopSignal))
+      if (u_strcmp((unichar *) a->tags[i_1]->input, stopSignal)) {
         continue;
+      }
       for (j_1 = 0; j_1 < a->number_of_states; j_1++) {
         strans = a->states[j_1]->transitions;
         while (strans) {
@@ -1167,22 +1227,26 @@ void CFstApp::loadGraph(int& changeStrToIdx,
     unichar temp[256];
     for (i = 0; i < a->number_of_tags; i++) {
       wp = (unichar *) a->tags[i]->input;
-      for (j = 0; wp[j]; j++)
+      for (j = 0; wp[j]; j++) {
         temp[j] = wp[j];
+      }
       temp[j] = 0;
       for (j = 0; j < changeStrToIdx; j++) {
         wp = changeStrTo[j] + 1;
         for (k = 0; temp[k]; k++) {
           for (l = 0; wp[l]; l++) {
-            if (!temp[k + l] || (temp[k + l] != wp[l]))
+            if (!temp[k + l] || (temp[k + l] != wp[l])) {
               break;
+	    }
           }
-          if (wp[l])
+          if (wp[l]) {
             continue;
+	  }
           temp[k] = changeStrTo[j][0];
           l--;
-          for (m = k + 1; temp[m + l]; m++)
+          for (m = k + 1; temp[m + l]; m++) {
             temp[m] = temp[m + l];
+	  }
           temp[m] = 0;
         }
       }
@@ -1190,10 +1254,10 @@ void CFstApp::loadGraph(int& changeStrToIdx,
       if (u_strcmp(wp, temp)) {
         char charBuffOut1[1024];
         char charBuffOut2[1024];
-        u_printf("%dth index, %s==>%s\n", i, getUtoChar(charBuffOut1,
-            wp), getUtoChar(charBuffOut2, temp));
-        for (j = 0; temp[j]; j++)
+        u_printf("%dth index, %s==>%s\n", i, getUtoChar(charBuffOut1,wp), getUtoChar(charBuffOut2, temp));
+        for (j = 0; temp[j]; j++) {
           *wp++ = temp[j];
+	}
         *wp = 0;
       }
 
@@ -1202,8 +1266,10 @@ void CFstApp::loadGraph(int& changeStrToIdx,
   }
 }
 
-int CFstApp::getWordsFromGraph(int &changeStrToIdx,
-    unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fname) {
+/**
+ * the main function to extract the words from the automaton
+ */
+int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fname) {
   int i;
   char *dp;
   char ofNameTmp[1024];
@@ -1218,7 +1284,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
     if (enableLoopCheck) {
       listOut = 0;
       niveau_traite_mot = 1;
-      exploirerSubAuto(1); // mark loop path start nodes
+      exploreSubAuto(1); // mark loop path start nodes
       prSubGrapheCycle();
     }
 
@@ -1246,7 +1312,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
       u_fprintf(foutput, "[%d th automata %S]\n", i, a->graph_names[i]);
       //      printf("[%d th automata %s]\n",i,getUtoChar(a->nom_graphe[i]));
 
-      if (exploirerSubAuto(i) != 0) {
+      if (exploreSubAuto(i) != 0) {
         CloseOutput();
         return 1;
       }
@@ -1257,7 +1323,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
       }
       u_fprintf(
           foutput,
-          " the automate %S, %d path, %d path stopped by cycle, %d error path\n",
+          " automaton %S, %d paths, %d path stopped by cycle, %d path overflows\n",
           a->graph_names[i], totalPath, totalLoop, errPath);
       CleanPathCounter();
     }
@@ -1279,7 +1345,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
     case SINGLE: {
       if (enableLoopCheck) {
         listOut = 0;
-        exploirerSubAuto(1); // mark loop path start nodes
+        exploreSubAuto(1); // mark loop path start nodes
         prSubGrapheCycle();
       }
       makeOfileName(ofNameTmp, 0, 0);
@@ -1294,11 +1360,11 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
         fatal_error("Cannot open file %s\n", ofNameTmp);
       }
       listOut = 1;
-      exploirerSubAuto(1);
+      exploreSubAuto(1);
       if (verboseMode) {
         char charBuffOut[1024];
         u_printf(
-            " The automate %s : %d path, %d path stopped by cycle, %d error path\n",
+            " automaton %s : %d paths, %d path stopped by cycle, %d path overflows\n",
             getUtoChar(charBuffOut, a->graph_names[1]), totalPath,
             totalLoop, errPath);
         if (stopPath) {
@@ -1321,7 +1387,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
       CloseOutput();
     }
       break;
-    case MULTI: // the first graph have only noms of the initials graphs
+    case MULTI: // the first graph has only the names of the initials graphs
     {
       U_FILE* listFile;
       unichar *wp;
@@ -1330,20 +1396,23 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
       strcat(tmpchar, "lst");
       makeOfileName(ofNameTmp, tmpchar, ".txt");
       listFile = u_fopen(ASCII, ofNameTmp, U_WRITE);
-      if (!(listFile))
+      if (!(listFile)) {
         fatal_error("list file open error");
+      }
       i = 0;
 
       for (sui = a->states[0]->transitions; sui != 0; sui = sui->next) {
-        if (!(sui->tag_number & FILE_PATH_MARK))
+        if (!(sui->tag_number & FILE_PATH_MARK)) {
           continue;
+	}
         ignoreTable[sui->tag_number & SUB_ID_MASK] = 1;
         i++;
       }
       u_fprintf(listFile, " %d\n", i);
       for (sui = a->states[0]->transitions; sui != 0; sui = sui->next) {
-        if (!(sui->tag_number & FILE_PATH_MARK))
+        if (!(sui->tag_number & FILE_PATH_MARK)) {
           continue;
+	}
         cleanCyclePath();
 
         wp = (unichar *) a->graph_names[sui->tag_number & SUB_ID_MASK];
@@ -1371,12 +1440,12 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
         }
         if (enableLoopCheck) {
           listOut = 0; // output disable
-          exploirerSubAuto(sui->tag_number & SUB_ID_MASK);
+          exploreSubAuto(sui->tag_number & SUB_ID_MASK);
           prSubGrapheCycle();
           CleanPathCounter();
         }
         listOut = 1; // output enable
-        exploirerSubAuto(sui->tag_number & SUB_ID_MASK);
+        exploreSubAuto(sui->tag_number & SUB_ID_MASK);
 
         if (recursiveMode == SYMBOL) {
           if (prOutCycle() != 0) {
@@ -1386,19 +1455,12 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
         }
         if (verboseMode) {
           char charBuffOut[1024];
-          u_printf(
-              " the automate %s %d path, %d path stopped by cycle, %d error path \n",
-              getUtoChar(charBuffOut,
-                  a->graph_names[sui->tag_number
-                      & SUB_ID_MASK]), totalPath,
-              totalLoop, errPath);
+          u_printf(" automaton %s: %d paths, %d path stopped by cycle, %d path overflows \n",getUtoChar(charBuffOut, a->graph_names[sui->tag_number & SUB_ID_MASK]), totalPath, totalLoop, errPath);
 
           if (stopPath) {
             for (int inx = 1; inx <= a->number_of_graphs; inx++) {
               if (numOfIgnore[inx]) {
-                u_printf(" sub-call[%s] %d\n", getUtoChar(
-                    charBuffOut, a->graph_names[inx]),
-                    numOfIgnore[inx]);
+                u_printf(" sub-call[%s] %d\n", getUtoChar(charBuffOut, a->graph_names[inx]),numOfIgnore[inx]);
                 numOfIgnore[inx] = 0;
               }
             }
@@ -1410,14 +1472,16 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
       u_fclose(listFile);
     }
       break;
-    }
-  }
+    } // end switch 'traitauto'
+  } // end switch 'display_control'
   return 0;
 }
-//
-//
-//
-int CFstApp::exploirerSubAuto(int startAutoNo) {
+
+/**
+ * explores all the sub graph calls in the automaton
+ * starting at 'startAutoNo'
+ */
+int CFstApp::exploreSubAuto(int startAutoNo) {
   Transition startCallTr;
   //if(listOut) prCycleNode();
   startCallTr.tag_number = startAutoNo | FILE_PATH_MARK;
@@ -1426,59 +1490,63 @@ int CFstApp::exploirerSubAuto(int startAutoNo) {
 
 
   autoStackMap[0].tran = &startCallTr;
-  int callSubId = callIdentifyId(autoStackMap, 1);
-  autoStackMap[0].autoId = callSubId;
+  int callSubGraphId = callIdentifyId(autoStackMap, 1);
+  autoStackMap[0].autoId = callSubGraphId;
 
   CautoDepth = 0;
-  CautoQueue[CautoDepth].aId = callSubId;
+  CautoQueue[CautoDepth].aId = callSubGraphId;
   CautoQueue[CautoDepth].next = 0;
   pathEtiQidx = 0;
-  pathEtiQ[pathEtiQidx].autoNo = callSubId;
-  pathEtiQ[pathEtiQidx].etatNo = a->initial_states[startAutoNo];
+  pathEtiQ[pathEtiQidx].autoNo = callSubGraphId;
+  pathEtiQ[pathEtiQidx].stateNo = a->initial_states[startAutoNo];
   pathEtiQ[pathEtiQidx].eti = 0;
   pathEtiQidx++;
-  if (findCycleSubGraph(callSubId, 1, a->initial_states[startAutoNo], 0) != 0)
+  if (findCycleSubGraph(callSubGraphId, 1, a->initial_states[startAutoNo], 0) != 0) {
     return 1;
+  }
   pathEtiQidx--;
-  if (pathEtiQidx)
+  if (pathEtiQidx) {
     fatal_error("error in program");
+  }
   return 0;
 }
 
 //
 //  find cycle path by node and call
 //
-int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo,
-    int stateDepth) {
+int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo, int stateDepth) {
   int skipCnt = 0;
   int i;
   int tmp;
-  int nEtat;
+  int nState;
   int callId;
   int scanner;
   //  prAutoStack(autoDepth);
   if (listOut && WasCycleNode(automateNo, stateNo)) {
-    pathEtiQ[pathEtiQidx - 1].etatNo |= LOOP_PATH_MARK;
+    pathEtiQ[pathEtiQidx - 1].stateNo |= LOOP_PATH_MARK;
   }
   if (pathEtiQidx >= PATH_QUEUE_MAX) {
     pathEtiQidx = PATH_QUEUE_MAX - 1;
     if (listOut) {
       errPath++;
-      pathEtiQ[pathEtiQidx].etatNo = STOP_PATH_MARK;
+      pathEtiQ[pathEtiQidx].stateNo = STOP_PATH_MARK;
       pathEtiQ[pathEtiQidx].eti = 0;
       pathEtiQidx++;
-      if (outWordsOfGraph(pathEtiQidx) != 0)
+      if (outWordsOfGraph(pathEtiQidx) != 0) {
         return 1;
+      }
       pathEtiQidx--;
-    } else
-      error("Warning:too many calls\n");
+    } else {
+      error("Warning: too many calls\n");
+    }
     return 0;
   }
   if (IsCyclePath(stateDepth)) {
-    if (recursiveMode == STOP)
+    if (recursiveMode == STOP) {
       return 0;
+    }
     //    if(!listOut){
-    //            a->etat[stateNo]->controle |= LOOP_NODE_MARK;
+    //            a->state[stateNo]->controle |= LOOP_NODE_MARK;
     //    }
     return 0;
   }
@@ -1487,64 +1555,65 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo,
     if (autoDepth != 1) { // check continue  condition
       skipCnt = 0; // find next state
       for (i = CautoDepth; i >= 0; --i) {
-        if (CautoQueue[i].aId == -1)
+        if (CautoQueue[i].aId == -1) {
           skipCnt++;
+	}
         else {
-          if (skipCnt)
+          if (skipCnt != 0) {
             skipCnt--;
-          else
+	  }
+          else {
             break;
+	  }
         }
       }
 
       // ?
       if (i == 0) {
-        //fatal_error("not want state arrive");
-        error("not want state arrive");
+        error("unwanted state happened");
         return 1;
       }
       int tauto = CautoQueue[i].aId;
-      nEtat = CautoQueue[i].next;
+      nState = CautoQueue[i].next;
       CautoDepth++;
       CautoQueue[CautoDepth].aId = -1;
       CautoQueue[CautoDepth].next = 0;
 
-      pathEtiQ[pathEtiQidx].etatNo = nEtat;
+      pathEtiQ[pathEtiQidx].stateNo = nState;
       pathEtiQ[pathEtiQidx].eti = 0;
       pathEtiQ[pathEtiQidx].autoNo = tauto;
       pathEtiQidx++;
-      if (findCycleSubGraph(tauto, autoDepth - 1, nEtat, stateDepth + 1)
-          != 0)
+      if (findCycleSubGraph(tauto, autoDepth - 1, nState, stateDepth + 1) != 0) {
         return 1;
+      }
       pathEtiQidx--;
       CautoDepth--;
     } else { // stop condition
       if (listOut) {
         totalPath++;
-        pathEtiQ[pathEtiQidx].etatNo = STOP_PATH_MARK;
+        pathEtiQ[pathEtiQidx].stateNo = STOP_PATH_MARK;
         pathEtiQ[pathEtiQidx].eti = 0;
         pathEtiQ[pathEtiQidx].autoNo = automateNo;
         pathEtiQidx++;
-        if (outWordsOfGraph(pathEtiQidx) != 0)
+        if (outWordsOfGraph(pathEtiQidx) != 0) {
           return 1;
+	}
         pathEtiQidx--;
-      } else {
-
       }
     }
-  }
-  for (Transition *sui = a->states[stateNo]->transitions; sui != 0; sui
-      = sui->next) {
+  } // end if terminal node
 
+  for (Transition *sui = a->states[stateNo]->transitions; sui != 0; sui = sui->next) {
     if (sui->tag_number & STOP_PATH_MARK) {
       if (listOut) {
         totalPath++;
         pathEtiQ[pathEtiQidx].autoNo = automateNo;
-        pathEtiQ[pathEtiQidx].etatNo = STOP_PATH_MARK;
+        pathEtiQ[pathEtiQidx].stateNo = STOP_PATH_MARK;
         pathEtiQ[pathEtiQidx].eti = sui->tag_number & ~STOP_PATH_MARK;
         pathEtiQidx++;
-        if (outWordsOfGraph(pathEtiQidx) != 0)
+        if (outWordsOfGraph(pathEtiQidx) != 0) {
           return 1;
+	}
         pathEtiQidx--;
       }
       continue;
@@ -1552,17 +1621,17 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo,
     if (display_control == GRAPH) {
       if (listOut) {
         pathEtiQ[pathEtiQidx].autoNo = automateNo;
-        pathEtiQ[pathEtiQidx].etatNo = sui->state_number;
+        pathEtiQ[pathEtiQidx].stateNo = sui->state_number;
         pathEtiQ[pathEtiQidx].eti = sui->tag_number;
         pathEtiQidx++;
-        if (findCycleSubGraph(automateNo, autoDepth, sui->state_number,
-            stateDepth + 1) != 0)
+        if (findCycleSubGraph(automateNo, autoDepth, sui->state_number, stateDepth + 1) != 0) {
           return 1;
+	}
         pathEtiQidx--;
       }
       continue;
     }
-    if (sui->tag_number & FILE_PATH_MARK) { // handling sub call
+    if (sui->tag_number & FILE_PATH_MARK) { // handling sub graph call
       if (ignoreTable[sui->tag_number & SUB_ID_MASK]) {
         // find stop condition path
         if (listOut) {
@@ -1573,10 +1642,11 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo,
 
           pathEtiQ[pathEtiQidx].autoNo = automateNo;
           pathEtiQ[pathEtiQidx].eti = sui->tag_number;
-          pathEtiQ[pathEtiQidx].etatNo = STOP_PATH_MARK;
+          pathEtiQ[pathEtiQidx].stateNo = STOP_PATH_MARK;
           pathEtiQidx++;
-          if (outWordsOfGraph(pathEtiQidx) != 0)
+          if (outWordsOfGraph(pathEtiQidx) != 0) {
             return 1;
+	  }
           pathEtiQidx--;
         }
         continue;
@@ -1585,51 +1655,55 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo,
       //    find cycle call
       //
       tmp = sui->tag_number & SUB_ID_MASK;
-
-      for (scanner = 0; scanner < autoDepth; scanner++)
-        if (autoStackMap[scanner].tran->tag_number == sui->tag_number)
+      // scanning the autoStackMap
+      for (scanner = 0; scanner < autoDepth; scanner++) {
+	// break if the tag number in the stack equals 
+        if (autoStackMap[scanner].tran->tag_number == sui->tag_number) {
           break;
+	}
+      }
       autoStackMap[autoDepth].tran = sui;
       if (scanner == autoDepth) {
         callId = callIdentifyId(autoStackMap, autoDepth + 1);
-      } else { // find recusive call
+      } else { // find recursive call
         pathEtiQ[pathEtiQidx].eti = 0;
         pathEtiQ[pathEtiQidx].autoNo = autoStackMap[scanner].autoId;
-        ;
-        pathEtiQ[pathEtiQidx].etatNo = a->initial_states[tmp]
+
+        pathEtiQ[pathEtiQidx].stateNo = a->initial_states[tmp]
             | LOOP_PATH_MARK;
-        ;
+
         ++pathEtiQidx;
-        if (!IsCyclePath(stateDepth))
+        if (!IsCyclePath(stateDepth)) {
           fatal_error("recursive find fail");
+	}
         --pathEtiQidx;
         continue;
       }
       pathEtiQ[pathEtiQidx].eti = 0;
       pathEtiQ[pathEtiQidx].autoNo = callId;
-      pathEtiQ[pathEtiQidx].etatNo = a->initial_states[tmp];
+      pathEtiQ[pathEtiQidx].stateNo = a->initial_states[tmp];
       ++pathEtiQidx;
       autoStackMap[autoDepth].autoId = callId;
 
       CautoDepth++;
       CautoQueue[CautoDepth].aId = callId;
       CautoQueue[CautoDepth].next = sui->state_number;
-      if (findCycleSubGraph(callId, autoDepth + 1,
-          a->initial_states[tmp], stateDepth + 1) != 0)
+      if (findCycleSubGraph(callId, autoDepth + 1, a->initial_states[tmp], stateDepth + 1) != 0) {
         return 1;
+      }
       --pathEtiQidx;
       --CautoDepth;
       continue;
     }
-    pathEtiQ[pathEtiQidx].etatNo = sui->state_number;
+    pathEtiQ[pathEtiQidx].stateNo = sui->state_number;
     pathEtiQ[pathEtiQidx].eti = sui->tag_number;
     pathEtiQ[pathEtiQidx].autoNo = automateNo;
     ++pathEtiQidx;
-    if (findCycleSubGraph(automateNo, autoDepth, sui->state_number,
-        stateDepth + 1) != 0)
+    if (findCycleSubGraph(automateNo, autoDepth, sui->state_number, stateDepth + 1) != 0) {
       return 1;
+    }
     pathEtiQidx--;
-  }
+  } // end for each transition
   return 0;
 }
 
@@ -1648,8 +1722,7 @@ void CFstApp::CqueuePathPr(U_FILE *f) {
   }
 }
 
-unichar *
-uascToNum(unichar *uasc, int *val) {
+unichar * uascToNum(unichar *uasc, int *val) {
   unichar *wp = uasc;
   int base = 10;
   int sum = 0;
@@ -1708,29 +1781,27 @@ int CFstApp::outWordsOfGraph(int depth) {
     if (!pathEtiQ[s].eti) {
       ep = tp = u_null_string;
     } else if (pathEtiQ[s].eti & FILE_PATH_MARK) {
-      ep
-          = (display_control == GRAPH) ? (unichar *) a->graph_names[pathEtiQ[s].eti
-              & SUB_ID_MASK]
-              : u_null_string;
+      ep = (display_control == GRAPH) ? (unichar *) a->graph_names[pathEtiQ[s].eti & SUB_ID_MASK] : u_null_string;
       tp = u_null_string;
     } else {
       Eti = a->tags[pathEtiQ[s].eti & SUB_ID_MASK];
-      ep = (u_strcmp(Eti->input, u_epsilon_string)) ? Eti->input
-          : u_null_string;
-
+      ep = (u_strcmp(Eti->input, u_epsilon_string)) ? 
+	      Eti->input : u_null_string;
       if (Eti->output != NULL) {
-        tp = (u_strcmp(Eti->output, u_epsilon_string)) ? Eti->output
-            : u_null_string;
-      } else
+        tp = (u_strcmp(Eti->output, u_epsilon_string)) ? 
+		Eti->output : u_null_string;
+      } else {
         tp = u_null_string;
+      }
     }
-    //wprintf(L"{%d,%x,%x,%s,%s}",s,pathEtiQ[s].etatNo,pathEtiQ[s].eti,ep,tp);
+    //wprintf(L"{%d,%x,%x,%s,%s}",s,pathEtiQ[s].stateNo,pathEtiQ[s].eti,ep,tp);
     markCtlChar = 0;
-    if (!(pathEtiQ[s].etatNo & STOP_PATH_MARK) && !niveau_traite_mot
+    if (!(pathEtiQ[s].stateNo & STOP_PATH_MARK) && !niveau_traite_mot
         && (*ep == '<')) {
       chp = ep + 1;
-      while (*chp)
+      while (*chp) {
         chp++;
+      }
       --chp;
       if (*chp == (unichar) '>') {
         markCtlChar = 1;
@@ -1745,27 +1816,32 @@ int CFstApp::outWordsOfGraph(int depth) {
     }
     //wprintf(L"\n");
 
-    if (pathEtiQ[s].etatNo & LOOP_PATH_MARK) {
+    if (pathEtiQ[s].stateNo & LOOP_PATH_MARK) {
       if (recursiveMode == LABEL) {
         if (*ep || *tp) { // current
           if (tPtrCnt) {
-            if (outOneWord(0) != 0)
+            if (outOneWord(0) != 0) {
               return 1;
+	    }
           }
           if (markPreCtlChar && *ep) {
-            if (outOneWord(0) != 0)
+            if (outOneWord(0) != 0) {
               return 1;
+	    }
           }
           while (*ep)
             EBuff[ePtrCnt++] = *ep++;
-          if (automateMode == TRANMODE)
-            while (*tp)
+          if (automateMode == TRANMODE) {
+            while (*tp) {
               TBuff[tPtrCnt++] = *tp++;
+	    }
+	  }
 
           if (niveau_traite_mot) {
             if (ePtrCnt || tPtrCnt) {
-              if (outOneWord(0) != 0)
+              if (outOneWord(0) != 0) {
                 return 1;
+	      }
             }
           }
           //                    else {
@@ -1773,18 +1849,20 @@ int CFstApp::outWordsOfGraph(int depth) {
           //                }
 
         }
-        if (pathEtiQ[s].etatNo & STOP_PATH_MARK) {
+        if (pathEtiQ[s].stateNo & STOP_PATH_MARK) {
           sp = getLabelNumber(aaBuffer_for_getLabelNumber, depth,
               indicateFirstUsed, s, 0);
-          if (outOneWord(sp) != 0)
+          if (outOneWord(sp) != 0) {
             return 1;
+	  }
           break;
         }
         sp = getLabelNumber(aaBuffer_for_getLabelNumber, s,
             indicateFirstUsed, s, 1);
         if (!indicateFirstUsed) { // first print out
-          if (outOneWord(sp) != 0)
+          if (outOneWord(sp) != 0) {
             return 1;
+	  }
         } else {
           resetBuffs();
         }
@@ -1797,13 +1875,15 @@ int CFstApp::outWordsOfGraph(int depth) {
         continue;
       } else if (recursiveMode == SYMBOL) { // SYMBOL
         if (tPtrCnt && niveau_traite_mot) {
-          if (outOneWord(0) != 0)
+          if (outOneWord(0) != 0) {
             return 1;
+	  }
         }
         wp = entreGO;
         while (*wp) {
-          if (automateMode == TRANMODE)
+          if (automateMode == TRANMODE) {
             TBuff[tPtrCnt++] = *wp;
+	  }
           EBuff[ePtrCnt++] = *wp;
           wp++;
         }
@@ -1816,11 +1896,12 @@ int CFstApp::outWordsOfGraph(int depth) {
           TBuff[tPtrCnt++] = (unichar) '|';
         }
         struct cyclePathMark *h = headCyc;
-        int findId = pathEtiQ[s].etatNo & PATHID_MASK;
+        int findId = pathEtiQ[s].stateNo & PATHID_MASK;
         while (h) {
           for (i = 0; i < h->pathCnt; i++) {
-            if (h->pathEtiQueue[i].etatNo == findId)
+            if (h->pathEtiQueue[i].stateNo == findId) {
               break;
+	    }
           }
           if (i != h->pathCnt) {
             if (automateMode == TRANMODE) {
@@ -1837,65 +1918,77 @@ int CFstApp::outWordsOfGraph(int depth) {
           }
           h = h->next;
         }
-        if (automateMode == TRANMODE)
+        if (automateMode == TRANMODE) {
           --tPtrCnt;
+	}
         --ePtrCnt;
         wp = entreGF;
         while (*wp) {
-          if (automateMode == TRANMODE)
+          if (automateMode == TRANMODE) {
             TBuff[tPtrCnt++] = *wp;
+	  }
           EBuff[ePtrCnt++] = *wp;
           wp++;
         }
-        if (outOneWord(0) != 0)
+        if (outOneWord(0) != 0) {
           return 1;
+	}
 
         continue;
       } else { // STOP
-        if (outOneWord(0) != 0)
+        if (outOneWord(0) != 0) {
           return 1;
-        if (!(pathEtiQ[s].etatNo & STOP_PATH_MARK)) {
+	}
+        if (!(pathEtiQ[s].stateNo & STOP_PATH_MARK)) {
           // mark the stop
           wp = entreGO;
           while (*wp) {
             EOUTLINE[EOutCnt++] = *wp;
             if ((automateMode == TRANMODE) && (prMode
-                == PR_SEPARATION))
+                == PR_SEPARATION)) {
               SOUTLINE[SOutCnt++] = *wp;
+	    }
             wp++;
           }
         }
-        while (*ep)
+        while (*ep) {
           EBuff[ePtrCnt++] = *ep++;
-        if (automateMode == TRANMODE)
-          while (*tp)
+	}
+        if (automateMode == TRANMODE) {
+          while (*tp) {
             TBuff[tPtrCnt++] = *tp++;
-        if (pathEtiQ[s].etatNo & STOP_PATH_MARK) {
+	  }
+	}
+        if (pathEtiQ[s].stateNo & STOP_PATH_MARK) {
           wp = entreGF;
           while (*wp) {
             if (automateMode == TRANMODE) {
               TBuff[tPtrCnt++] = *wp;
-              if (prMode == PR_SEPARATION)
+              if (prMode == PR_SEPARATION) {
                 EBuff[ePtrCnt++] = *wp;
-            } else
+	      }
+            } else {
               EBuff[ePtrCnt++] = *wp;
+	    }
 
             wp++;
           }
-          if (outOneWord(u_null_string) != 0)
+          if (outOneWord(u_null_string) != 0) {
             return 1;
+	  }
         } else {
           if (niveau_traite_mot) {
             if (ePtrCnt || tPtrCnt) {
-              if (outOneWord(0) != 0)
+              if (outOneWord(0) != 0) {
                 return 1;
+	      }
             }
           } else {
             if (markPreCtlChar) {
-              if (outOneWord(0) != 0)
+              if (outOneWord(0) != 0) {
                 return 1;
+	      }
             }
-
           }
         }
         markPreCtlChar = markCtlChar;
@@ -1903,35 +1996,40 @@ int CFstApp::outWordsOfGraph(int depth) {
       }
     }
 
-    if (pathEtiQ[s].etatNo & STOP_PATH_MARK) {
+    if (pathEtiQ[s].stateNo & STOP_PATH_MARK) {
       //printf("stop %d\n",s);
       if (markPreCtlChar && markCtlChar) {
-        if (outOneWord(0) != 0)
+        if (outOneWord(0) != 0) {
           return 1;
+	}
       }
       if ((automateMode == TRANMODE) && *tp) { // current
         if (tPtrCnt) {
-          if (outOneWord(0) != 0)
+          if (outOneWord(0) != 0) {
             return 1;
+	  }
         }
-        while (*tp)
+        while (*tp) {
           TBuff[tPtrCnt++] = *tp++;
+	}
       }
       if (pathEtiQ[s].eti & FILE_PATH_MARK) {
         if (outOneWord((unichar *) a->graph_names[pathEtiQ[s].eti
-            & SUB_ID_MASK]) != 0)
+            & SUB_ID_MASK]) != 0) {
           return 1;
+	}
       } else {
-        if (outOneWord(u_null_string) != 0)
+        if (outOneWord(u_null_string) != 0) {
           return 1;
+	}
       }
       break;
     }
     if (pathEtiQ[s].eti & FILE_PATH_MARK) {
-
       if (tPtrCnt || (markPreCtlChar && *ep)) {
-        if (outOneWord(0) != 0)
+        if (outOneWord(0) != 0) {
           return 1;
+	}
       }
 
       switch (display_control) {
@@ -1940,8 +2038,9 @@ int CFstApp::outWordsOfGraph(int depth) {
         while (*ep)
           EBuff[ePtrCnt++] = *ep++;
         EBuff[ePtrCnt++] = (unichar) '}';
-        if (outOneWord(0) != 0)
+        if (outOneWord(0) != 0) {
           return 1;
+	}
         break;
       case FST2LIST_DEBUG:
       case FULL:
@@ -1957,18 +2056,22 @@ int CFstApp::outWordsOfGraph(int depth) {
     }
 
     if (tPtrCnt || (markPreCtlChar && *ep)) {
-      if (outOneWord(0) != 0)
+      if (outOneWord(0) != 0) {
         return 1;
+      }
     }
     while (*ep)
       EBuff[ePtrCnt++] = *ep++;
-    if (automateMode == TRANMODE)
-      while (*tp)
+    if (automateMode == TRANMODE) {
+      while (*tp) {
         TBuff[tPtrCnt++] = *tp++;
+      }
+    }
     if (niveau_traite_mot) {
       if (ePtrCnt || tPtrCnt) {
-        if (outOneWord(0) != 0)
+        if (outOneWord(0) != 0) {
           return 1;
+	}
       }
     }
     //         else {
@@ -2006,220 +2109,256 @@ int main_Fst2List(int argc, char* const argv[]) {
   VersatileEncodingConfig vec = VEC_DEFAULT;
   bool only_verify_arguments = false;
   while (iargIndex < argc) {
-    if (*argv[iargIndex] != '-')
+    if (*argv[iargIndex] != '-') {
       break;
+    }
     switch (argv[iargIndex][1]) {
-    case 'f':
-      iargIndex++;
-      switch (argv[iargIndex][0]) {
-      case 's':
-        aa.prMode = PR_SEPARATION;
-        break;
-      case 'a':
-        aa.prMode = PR_TOGETHER;
-        break;
-      default:
-        error("Invalid arguments: rerun with --help\n");
-        return USAGE_ERROR_CODE;
-      }
-      break;
-    case 'd':
-      aa.enableLoopCheck = false;
-    case 'S':
-      ofilename = new char[strlen(MAGIC_OUT_STDOUT) + 1];
-      strcpy(ofilename, MAGIC_OUT_STDOUT);
-      break;
-    case 'o':
-      iargIndex++;
-      ofilename = new char[strlen(argv[iargIndex]) + 1];
-      strcpy(ofilename, argv[iargIndex]);
-      break;
-    case 'l':
-      iargIndex++;
-      aa.outLineLimit = atoi(argv[iargIndex]);
-      break;
-    case 'i':
-      iargIndex++; // stop the exploitation
-      aa.arretExpoList(argv[iargIndex]);
-      break;
-    case 'I':
-      iargIndex++; // stop the exploitation
-      aa.arretExpoListFile(argv[iargIndex]);
-      break;
-    case 'p':
-      iargIndex++;
-      switch (argv[iargIndex][0]) {
-      case 's':
-        aa.display_control = GRAPH;
-        break;
       case 'f':
-        aa.display_control = FULL;
+        iargIndex++;
+        switch (argv[iargIndex][0]) {
+        case 's':
+          aa.prMode = PR_SEPARATION;
+          break;
+        case 'a':
+          aa.prMode = PR_TOGETHER;
+          break;
+        default:
+          error("Invalid arguments: rerun with --help\n");
+          return USAGE_ERROR_CODE;
+        }
         break;
       case 'd':
-        aa.display_control = FST2LIST_DEBUG;
+        aa.enableLoopCheck = false;
+      case 'S':
+        ofilename = new char[strlen(MAGIC_OUT_STDOUT) + 1];
+        strcpy(ofilename, MAGIC_OUT_STDOUT);
         break;
-      default:
-        error("Invalid arguments: rerun with --help\n");
-        return USAGE_ERROR_CODE;
-      }
-      break;
-    case 'a':
-    case 't':
-      aa.automateMode = (argv[iargIndex][1] == 't') ? TRANMODE : AUTOMODE;
-      iargIndex++;
-      switch (argv[iargIndex][0]) {
-      case 's':
-        aa.traitAuto = SINGLE;
-        break;
-      case 'm':
-        aa.traitAuto = MULTI;
-        break;
-      default:
-        error("Invalid arguments: rerun with --help\n");
-        return USAGE_ERROR_CODE;
-      }
-      break;
-    case 'v':
-      aa.verboseMode = 1;
-      break;
-    case 'm':
-      aa.niveau_traite_mot = 0;
-      break;
-    case 'r':
-      switch (argv[iargIndex][2]) {
-      case 's':
-        aa.recursiveMode = SYMBOL;
+      case 'o':
+        iargIndex++;
+        ofilename = new char[strlen(argv[iargIndex]) + 1];
+        strcpy(ofilename, argv[iargIndex]);
         break;
       case 'l':
-        aa.recursiveMode = LABEL;
+        iargIndex++;
+        aa.outLineLimit = atoi(argv[iargIndex]);
         break;
-      case 'x':
-        aa.recursiveMode = STOP;
+      case 'i':
+        iargIndex++; // stop the exploitation
+        aa.arretExpoList(argv[iargIndex]);
         break;
-      default:
-        error("Invalid arguments: rerun with --help\n");
-        return USAGE_ERROR_CODE;
-      }
-      iargIndex++;
-      aa.saveEntre = new unichar[strlen(argv[iargIndex]) + 1];
-      wp = argv[iargIndex];
-      wp2 = aa.saveEntre;
-      wp3 = 0;
-      while (*wp) {
-        if ((*wp < 0x20) || (*wp > 0x7e)) {
-          error("Use a separator in ASC code\r\n");
-          return DEFAULT_ERROR_CODE;
+      case 'I':
+        iargIndex++; // stop the exploitation
+        aa.arretExpoListFile(argv[iargIndex]);
+        break;
+      case 'p':
+        iargIndex++;
+        switch (argv[iargIndex][0]) {
+        case 's':
+          aa.display_control = GRAPH;
+          break;
+        case 'f':
+          aa.display_control = FULL;
+          break;
+        case 'd':
+          aa.display_control = FST2LIST_DEBUG;
+          break;
+        default:
+          error("Invalid arguments: rerun with --help\n");
+          return USAGE_ERROR_CODE;
         }
-        if (*wp == '\\')
-          wp++;
-        else if (*wp == ',')
-          wp3 = wp2;
-        if (*wp != '"')
-          *wp2++ = (unichar) *wp++;
-        else
-          wp++;
-      }
-      *wp2 = 0;
-
-      aa.entreGO = aa.saveEntre;
-      if (wp3) {
-        *wp3++ = 0;
-        aa.entreGF = wp3;
-      } else
-        aa.entreGF = wp2;
-      break;
-    case 'c':
-      iargIndex++;
-      if (!changeStrToVal(changeStrToIdx, changeStrTo, argv[iargIndex])) {
         break;
-      }
-      error("Invalid arguments: rerun with --help\n");
-      return USAGE_ERROR_CODE;
-    case 's': {
-      char cc = argv[iargIndex][2];
-      iargIndex++;
-      wp = argv[iargIndex];
-      wp3 = 0;
-      switch (cc) {
-      case 0:
-        wp2 = aa.sep1 = new unichar[strlen(wp) + 1];
+      case 'a':
+      case 't':
+        aa.automateMode = (argv[iargIndex][1] == 't') ? TRANMODE : AUTOMODE;
+        iargIndex++;
+        switch (argv[iargIndex][0]) {
+        case 's':
+          aa.traitAuto = SINGLE;
+          break;
+        case 'm':
+          aa.traitAuto = MULTI;
+          break;
+        default:
+          error("Invalid arguments: rerun with --help\n");
+          return USAGE_ERROR_CODE;
+        }
+        break;
+      case 'v':
+        aa.verboseMode = 1;
+        break;
+      case 'm':
+        aa.niveau_traite_mot = 0;
+        break;
+      case 'r':
+        switch (argv[iargIndex][2]) {
+        case 's':
+          aa.recursiveMode = SYMBOL;
+          break;
+        case 'l':
+          aa.recursiveMode = LABEL;
+          break;
+        case 'x':
+          aa.recursiveMode = STOP;
+          break;
+        default:
+          error("Invalid arguments: rerun with --help\n");
+          return USAGE_ERROR_CODE;
+        }
+        iargIndex++;
+        aa.saveEntre = new unichar[strlen(argv[iargIndex]) + 1];
+        wp = argv[iargIndex];
+        wp2 = aa.saveEntre;
         wp3 = 0;
         while (*wp) {
           if ((*wp < 0x20) || (*wp > 0x7e)) {
             error("Use a separator in ASCII code\r\n");
             return DEFAULT_ERROR_CODE;
           }
-          switch (*wp) {
-          case '\\':
-            wp++;
-            if (*wp == '\0') {
-                // TODO(jhondoe) Put an error message here
-              error("");
-              return DEFAULT_ERROR_CODE;
-            }
-            if (*wp != '"')
-              break;
-          case '"':
-            wp++;
-            continue;
-          case ',':
-            wp3 = wp2;
-            break;
-          default:
-            break;
-          }
-          *wp2++ = (unichar) *wp++;
-        }
-        *wp2 = 0;
-        aa.sepL = aa.sep1;
-        if (wp3) {
-          *wp3++ = 0;
-          aa.sepR = wp3;
-        } else {
-          aa.sepR = wp2;
-        }
-
-        break;
-      case '0':
-        wp2 = aa.saveSep = new unichar[strlen(wp) + 1];
-        while (*wp) {
-          if ((*wp < 0x20) || (*wp > 0x7e)) {
-            error("Use a separator in ASC code\r\n");
-            return DEFAULT_ERROR_CODE;
-          }
           if (*wp == '\\') {
             wp++;
-            if (*wp == '\0') {
-                // TODO(jhondoe) Put an error message here
-              error("");
-              return DEFAULT_ERROR_CODE;
-            }
           }
-          if (*wp == '"')
-            continue;
-          *wp2++ = (unichar) *wp++;
+          else if (*wp == ',') {
+            wp3 = wp2;
+          } 
+          if (*wp != '"') {
+            *wp2++ = (unichar) *wp++;
+          }
+          else {
+            wp++;
+          }
         }
         *wp2 = 0;
+
+        aa.entreGO = aa.saveEntre;
+        if (wp3) {
+          *wp3++ = 0;
+          aa.entreGF = wp3;
+        } else
+          aa.entreGF = wp2;
         break;
-      case 's':
-        wp2 = aa.stopSignal = new unichar[strlen(wp) + 3];
-        ;
-        *wp2++ = (unichar) '<';
-        while (*wp) {
-          if (*wp == '"')
-            continue;
-          *wp2++ = (unichar) *wp++;
+      case 'c':
+        iargIndex++;
+        if (!changeStrToVal(changeStrToIdx, changeStrTo, argv[iargIndex])) {
+          break;
         }
-        *wp2++ = (unichar) '>';
+        error("Invalid arguments: rerun with --help\n");
+        return USAGE_ERROR_CODE;
+      case 's': {
+        char cc = argv[iargIndex][2];
+        iargIndex++;
+        wp = argv[iargIndex];
+        wp3 = 0;
+        switch (cc) {
+        case 0:
+          wp2 = aa.sep1 = new unichar[strlen(wp) + 1];
+          wp3 = 0;
+          while (*wp) {
+            if ((*wp < 0x20) || (*wp > 0x7e)) {
+              error("Use a separator in ASCII code\r\n");
+              return DEFAULT_ERROR_CODE;
+            }
+            switch (*wp) {
+            case '\\':
+              wp++;
+              if (*wp == '\0') {
+                  // TODO(jhondoe) Put an error message here
+                error("");
+                return DEFAULT_ERROR_CODE;
+              }
+              if (*wp != '"') {
+                break;
+              }
+            case '"':
+              wp++;
+              continue;
+            case ',':
+              wp3 = wp2;
+              break;
+            default:
+              break;
+            }
+            *wp2++ = (unichar) *wp++;
+          }
+          *wp2 = 0;
+          aa.sepL = aa.sep1;
+          if (wp3) {
+            *wp3++ = 0;
+            aa.sepR = wp3;
+          } else {
+            aa.sepR = wp2;
+          }
+
+          break;
+        case '0':
+          wp2 = aa.saveSep = new unichar[strlen(wp) + 1];
+          while (*wp) {
+            if ((*wp < 0x20) || (*wp > 0x7e)) {
+              error("Use a separator in ASC code\r\n");
+              return DEFAULT_ERROR_CODE;
+            }
+            if (*wp == '\\') {
+              wp++;
+              if (*wp == '\0') {
+                  // TODO(jhondoe) Put an error message here
+                error("");
+                return DEFAULT_ERROR_CODE;
+              }
+            }
+            if (*wp == '"') {
+              continue;
+            }
+            *wp2++ = (unichar) *wp++;
+          }
+          *wp2 = 0;
+          break;
+        case 's':
+          wp2 = aa.stopSignal = new unichar[strlen(wp) + 3];
+          ;
+          *wp2++ = (unichar) '<';
+          while (*wp) {
+            if (*wp == '"') {
+              continue;
+            }
+            *wp2++ = (unichar) *wp++;
+          }
+          *wp2++ = (unichar) '>';
+          *wp2 = 0;
+          break;
+        }
         *wp2 = 0;
         break;
       }
-      break;
-    }
-    case 'k':
-      iargIndex++;
-      if (argv[iargIndex][0] == '\0') {
-        error("Empty input_encoding argument\n");
+      case 'k':
+        iargIndex++;
+        if (argv[iargIndex][0] == '\0') {
+          error("Empty input_encoding argument\n");
+          return USAGE_ERROR_CODE;
+        }
+        decode_reading_encoding_parameter(
+            &(vec.mask_encoding_compatibility_input), argv[iargIndex]);
+        break;
+      case 'V': only_verify_arguments = true;
+                break;
+      case 'h': usage();
+                return SUCCESS_RETURN_CODE;
+      case 'q': {
+        char* arg;
+        if (argv[iargIndex][2] == '\0') {
+          iargIndex++;
+          arg = argv[iargIndex];
+        } else {
+          arg = &(argv[iargIndex][2]);
+        }
+        if (arg[0] == '\0') {
+          error("Empty output_encoding argument\n");
+          return USAGE_ERROR_CODE;
+        }
+        decode_writing_encoding_parameter(&(vec.encoding_output),
+            &(vec.bom_output), arg);
+        break;
+      }
+      default:
+        error("Invalid arguments: rerun with --help\n");
         return USAGE_ERROR_CODE;
       }
       decode_reading_encoding_parameter(
@@ -2245,29 +2384,25 @@ int main_Fst2List(int argc, char* const argv[]) {
           &(vec.bom_output), arg);
       break;
     }
-    default:
-      error("Invalid arguments: rerun with --help\n");
-      return USAGE_ERROR_CODE;
-    }
-  iargIndex++;
-}
-if (iargIndex != (argc - 1)) {
-  error("Invalid arguments: rerun with --help\n");
-  return USAGE_ERROR_CODE;
-}
-
-if (only_verify_arguments) {
-  // freeing all allocated memory
-  // TODO(jhondoe) free all allocated memory
+    iargIndex++;
+  } // end while iargIndex<argc
+  if (iargIndex != (argc - 1)) {
+    error("Invalid arguments: rerun with --help\n");
+    return USAGE_ERROR_CODE;
+  }
+  
+  if (only_verify_arguments) {
+    // freeing all allocated memory
+    // TODO(jhondoe) free all allocated memory
+    delete ofilename;
+    return SUCCESS_RETURN_CODE;
+  }
+  
+  aa.fileNameSet(argv[iargIndex], ofilename);
+  aa.vec = vec;	// sets config file
+  aa.getWordsFromGraph(changeStrToIdx, changeStrTo, argv[iargIndex]);
   delete ofilename;
   return SUCCESS_RETURN_CODE;
-}
-
-aa.fileNameSet(argv[iargIndex], ofilename);
-aa.vec = vec;
-aa.getWordsFromGraph(changeStrToIdx, changeStrTo, argv[iargIndex]);
-delete ofilename;
-return SUCCESS_RETURN_CODE;
-}
+} // end main function
 
 } // namespace unitex
