@@ -1669,12 +1669,14 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
       //u_printf("== START %d,\n",autoDepth);
       for (scanner = 0; scanner < autoDepth; scanner++) {
 	  //u_printf("== SCANNER IS %d\n",scanner);
-	  prAutoStack(autoDepth);
-        if (autoStackMap[scanner].tran->tag_number == trans->tag_number) {
+	  //prAutoStack(autoDepth);
+        if ((autoStackMap[scanner].tran->tag_number == trans->tag_number) && (trans->state_number == autoStackMap[scanner].tran->state_number)) {
+	    //u_printf("current state number : %d\n",trans->state_number);
+	    //u_printf("stack state number : %d\n",autoStackMap[scanner].tran->state_number);
 	  // debug print
 	  /*u_printf("== FAIL at depth %d\n",scanner);
 	  u_printf("== autoStack :  %d\n",autoStackMap[scanner].tran->tag_number);
-	  u_printf("== trans :  %d\n",trans->tag_number);*/
+	  u_printf("== trans %d :  %d\n",idx,trans->tag_number);*/
           break;
         }
       }
@@ -1765,6 +1767,9 @@ unichar * uascToNum(unichar *uasc, int *val) {
   return (wp);
 }
 
+/**
+ * prints the current path
+ */
 int CFstApp::outWordsOfGraph(int depth) {
   int s;
   Fst2Tag Tag;
@@ -1810,8 +1815,7 @@ int CFstApp::outWordsOfGraph(int depth) {
     }
     //wprintf(L"{%d,%x,%x,%s,%s}",s,pathTagQ[s].stateNo,pathTagQ[s].tag,ep,tp);
     markCtlChar = 0;
-    if (!(pathTagQ[s].stateNo & STOP_PATH_MARK) && !niveau_traite_mot
-        && (*ep == '<')) {
+    if (!(pathTagQ[s].stateNo & STOP_PATH_MARK) && !niveau_traite_mot && (*ep == '<')) {
       chp = ep + 1;
       while (*chp) {
         chp++;
@@ -1864,15 +1868,13 @@ int CFstApp::outWordsOfGraph(int depth) {
 
         }
         if (pathTagQ[s].stateNo & STOP_PATH_MARK) {
-          sp = getLabelNumber(aaBuffer_for_getLabelNumber, depth,
-              indicateFirstUsed, s, 0);
+          sp = getLabelNumber(aaBuffer_for_getLabelNumber, depth,indicateFirstUsed, s, 0);
           if (outOneWord(sp) != 0) {
             return 1;
           }
           break;
         }
-        sp = getLabelNumber(aaBuffer_for_getLabelNumber, s,
-            indicateFirstUsed, s, 1);
+        sp = getLabelNumber(aaBuffer_for_getLabelNumber, s,indicateFirstUsed, s, 1);
         if (!indicateFirstUsed) { // first print out
           if (outOneWord(sp) != 0) {
             return 1;
