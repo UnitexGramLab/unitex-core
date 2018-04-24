@@ -157,12 +157,12 @@ static const char *StrMemLack = "allocation of memory for cycle data failed";
 
 /**
  * struct to keep track 
- * of the path and label
+ * of the path and tag
  * in a queue
  */
 struct pathAndTag {
   int autoNo;        // automaton's number
-  int stateNo;        // state's number
+  int stateNo;       // state's number
   int tag;
 };
 
@@ -186,7 +186,7 @@ public:
 #define  PATH_QUEUE_MAX  1024
   struct pathAndTag pathTagQ[PATH_QUEUE_MAX];
   int pathTagQidx;
-#define ETIQ_MAX    1024
+#define TAGQ_MAX    1024
 
   //
   // print out all path in the .fst2
@@ -325,7 +325,7 @@ public:
       delete[] ignoreTable;
     if (numOfIgnore)
       delete[] numOfIgnore;
-    finiCallIdMap();
+    deleteCallIdMap();
   }
   ;
   void CleanPathCounter() {
@@ -397,7 +397,7 @@ public:
     autoStackMap = new struct callStackMapSt[1024];
     mapOfCallHead = mapOfCallTail = 0;
   }
-  void finiCallIdMap() {
+  void deleteCallIdMap() {
     delete[] autoStackMap;
     while (mapOfCallHead) {
       mapOfCallTail = mapOfCallHead;
@@ -430,6 +430,10 @@ public:
     struct linkCycle *next;
   }*cycInfos;
 
+  /**
+   * structure to hold
+   * cycle informations
+   */
   struct cycleNodeId {
     int index;
     int autoNo;
@@ -484,8 +488,7 @@ public:
     int cycStateAutoNo = pathTagQ[cntNode - 1].autoNo;
     int cycStateTag = pathTagQ[cntNode - 1].tag;
     while (*cnode) {
-      if (((*cnode)->autoNo == cycStateAutoNo) && ((*cnode)->stateNo
-          == cycStateNo) && ((*cnode)->tag == cycStateTag)) {
+      if (((*cnode)->autoNo == cycStateAutoNo) && ((*cnode)->stateNo == cycStateNo) && ((*cnode)->tag == cycStateTag)) {
         break;
       }
       cnode = &((*cnode)->next);
@@ -521,8 +524,8 @@ public:
     }
     (*alc)->next = 0;
     (*alc)->cyc = pCyc;
-
   }
+
   struct cyclePathMark *getLoopId(int offset) {
     struct cyclePathMark **h = &headCyc;
     int numOfPath;
@@ -590,6 +593,7 @@ public:
 
     return ((*h));
   }
+
   void cleanCyclePath() {
     struct cycleNodeId *cnode = headCycNodes;
     struct cycleNodeId *tnode;
@@ -634,9 +638,6 @@ public:
     }
   }
 
-  /**
-   * 
-   */
   int WasCycleNode(int cauto, int cstate) {
     struct cycleNodeId **cnode = &headCycNodes;
 
@@ -653,7 +654,6 @@ public:
   /**
    * detect a recursive call
    * increment 'totalLoop' if a loop is found
-   * return 0 if a recursive call is found, else 1
    */
   int IsCyclePath(int depth) {
     int scanner; 
@@ -1065,17 +1065,17 @@ public:
       EBuff[i++] = 0;
 
       if (arretSubListIdx == MAX_IGNORE_SUB_GRAPH) {
-        u_printf("too many igored sub-graph name ignore%s\n", src);
+        u_printf("too many ignored sub-graph, name ignore %s\n", src);
         return;
       }
       arretSubList[arretSubListIdx] = new unichar[i];
-      for (i = 0; EBuff[i]; i++)
+      for (i = 0; EBuff[i]; i++) {
         arretSubList[arretSubListIdx][i] = EBuff[i];
+      }
       arretSubList[arretSubListIdx][i] = 0;
       if (verboseMode) {
         char charBuffOut[1024];
-        u_printf("IGNORE %s\n", getUtoChar(charBuffOut,
-            arretSubList[arretSubListIdx]));
+        u_printf("IGNORE %s\n", getUtoChar(charBuffOut,arretSubList[arretSubListIdx]));
       }
       arretSubListIdx++;
     }
@@ -1665,18 +1665,8 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
       //    find cycle call
       //
       tmp = trans->tag_number & SUB_ID_MASK;
-      // scanning the autoStackMap
-      //u_printf("== START %d,\n",autoDepth);
       for (scanner = 0; scanner < autoDepth; scanner++) {
-	  //u_printf("== SCANNER IS %d\n",scanner);
-	  //prAutoStack(autoDepth);
         if ((autoStackMap[scanner].tran->tag_number == trans->tag_number) && (trans->state_number == autoStackMap[scanner].tran->state_number)) {
-	    //u_printf("current state number : %d\n",trans->state_number);
-	    //u_printf("stack state number : %d\n",autoStackMap[scanner].tran->state_number);
-	  // debug print
-	  /*u_printf("== FAIL at depth %d\n",scanner);
-	  u_printf("== autoStack :  %d\n",autoStackMap[scanner].tran->tag_number);
-	  u_printf("== trans %d :  %d\n",idx,trans->tag_number);*/
           break;
         }
       }
