@@ -77,7 +77,7 @@ static char *getUtoChar(char charBuffOut[], unichar *s) {
   for (i = 0; (i < 1024) && s[i]; i++)
     charBuffOut[i] = (char) s[i];
   charBuffOut[i] = 0;
-  return (charBuffOut);
+  return charBuffOut;
 }
 enum ModeOut {
   PR_SEPARATION, PR_TOGETHER
@@ -87,7 +87,7 @@ enum printOutType {
 };
 enum initialType {
   SINGLE, MULTI
-}; // 'multi' is used for graph with several starting state
+}; // 'multi' is used for graph with several starting states
 enum presentCycleValue {
   SYMBOL, LABEL, STOP
 };
@@ -109,46 +109,46 @@ static unichar *uascToNum(unichar *uasc, int *val);
 #define MAGIC_OUT_STDOUT "<WRITE_U_STDOUT>"
 
 static int changeStrToVal(int &changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *src) {
-  char *wp = src;
+  char *wordPtr = src;
 
-  int ptLoc = 0;
+  int ptrLoc = 0;
   int i;
 
   i = 1;
   changeStrTo[changeStrToIdx][i++] = (unichar) '<';
-  for (wp = src; i < MAX_CHANGE_SYMBOL_SIZE && (*wp); i++) {
-    if (*wp == (unichar) '=')
+  for (wordPtr = src; i < MAX_CHANGE_SYMBOL_SIZE && (*wordPtr); i++) {
+    if (*wordPtr == (unichar) '=')
       break;
-    changeStrTo[changeStrToIdx][i] = (unsigned short) *wp++;
+    changeStrTo[changeStrToIdx][i] = (unsigned short) *wordPtr++;
   }
-  if (*wp != (unichar) '=')
-    return (1);
+  if (*wordPtr != (unichar) '=')
+    return 1;
   if (i > (MAX_CHANGE_SYMBOL_SIZE - 2)) {
     u_printf("the name of the variable is too long %s", src);
     return 1;
   }
   changeStrTo[changeStrToIdx][i++] = (unichar) '>';
   changeStrTo[changeStrToIdx][i++] = (unichar) '\0';
-  ptLoc = i;
-  if (!*wp) {
+  ptrLoc = i;
+  if (!*wordPtr) {
     usage();
     return 1;
   }
-  for (wp++; i < MAX_CHANGE_SYMBOL_SIZE && (*wp); i++) {
-    changeStrTo[changeStrToIdx][i] = (unsigned short) *wp++;
+  for (wordPtr++; i < MAX_CHANGE_SYMBOL_SIZE && (*wordPtr); i++) {
+    changeStrTo[changeStrToIdx][i] = (unsigned short) *wordPtr++;
   }
-  if (*wp != (unichar) '\0') {
-    return (1);
+  if (*wordPtr != (unichar) '\0') {
+    return 1;
   }
   changeStrTo[changeStrToIdx][i++] = (unichar) '\0';
-  uascToNum(&changeStrTo[changeStrToIdx][ptLoc], &i);
+  uascToNum(&changeStrTo[changeStrToIdx][ptrLoc], &i);
   changeStrTo[changeStrToIdx][0] = (unsigned short) i;
 
   char charBuffOut[1024];
   u_printf("Change symbol %s --> %x\n", getUtoChar(charBuffOut,&changeStrTo[changeStrToIdx][1]),changeStrTo[changeStrToIdx][0]);
 
   changeStrToIdx++;
-  return (0);
+  return 0;
 }
 static unichar u_null_string[] = { (unichar) '\0', (unichar) '\0' };
 static unichar u_epsilon_string[] = { (unichar) '<', (unichar) 'E',(unichar) '>', (unichar) '\0' };
@@ -179,9 +179,9 @@ public:
   U_FILE* foutput;
   ModeOut prMode;
   autoType automateMode;
-  int listOut;
+  int listOut; // controls if output is enabled
   int verboseMode;
-  int enableLoopCheck;
+  int enableLoopCheck; // controls if the graph is explored to find loops
   //  int control_char; // control the output for control_chars <>
 #define  PATH_QUEUE_MAX  1024
   struct pathAndTag pathTagQ[PATH_QUEUE_MAX];
@@ -208,7 +208,7 @@ public:
   } calledAutoQ[2048];
   int calledAutoDepth;
 
-  void CqueuePathPr(U_FILE *f);
+  void printPathQ(U_FILE *f);
 
   int *ignoreTable;  // 1 where the automaton is ignored, else 0
   int *numOfIgnore;
@@ -217,8 +217,7 @@ public:
   int numberOfOutLine;
   int count_in_line; // number of out per line
 
-
-  int totalPath;
+  int totalPath; // number of paths found in the automaton
   int totalLoop; // number of loops present in the automaton
   int stopPath;
   int errPath;
@@ -229,9 +228,9 @@ public:
   int niveau_traite_mot;
   int depthDebug;
 
-  unichar *saveSep, *sepL; // for input and output
-  unichar *sepR; // for input and output
-  unichar *sep1; // for each input/output
+  unichar *saveSep;     // for input and output
+  unichar *sepL,*sepR;  // left separator and right separator for i/o
+  unichar *sep1;        // for each input/output
   unichar *stopSignal;
   unichar *saveEntre, *entreGO, *entreGF;
   VersatileEncodingConfig vec;
@@ -239,6 +238,7 @@ public:
   char ofExt[16];
   char ofnameOnly[512];        // output file name
   char defaultIgnoreName[512]; // input file name
+
   void fileNameSet(char *ifn, char *ofn) {
     char tmp[512];
     remove_path(ifn, tmp);
@@ -261,8 +261,9 @@ public:
 
   /**
    * builds the output file's name
+   * and puts it '*des'
    */
-  void makeOfileName(char *des, const char *fn, const char *ext) {
+  void buildOfileName(const char *fn, const char *ext, char *des) {
     strcpy(des, ofdirName);
     if (fn)
       strcat(des, fn);
@@ -297,7 +298,7 @@ public:
             u_null_string), saveEntre(u_null_string), entreGO(
             u_null_string), entreGF(u_null_string),
 
-        autoStackMap(NULL), mapOfCallHead(NULL), mapOfCallTail(NULL),
+        autoStackMap(NULL), transitionListHead(NULL), transitionListTail(NULL),
 
         cycInfos(NULL),
 
@@ -328,14 +329,14 @@ public:
     deleteCallIdMap();
   }
   ;
-  void CleanPathCounter() {
+  void resetCounters() {
     totalPath = totalLoop = errPath = stopPath = 0;
   }
   //
   //    identify sub calls with transition and call id
   //
 
-  void CloseOutput() {
+  void closeOutput() {
     if ((foutput != NULL) && (foutput != U_STDOUT)) {
       u_fclose(foutput);
     }
@@ -343,67 +344,79 @@ public:
   }
 
   /**
-   * Map associating the transitions and their ID
+   * Map associating transitions and their automaton ID
    */
   struct callStackMapSt {
     Transition* tran;
     int autoId;
   }*autoStackMap;
-  struct callIdMap {
-    int cnt;
-    Transition** list;
-    struct callIdMap *next;
-  }*mapOfCallHead, *mapOfCallTail;
 
   /**
-   * return the ID of the transition called
+   * list of lists of transitions
+   * each list correspond to an automaton
+   */
+  struct transitionList {
+    int cnt;
+    Transition** trans;
+    struct transitionList *next;
+  }*transitionListHead, *transitionListTail;
+
+  /**
+   * compare *cmap and transitionListHead
+   * return the automaton ID corresponding to the transitions in *cmap
    */
   int callIdentifyId(struct callStackMapSt *cmap, int count) {
     int id = 0;
-    int i;
-    struct callIdMap *fPtr;
-    fPtr = mapOfCallHead;
-    while (fPtr) {
-      if (fPtr->cnt == count) {
+    struct transitionList *callMapPtr;
+    callMapPtr = transitionListHead;
+    while (callMapPtr) {
+      if (callMapPtr->cnt == count) {
+        int i;
+        // search for the automaton corresponding to the transitions in cmap
         for (i = 0; i < count; i++) {
-          if (fPtr->list[i] != cmap[i].tran) {
+          if (callMapPtr->trans[i] != cmap[i].tran) {
             break;
           }
         }
+        // if *cmap corresponds to transitionListHead then
+        // we found the automaton ID
         if (i == count) {
           return id;
         }
       }
       id++;
-      fPtr = fPtr->next;
+      callMapPtr = callMapPtr->next;
     }
-    fPtr = new struct callIdMap;
-    fPtr->cnt = count;
-    fPtr->next = 0;
-    fPtr->list = new Transition*[count];
-    for (i = 0; i < count; i++) {
-      fPtr->list[i] = cmap[i].tran;
+    // if the automaton is not yet in the transitionList we add it
+    callMapPtr = new struct transitionList;
+    callMapPtr->cnt = count;
+    callMapPtr->next = 0;
+    callMapPtr->trans = new Transition*[count];
+    for (int i = 0; i < count; i++) {
+      callMapPtr->trans[i] = cmap[i].tran;
     }
 
-    if (mapOfCallTail) {
-      mapOfCallTail->next = fPtr;
-      mapOfCallTail = fPtr;
+    if (transitionListTail) {
+      transitionListTail->next = callMapPtr;
+      transitionListTail = callMapPtr;
     } else {
-      mapOfCallTail = mapOfCallHead = fPtr;
+      transitionListTail = transitionListHead = callMapPtr;
     }
     return id;
   }
+
   void initCallIdMap() {
     autoStackMap = new struct callStackMapSt[1024];
-    mapOfCallHead = mapOfCallTail = 0;
+    transitionListHead = transitionListTail = 0;
   }
+
   void deleteCallIdMap() {
     delete[] autoStackMap;
-    while (mapOfCallHead) {
-      mapOfCallTail = mapOfCallHead;
-      mapOfCallHead = mapOfCallHead->next;
-      delete[] mapOfCallTail->list;
-      delete mapOfCallTail;
+    while (transitionListHead) {
+      transitionListTail = transitionListHead;
+      transitionListHead = transitionListHead->next;
+      delete[] transitionListTail->trans;
+      delete transitionListTail;
     }
   }
 
@@ -450,7 +463,6 @@ public:
 
   unichar *getLabelNumber(unichar*aa, int numOfPath, int &flag, int curidx, int setflag) {
     struct cycleNodeId *cnode = headCycNodes;
-    int i;
     int searchState = pathTagQ[curidx].stateNo & PATHID_MASK;
     int searchStateAuto = pathTagQ[curidx].autoNo;
     int searchTag = pathTagQ[curidx].tag;
@@ -462,11 +474,11 @@ public:
     }
     if (!cnode) {
       error("%d/%d stack\n", numOfPath, curidx);
-      for (i = 0; i < pathTagQidx; i++) {
+      for (int i = 0; i < pathTagQidx; i++) {
         error("%d : (%08x:%08x) : %08x\n", i, pathTagQ[i].autoNo, pathTagQ[i].stateNo, pathTagQ[i].tag);
       }
 
-      CqueuePathPr(U_STDERR);
+      printPathQ(U_STDERR);
       fatal_error("eu~ak\n");
     }
     if (setflag) {
@@ -478,7 +490,7 @@ public:
 
     //unichar aa[64];
     u_sprintf(aa, "Loc%d", cnode->index);
-    return ((unichar *) aa);
+    return (unichar *) aa;
   }
 
   void setIdentifyValue(int offset, int cntNode) {
@@ -559,7 +571,7 @@ public:
             }
           }
           if (j == numOfPath) {
-            return ((*h));
+            return (*h);
           }
         }
       }
@@ -591,7 +603,7 @@ public:
     (*h)->pathCnt = numOfPath;
     (*h)->index = cyclePathCnt++;
 
-    return ((*h));
+    return (*h);
   }
 
   void cleanCyclePath() {
@@ -628,6 +640,10 @@ public:
       }
     }
   }
+
+  /**
+   * prints the cycle node
+   */
   void prCycleNode() {
     struct cycleNodeId *cnode = headCycNodes;
     u_fprintf(foutput, "cycle Nodes %d\n", cyclePathCnt);
@@ -638,7 +654,7 @@ public:
     }
   }
 
-  int WasCycleNode(int cauto, int cstate) {
+  int wasCycleNode(int cauto, int cstate) {
     struct cycleNodeId **cnode = &headCycNodes;
 
     while (*cnode) {
@@ -654,15 +670,15 @@ public:
   /**
    * detect a recursive call
    * increment 'totalLoop' if a loop is found
+   * return 1 if a cycle is found, else 0
    */
-  int IsCyclePath(int depth) {
+  int isCyclePath(int depth) {
     int scanner; 
     int curId = pathTagQ[pathTagQidx - 1].stateNo & PATHID_MASK;
     int curAutoId = pathTagQ[pathTagQidx - 1].autoNo;
 
     for (scanner = 0; scanner < pathTagQidx - 1; scanner++) {
-      if (((pathTagQ[scanner].stateNo & PATHID_MASK) == curId)
-          && (pathTagQ[scanner].autoNo == curAutoId)) { // find recursive path
+      if (((pathTagQ[scanner].stateNo & PATHID_MASK) == curId) && (pathTagQ[scanner].autoNo == curAutoId)) { // find recursive path
         switch (recursiveMode) {
         case LABEL:
           if (listOut) {
@@ -691,105 +707,109 @@ public:
           fatal_error("illegal execution");
         }
         totalLoop++;
-        return (1);
+        return 1;
       }
     }
-    return (0);
+    return 0;
   }
 
   unichar EBuff[128];
   unichar TBuff[128];
   int ePtrCnt;
   int tPtrCnt;
-  unichar EOUTLINE[4096];
-  unichar SOUTLINE[4096];
-  int EOutCnt;
-  int SOutCnt;
+  unichar EOUTLINE[4096]; // buffer used to print the path found 
+  unichar SOUTLINE[4096]; // sortie ?
+  int EOutCnt;            // buffer counter
+  int SOutCnt;            // buffer counter
 
-  void resetBuffs() {
+  void resetBufferCounters() {
     ePtrCnt = tPtrCnt = EOutCnt = SOutCnt = 0;
   }
 
-  int outOneWord(unichar *suf) {
-    int i;
+  /**
+   * prints the word
+   * return 0 if we can't print it, else 1
+   */
+  int outOneWord(unichar *suffix) {
     int setOut;
-    unichar *wp;
+    unichar *wordPtr;
     EBuff[ePtrCnt] = TBuff[tPtrCnt] = 0;
-    if (!ePtrCnt && !tPtrCnt && !suf) {
+    if (!ePtrCnt && !tPtrCnt && !suffix) {
       return 0;
     }
-    if (suf) {
+    if (suffix) {
       setOut = 0;
-      //printf("%d %d %d %d \n",ePtrCnt,tPtrCnt,*suf,count_in_line);
-      if (ePtrCnt || tPtrCnt || *suf || (count_in_line == 0)) {
+      //printf("%d %d %d %d \n",ePtrCnt,tPtrCnt,*suffix,count_in_line);
+      if (ePtrCnt || tPtrCnt || *suffix || (count_in_line == 0)) {
         setOut = 1;
         if (prMode == PR_SEPARATION) {
-          wp = sepL;
-          while (*wp) {
-            EOUTLINE[EOutCnt++] = *wp;
+          wordPtr = sepL;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr;
             if (automateMode == TRANMODE) {
-              SOUTLINE[SOutCnt++] = *wp;
+              SOUTLINE[SOutCnt++] = *wordPtr;
             }
-            wp++;
+            wordPtr++;
           }
-          for (i = 0; i < ePtrCnt; i++)
+          for (int i = 0; i < ePtrCnt; i++) {
             EOUTLINE[EOutCnt++] = EBuff[i];
+	  }
           if (automateMode == TRANMODE) {
-            for (i = 0; i < tPtrCnt; i++) {
+            for (int i = 0; i < tPtrCnt; i++) {
               SOUTLINE[SOutCnt++] = TBuff[i];
             }
           }
-          wp = sepR;
-          while (*wp) {
+          wordPtr = sepR;
+          while (*wordPtr) {
             if (ePtrCnt) {
-              EOUTLINE[EOutCnt++] = *wp;
+              EOUTLINE[EOutCnt++] = *wordPtr;
             }
             if (automateMode == TRANMODE) {
-              SOUTLINE[SOutCnt++] = *wp;
+              SOUTLINE[SOutCnt++] = *wordPtr;
             }
-            wp++;
+            wordPtr++;
           }
         } else {
-          wp = sepL;
-          while (*wp) {
-            EOUTLINE[EOutCnt++] = *wp++;
+          wordPtr = sepL;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr++;
           }
-          for (i = 0; i < ePtrCnt; i++) {
+          for (int i = 0; i < ePtrCnt; i++) {
             EOUTLINE[EOutCnt++] = EBuff[i];
           }
-          wp = saveSep;
-          while (*wp) {
-            EOUTLINE[EOutCnt++] = *wp++;
+          wordPtr = saveSep;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr++;
           }
           if (automateMode == TRANMODE) {
-            for (i = 0; i < tPtrCnt; i++) {
+            for (int i = 0; i < tPtrCnt; i++) {
               EOUTLINE[EOutCnt++] = TBuff[i];
             }
           }
-          wp = sepR;
-          while (*wp) {
-            EOUTLINE[EOutCnt++] = *wp++;
+          wordPtr = sepR;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr++;
           }
         }
       } // condition de out
       if ((recursiveMode == LABEL) && setOut) {
         if ((automateMode == TRANMODE) && (prMode == PR_SEPARATION)) {
-          wp = entreGO;
-          while (*wp) {
-            SOUTLINE[SOutCnt++] = *wp++;
+          wordPtr = entreGO;
+          while (*wordPtr) {
+            SOUTLINE[SOutCnt++] = *wordPtr++;
           }
-          wp = suf;
-          while (*wp) {
-            SOUTLINE[SOutCnt++] = *wp++;
+          wordPtr = suffix;
+          while (*wordPtr) {
+            SOUTLINE[SOutCnt++] = *wordPtr++;
           }
         } else {
-          wp = entreGO;
-          while (*wp) {
-            EOUTLINE[EOutCnt++] = *wp++;
+          wordPtr = entreGO;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr++;
           }
-          wp = suf;
-          while (*wp) {
-            EOUTLINE[EOutCnt++] = *wp++;
+          wordPtr = suffix;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr++;
           }
         }
       }
@@ -800,64 +820,67 @@ public:
         u_fprintf(foutput, "%S%S", saveSep, SOUTLINE);
       }
       if (display_control == FST2LIST_DEBUG) {
-        CqueuePathPr(foutput);
+        printPathQ(foutput);
       }
       u_fprintf(foutput, "\n");
       numberOfOutLine++;
       EOutCnt = SOutCnt = 0;
-    } else { // suf == 0
+    } else { // suffix == 0
       if (ePtrCnt || tPtrCnt) {
         if (prMode == PR_SEPARATION) {
-          wp = sepL;
-          while (*wp) {
-            EOUTLINE[EOutCnt++] = *wp;
+          wordPtr = sepL;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr;
             if (automateMode == TRANMODE) {
-              SOUTLINE[SOutCnt++] = *wp;
+              SOUTLINE[SOutCnt++] = *wordPtr;
             }
-            wp++;
+            wordPtr++;
           }
-          for (i = 0; i < ePtrCnt; i++) {
+          for (int i = 0; i < ePtrCnt; i++) {
             EOUTLINE[EOutCnt++] = EBuff[i];
           }
           if (automateMode == TRANMODE) {
-            for (i = 0; i < tPtrCnt; i++) {
+            for (int i = 0; i < tPtrCnt; i++) {
               SOUTLINE[SOutCnt++] = TBuff[i];
             }
           }
           //        if(recursiveMode == LABEL){
-          //          wp = entreGO;while(*wp)  EOUTLINE[EOutCnt++] = *wp++;
+          //          wordPtr = entreGO;while(*wordPtr)  EOUTLINE[EOutCnt++] = *wordPtr++;
           //          }
-          wp = sepR;
-          while (*wp) {
-            EOUTLINE[EOutCnt++] = *wp;
+          wordPtr = sepR;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr;
             if (automateMode == TRANMODE) {
-              SOUTLINE[SOutCnt++] = *wp;
+              SOUTLINE[SOutCnt++] = *wordPtr;
             }
-            wp++;
+            wordPtr++;
           }
         } else {
-          wp = sepL;
-          while (*wp)
-            EOUTLINE[EOutCnt++] = *wp++;
-          for (i = 0; i < ePtrCnt; i++)
+          wordPtr = sepL;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr++;
+	  }
+          for (int i = 0; i < ePtrCnt; i++) {
             EOUTLINE[EOutCnt++] = EBuff[i];
-          wp = saveSep;
-          while (*wp)
-            EOUTLINE[EOutCnt++] = *wp++;
+	  }
+          wordPtr = saveSep;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr++;
+	  }
           if (automateMode == TRANMODE) {
-            for (i = 0; i < tPtrCnt; i++) {
+            for (int i = 0; i < tPtrCnt; i++) {
               EOUTLINE[EOutCnt++] = TBuff[i];
             }
           }
           if (recursiveMode == LABEL) {
-            wp = entreGO;
-            while (*wp) {
-              EOUTLINE[EOutCnt++] = *wp++;
+            wordPtr = entreGO;
+            while (*wordPtr) {
+              EOUTLINE[EOutCnt++] = *wordPtr++;
             }
           }
-          wp = sepR;
-          while (*wp) {
-            EOUTLINE[EOutCnt++] = *wp++;
+          wordPtr = sepR;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr++;
           }
         }
         count_in_line++;
@@ -873,25 +896,26 @@ public:
   }
 
   void dummyWordOut() {
-    unichar *wp;
+    unichar *wordPtr;
     if ((recursiveMode == LABEL) && !count_in_line) {
-      wp = sepL;
-      while (*wp)
-        EOUTLINE[EOutCnt++] = *wp++;
-      wp = saveSep;
-      while (*wp)
-        EOUTLINE[EOutCnt++] = *wp++;
-      wp = sepR;
-      while (*wp)
-        EOUTLINE[EOutCnt++] = *wp++;
-      wp = entreGO;
-      while (*wp)
-        EOUTLINE[EOutCnt++] = *wp++;
+      wordPtr = sepL;
+      while (*wordPtr)
+        EOUTLINE[EOutCnt++] = *wordPtr++;
+      wordPtr = saveSep;
+      while (*wordPtr)
+        EOUTLINE[EOutCnt++] = *wordPtr++;
+      wordPtr = sepR;
+      while (*wordPtr)
+        EOUTLINE[EOutCnt++] = *wordPtr++;
+      wordPtr = entreGO;
+      while (*wordPtr)
+        EOUTLINE[EOutCnt++] = *wordPtr++;
     }
     EOUTLINE[EOutCnt++] = 0;
     u_fprintf(foutput, "%S\n", EOUTLINE);
     numberOfOutLine++;
   }
+
   void putInt(int flag, int v) {
     if (v < 10) {
       EBuff[ePtrCnt] = v % 10 + (unichar) '0';
@@ -908,11 +932,12 @@ public:
     }
     ePtrCnt++;
   }
-  int prOutCycle() {
+
+  int printOutCycle() {
     struct cyclePathMark *h = headCyc;
     int i;
-    unichar *wp;
-    //        unichar *wwp;
+    unichar *wordPtr;
+    //        unichar *wwordPtr;
     Fst2Tag Tag;
     while (h) {
       u_fprintf(foutput, "C%d%S", h->index, entreGO);
@@ -920,20 +945,20 @@ public:
       for (i = 0; i < h->pathCnt; i++) {
         //        putInt(0,h->pathTagQueue[i].path);
         Tag = a->tags[h->pathTagQueue[i].tag];
-        wp = (unichar *) Tag->input;
+        wordPtr = (unichar *) Tag->input;
 
-        if (u_strcmp(wp, u_epsilon_string)) {
-          //          wwp = saveSep;while(*wwp) EBuff[ePtrCnt++] = *wwp++;
-          while (*wp) {
-            EBuff[ePtrCnt++] = *wp++;
+        if (u_strcmp(wordPtr, u_epsilon_string)) {
+          //          wwordPtr = saveSep;while(*wwordPtr) EBuff[ePtrCnt++] = *wwordPtr++;
+          while (*wordPtr) {
+            EBuff[ePtrCnt++] = *wordPtr++;
           }
         }
-        wp = (unichar *) Tag->output;
-        if ((automateMode == TRANMODE) && wp && u_strcmp(wp,
+        wordPtr = (unichar *) Tag->output;
+        if ((automateMode == TRANMODE) && wordPtr && u_strcmp(wordPtr,
             u_epsilon_string)) {
-          //            wwp = saveSep;while(*wwp) EBuff[ePtrCnt++] = *wwp++;
-          while (*wp) {
-            TBuff[tPtrCnt++] = *wp++;
+          //            wwordPtr = saveSep;while(*wwordPtr) EBuff[ePtrCnt++] = *wwordPtr++;
+          while (*wordPtr) {
+            TBuff[tPtrCnt++] = *wordPtr++;
           }
         }
       }
@@ -945,11 +970,11 @@ public:
     return 0;
   }
 
-  int prOutCycleAtNode(int autoNum, int nodeNum) {
+  int printOutCycleAtNode(int autoNum, int nodeNum) {
     struct cyclePathMark *h = headCyc;
     int i, st, ed;
     int tmp;
-    unichar *wp;
+    unichar *wordPtr;
     Fst2Tag Tag;
     if (autoNum) {
       st = a->initial_states[autoNum];
@@ -985,17 +1010,17 @@ public:
         }
 
         Tag = a->tags[h->pathTagQueue[i].tag];
-        wp = (unichar *) Tag->input;
-        if (u_strcmp(wp, u_epsilon_string) && *wp) {
-          while (*wp) {
-            EBuff[ePtrCnt++] = *wp++;
+        wordPtr = (unichar *) Tag->input;
+        if (u_strcmp(wordPtr, u_epsilon_string) && *wordPtr) {
+          while (*wordPtr) {
+            EBuff[ePtrCnt++] = *wordPtr++;
           }
         }
-        wp = (unichar *) Tag->output;
-        if ((automateMode == TRANMODE) && wp && u_strcmp(wp,
-            u_epsilon_string) && *wp) {
-          while (*wp) {
-            TBuff[tPtrCnt++] = *wp++;
+        wordPtr = (unichar *) Tag->output;
+        if ((automateMode == TRANMODE) && wordPtr && u_strcmp(wordPtr,
+            u_epsilon_string) && *wordPtr) {
+          while (*wordPtr) {
+            TBuff[tPtrCnt++] = *wordPtr++;
           }
         }
       }
@@ -1004,7 +1029,7 @@ public:
           return 1;
         }
       } else
-        resetBuffs();
+        resetBufferCounters();
       h = h->next;
     }
     return 0;
@@ -1012,7 +1037,7 @@ public:
   //
   //
   //
-  void prSubGrapheCycle() {
+  void printSubGraphCycle() {
     int i;
     for (i = 1; i <= a->number_of_graphs; i++) {
       char charBuffOut[1024];
@@ -1029,23 +1054,25 @@ public:
 
   void arretExpoList(char *src) {
     char *cp = src;
-    unichar *wp;
+    unichar *wordPtr;
     if (arretSubListIdx == MAX_IGNORE_SUB_GRAPH) {
       u_printf("too many ignored sub-graph name ignore%s\n", src);
       return;
     }
-    wp = new unichar[strlen(src) + 1];
-    arretSubList[arretSubListIdx++] = wp;
+    wordPtr = new unichar[strlen(src) + 1];
+    arretSubList[arretSubListIdx++] = wordPtr;
     while (*cp)
-      *wp++ = (unichar) (*cp++ & 0xff);
-    *wp = (unichar) '\0';
+      *wordPtr++ = (unichar) (*cp++ & 0xff);
+    *wordPtr = (unichar) '\0';
     if (verboseMode) {
       char charBuffOut[1024];
       u_printf("IGNORE %s\n", getUtoChar(charBuffOut,
           arretSubList[arretSubListIdx - 1]));
     }
   }
+
   char fileLine[1024];
+
   void arretExpoListFile(char *src) {
     int i;
 
@@ -1095,16 +1122,19 @@ public:
   void prAutoStack(int depStack) {
     int i;
     u_printf("===== AutoQueue\n");
+    u_printf("i   aId  next\n");
     for (i = 0; i <= calledAutoDepth; i++) {
       u_printf("%d :: %d :: %d\n", i, calledAutoQ[i].aId,
           calledAutoQ[i].next);
     }
     u_printf("===== stateQueue\n");
+    u_printf("i autoNo  stateNo tag\n");
     for (i = 0; i < pathTagQidx; i++) {
       u_printf("%d (%d ::%d)%d\n", i, pathTagQ[i].autoNo,
           pathTagQ[i].stateNo, pathTagQ[i].tag);
     }
-    u_printf("===== AutoStack\n");
+    u_printf("===== AutoStack\n"); 
+    u_printf("i  autoId  stateNb tag\n");
     Transition *k;
     for (i = 0; i < depStack; i++) {
       k = autoStackMap[i].tran;
@@ -1145,7 +1175,7 @@ private:
             u_null_string), saveEntre(u_null_string), entreGO(
             u_null_string), entreGF(u_null_string),
 
-        autoStackMap(NULL), mapOfCallHead(NULL), mapOfCallTail(NULL),
+        autoStackMap(NULL), transitionListHead(NULL), transitionListTail(NULL),
 
         cycInfos(NULL),
 
@@ -1164,6 +1194,10 @@ private:
 }; // end of fstApp
 
 
+/**
+ * loads graph '*fname' and puts it
+ * in the automaton 'a'
+ */
 void CFstApp::loadGraph(int& changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fname) {
   int i_1, j_1;
   Transition *strans;
@@ -1195,7 +1229,6 @@ void CFstApp::loadGraph(int& changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SY
   }
 
   if (arretSubListIdx) {
-
     for (i_1 = 0; i_1 < arretSubListIdx; i_1++) {
       for (j_1 = 1; j_1 <= a->number_of_graphs; j_1++) {
         if (!u_strcmp((unichar *) a->graph_names[j_1], arretSubList[i_1])) {
@@ -1204,7 +1237,7 @@ void CFstApp::loadGraph(int& changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SY
       }
       if (j_1 > a->number_of_graphs) {
         char charBuffOut[1024];
-        u_printf("Warning : Not exist the sub-graph %s\n", getUtoChar(charBuffOut, arretSubList[i_1]));
+        u_printf("Warning : the sub graph doesn't exist %s\n", getUtoChar(charBuffOut, arretSubList[i_1]));
         continue;
       }
       char charBuffOut[1024];
@@ -1214,7 +1247,6 @@ void CFstApp::loadGraph(int& changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SY
     }
   }
   if (stopSignal) {
-
     for (i_1 = 0; i_1 < a->number_of_tags; i_1++) {
       if (u_strcmp((unichar *) a->tags[i_1]->input, stopSignal)) {
         continue;
@@ -1227,29 +1259,28 @@ void CFstApp::loadGraph(int& changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SY
           }
           strans = strans->next;
         }
-
       }
     }
   }
   if (changeStrToIdx) {
-    unichar *wp;
+    unichar *wordPtr;
     int i, j, k, l, m;
     unichar temp[256];
     for (i = 0; i < a->number_of_tags; i++) {
-      wp = (unichar *) a->tags[i]->input;
-      for (j = 0; wp[j]; j++) {
-        temp[j] = wp[j];
+      wordPtr = (unichar *) a->tags[i]->input;
+      for (j = 0; wordPtr[j]; j++) {
+        temp[j] = wordPtr[j];
       }
       temp[j] = 0;
       for (j = 0; j < changeStrToIdx; j++) {
-        wp = changeStrTo[j] + 1;
+        wordPtr = changeStrTo[j] + 1;
         for (k = 0; temp[k]; k++) {
-          for (l = 0; wp[l]; l++) {
-            if (!temp[k + l] || (temp[k + l] != wp[l])) {
+          for (l = 0; wordPtr[l]; l++) {
+            if (!temp[k + l] || (temp[k + l] != wordPtr[l])) {
               break;
             }
           }
-          if (wp[l]) {
+          if (wordPtr[l]) {
             continue;
           }
           temp[k] = changeStrTo[j][0];
@@ -1260,19 +1291,17 @@ void CFstApp::loadGraph(int& changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SY
           temp[m] = 0;
         }
       }
-      wp = (unichar *) a->tags[i]->input;
-      if (u_strcmp(wp, temp)) {
+      wordPtr = (unichar *) a->tags[i]->input;
+      if (u_strcmp(wordPtr, temp)) {
         char charBuffOut1[1024];
         char charBuffOut2[1024];
-        u_printf("%dth index, %s==>%s\n", i, getUtoChar(charBuffOut1,wp), getUtoChar(charBuffOut2, temp));
+        u_printf("%dth index, %s==>%s\n", i, getUtoChar(charBuffOut1,wordPtr), getUtoChar(charBuffOut2, temp));
         for (j = 0; temp[j]; j++) {
-          *wp++ = temp[j];
+          *wordPtr++ = temp[j];
         }
-        *wp = 0;
+        *wordPtr = 0;
       }
-
     }
-
   }
 }
 
@@ -1287,7 +1316,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
   char ttpchar[1024];
   // load fst2 file
   loadGraph(changeStrToIdx, changeStrTo, fname);
-  CleanPathCounter();
+  resetCounters();
   ofNameTmp[0] = 0;
   switch (display_control) {
   case GRAPH: {
@@ -1295,7 +1324,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
       listOut = 0;
       niveau_traite_mot = 1;
       exploreSubAuto(1); // mark loop path start nodes
-      prSubGrapheCycle();
+      printSubGraphCycle();
     }
 
     if (recursiveMode == LABEL) {
@@ -1304,7 +1333,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
     recursiveMode = SYMBOL;
     strcpy(tmpchar, ofnameOnly);
     strcat(tmpchar, "autolst");
-    makeOfileName(ofNameTmp, tmpchar, ".txt");
+    buildOfileName(tmpchar, ".txt",ofNameTmp);
 
     if (strcmp(ofnameOnly,MAGIC_OUT_STDOUT)==0) {
       foutput = U_STDOUT;
@@ -1323,28 +1352,28 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
       //      printf("[%d th automata %s]\n",i,getUtoChar(a->nom_graphe[i]));
 
       if (exploreSubAuto(i) != 0) {
-        CloseOutput();
+        closeOutput();
         return 1;
       }
 
-      if (prOutCycleAtNode(i, 0) != 0) {
-        CloseOutput();
+      if (printOutCycleAtNode(i, 0) != 0) {
+        closeOutput();
         return 1;
       }
       u_fprintf(
           foutput,
           " automaton %S, %d paths, %d path stopped by cycle, %d path overflows\n",
           a->graph_names[i], totalPath, totalLoop, errPath);
-      CleanPathCounter();
+      resetCounters();
     }
 
     if (recursiveMode == SYMBOL) {
-      if (prOutCycle() != 0) {
-        CloseOutput();
+      if (printOutCycle() != 0) {
+        closeOutput();
         return 1;
       }
     }
-    CloseOutput();
+    closeOutput();
 
     break;
   }
@@ -1353,12 +1382,13 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
   case FULL:
     switch (traitAuto) {
     case SINGLE: {
+      // check for loops before writing the result
       if (enableLoopCheck) {
         listOut = 0;
         exploreSubAuto(1); // mark loop path start nodes
-        prSubGrapheCycle();
+        printSubGraphCycle();
       }
-      makeOfileName(ofNameTmp, 0, 0);
+      buildOfileName(0, 0, ofNameTmp);
       if (strcmp(ofnameOnly, MAGIC_OUT_STDOUT) == 0) {
         foutput = U_STDOUT;
       }
@@ -1389,22 +1419,22 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
         }
       }
       if (recursiveMode == SYMBOL) {
-        if (prOutCycle() != 0) {
-          CloseOutput();
+        if (printOutCycle() != 0) {
+          closeOutput();
           return 1;
         }
       }
-      CloseOutput();
+      closeOutput();
     }
       break;
     case MULTI: // the first graph has only the names of the initials graphs
     {
       U_FILE* listFile;
-      unichar *wp;
+      unichar *wordPtr;
       Transition *trans;
       strcpy(tmpchar, ofnameOnly);
       strcat(tmpchar, "lst");
-      makeOfileName(ofNameTmp, tmpchar, ".txt");
+      buildOfileName(tmpchar, ".txt", ofNameTmp);
       listFile = u_fopen(ASCII, ofNameTmp, U_WRITE);
       if (!(listFile)) {
         fatal_error("list file open error");
@@ -1425,15 +1455,15 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
         }
         cleanCyclePath();
 
-        wp = (unichar *) a->graph_names[trans->tag_number & SUB_ID_MASK];
+        wordPtr = (unichar *) a->graph_names[trans->tag_number & SUB_ID_MASK];
         dp = tmpchar;
 
-        while (*wp) {
-          *dp++ = (char) (*wp & 0xff);
-          wp++;
+        while (*wordPtr) {
+          *dp++ = (char) (*wordPtr & 0xff);
+          wordPtr++;
         }
         *dp++ = '\0';
-        makeOfileName(ofNameTmp, tmpchar, 0);
+        buildOfileName(tmpchar, 0, ofNameTmp);
         remove_path(ofNameTmp, ttpchar);
         u_fprintf(listFile, "%s\r\n", ttpchar);
 
@@ -1451,15 +1481,15 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
         if (enableLoopCheck) {
           listOut = 0; // output disable
           exploreSubAuto(trans->tag_number & SUB_ID_MASK);
-          prSubGrapheCycle();
-          CleanPathCounter();
+          printSubGraphCycle();
+          resetCounters();
         }
         listOut = 1; // output enable
         exploreSubAuto(trans->tag_number & SUB_ID_MASK);
 
         if (recursiveMode == SYMBOL) {
-          if (prOutCycle() != 0) {
-            CloseOutput();
+          if (printOutCycle() != 0) {
+            closeOutput();
             return 1;
           }
         }
@@ -1477,7 +1507,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
           }
         }
 
-        CloseOutput();
+        closeOutput();
       }
       u_fclose(listFile);
     }
@@ -1496,7 +1526,7 @@ int CFstApp::exploreSubAuto(int startAutoNo) {
   //if(listOut) prCycleNode();
   startCallTr.tag_number = startAutoNo | FILE_PATH_MARK;
   startCallTr.state_number = 0;
-  numberOfOutLine = 0; // reset output lines
+  numberOfOutLine = 0; // reset output line counter
 
   autoStackMap[0].tran = &startCallTr;
   int callSubGraphId = callIdentifyId(autoStackMap, 1);
@@ -1520,19 +1550,21 @@ int CFstApp::exploreSubAuto(int startAutoNo) {
   return 0;
 }
 
-//
-//  find cycle path by node and call
-//
+/**
+ *  find cycle path by node and call
+ *  param automatonNo
+ *  param autoDepth
+ *  param stateNo
+ *  param stateDepth
+ */
 int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int stateDepth) {
   int skipCnt = 0;
-  int i;
   int tmp;
   int nextState;
   int callId;
-  int scanner;
-  //  prAutoStack(autoDepth);
+  //prAutoStack(autoDepth);
 
-  if (listOut && WasCycleNode(automatonNo, stateNo)) {
+  if (listOut && wasCycleNode(automatonNo, stateNo)) {
     pathTagQ[pathTagQidx - 1].stateNo |= LOOP_PATH_MARK;
   }
   if (pathTagQidx >= PATH_QUEUE_MAX) {
@@ -1551,7 +1583,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
     }
     return 0;
   }
-  if (IsCyclePath(stateDepth)) {
+  if (isCyclePath(stateDepth)) {
     if (recursiveMode == STOP) {
       return 0;
     }
@@ -1564,6 +1596,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
   if (is_final_state(a->states[stateNo])) { // terminal node
     if (autoDepth != 1) { // check continue condition
       skipCnt = 0; // find next state
+      int i;
       for (i = calledAutoDepth; i >= 0; --i) {
         if (calledAutoQ[i].aId == -1) {
           skipCnt++;
@@ -1578,7 +1611,6 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
         }
       }
 
-      // ?
       if (i == 0) {
         error("unwanted state happened");
         return 1;
@@ -1665,26 +1697,35 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
       //    find cycle call
       //
       tmp = trans->tag_number & SUB_ID_MASK;
+
+      int scanner;
       for (scanner = 0; scanner < autoDepth; scanner++) {
-        if ((autoStackMap[scanner].tran->tag_number == trans->tag_number) && (trans->state_number == autoStackMap[scanner].tran->state_number)) {
+        if ( autoStackMap[scanner].tran->tag_number == trans->tag_number ) {
           break;
         }
       }
-      autoStackMap[autoDepth].tran = trans;
-      if (scanner == autoDepth) {
+      autoStackMap[autoDepth].tran = trans; // add the transition to the stack
+      if (scanner == autoDepth) { // didn't find a recursive call
         callId = callIdentifyId(autoStackMap, autoDepth + 1);
-      } else { // find recursive call
+      } else { // found a recursive call
         pathTagQ[pathTagQidx].tag = 0;
         pathTagQ[pathTagQidx].autoNo = autoStackMap[scanner].autoId;
         pathTagQ[pathTagQidx].stateNo = a->initial_states[tmp] | LOOP_PATH_MARK;
 
         ++pathTagQidx;
-        if (!IsCyclePath(stateDepth)) {
-          fatal_error("recursive find fail");
+        if (!isCyclePath(stateDepth)) { 
+          // no cycle was found we identify the automaton
+          // and continue the exploration
+          callId = callIdentifyId(autoStackMap, autoDepth + 1);
+          --pathTagQidx;
+          goto noCycle;
+          // previous error
+          //fatal_error("failed to find the recursive call\n");
         }
         --pathTagQidx;
         continue;
       }
+      noCycle:
       pathTagQ[pathTagQidx].tag = 0;
       pathTagQ[pathTagQidx].autoNo = callId;
       pathTagQ[pathTagQidx].stateNo = a->initial_states[tmp];
@@ -1716,7 +1757,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
 //
 //  for debugging, display all stack
 //
-void CFstApp::CqueuePathPr(U_FILE *f) {
+void CFstApp::printPathQ(U_FILE *f) {
   int pidx = -1;
   int i;
   u_fprintf(f, "#");
@@ -1728,33 +1769,38 @@ void CFstApp::CqueuePathPr(U_FILE *f) {
   }
 }
 
+/**
+ * takes a number (decimal or hex) in char and puts its value in 'val'
+ */
 unichar * uascToNum(unichar *uasc, int *val) {
-  unichar *wp = uasc;
+  unichar *wordPtr = uasc;
   int base = 10;
   int sum = 0;
-  if ((*wp == (unichar) '0') && ((*(wp + 1) == (unichar) 'x') || (*(wp + 1)
+
+  // if number is hexadecimal
+  if ((*wordPtr == (unichar) '0') && ((*(wordPtr + 1) == (unichar) 'x') || (*(wordPtr + 1)
       == (unichar) 'X'))) {
     base = 16;
-    wp += 2;
+    wordPtr += 2;
   }
   do {
-    if ((*wp >= (unichar) '0') && (*wp <= (unichar) '9')) {
-      sum = sum * base + *wp - (unichar) '0';
-      wp++;
-    } else if ((base == 16) && (*wp >= (unichar) 'a') && (*wp
+    if ((*wordPtr >= (unichar) '0') && (*wordPtr <= (unichar) '9')) {
+      sum = sum * base + *wordPtr - (unichar) '0';
+      wordPtr++;
+    } else if ((base == 16) && (*wordPtr >= (unichar) 'a') && (*wordPtr
         <= (unichar) 'f')) {
-      sum = sum * base + *wp - (unichar) 'a' + 10;
-      wp++;
-    } else if ((base == 16) && (*wp >= (unichar) 'A') && (*wp
+      sum = sum * base + *wordPtr - (unichar) 'a' + 10;
+      wordPtr++;
+    } else if ((base == 16) && (*wordPtr >= (unichar) 'A') && (*wordPtr
         <= (unichar) 'F')) {
-      sum = sum * base + *wp - (unichar) 'A' + 10;
-      wp++;
+      sum = sum * base + *wordPtr - (unichar) 'A' + 10;
+      wordPtr++;
     } else {
       break;
     }
-  } while (*wp);
+  } while (*wordPtr);
   *val = sum;
-  return (wp);
+  return wordPtr;
 }
 
 /**
@@ -1764,7 +1810,7 @@ int CFstApp::outWordsOfGraph(int depth) {
   int s;
   Fst2Tag Tag;
   unichar *sp;
-  unichar *wp;
+  unichar *wordPtr;
   unichar *ep;
   unichar *tp;
   unichar *chp;
@@ -1803,7 +1849,7 @@ int CFstApp::outWordsOfGraph(int depth) {
         tp = u_null_string;
       }
     }
-    //wprintf(L"{%d,%x,%x,%s,%s}",s,pathTagQ[s].stateNo,pathTagQ[s].tag,ep,tp);
+    //wordPtrrintf(L"{%d,%x,%x,%s,%s}",s,pathTagQ[s].stateNo,pathTagQ[s].tag,ep,tp);
     markCtlChar = 0;
     if (!(pathTagQ[s].stateNo & STOP_PATH_MARK) && !niveau_traite_mot && (*ep == '<')) {
       chp = ep + 1;
@@ -1822,7 +1868,7 @@ int CFstApp::outWordsOfGraph(int depth) {
       }
 
     }
-    //wprintf(L"\n");
+    //wordPtrrintf(L"\n");
 
     if (pathTagQ[s].stateNo & LOOP_PATH_MARK) {
       if (recursiveMode == LABEL) {
@@ -1870,13 +1916,13 @@ int CFstApp::outWordsOfGraph(int depth) {
             return 1;
           }
         } else {
-          resetBuffs();
+          resetBufferCounters();
         }
         while (*sp)
           EOUTLINE[EOutCnt++] = *sp++;
-        wp = entreGF;
-        while (*wp)
-          EOUTLINE[EOutCnt++] = *wp++;
+        wordPtr = entreGF;
+        while (*wordPtr)
+          EOUTLINE[EOutCnt++] = *wordPtr++;
         markPreCtlChar = markCtlChar;
         continue;
       } else if (recursiveMode == SYMBOL) { // SYMBOL
@@ -1885,13 +1931,13 @@ int CFstApp::outWordsOfGraph(int depth) {
             return 1;
           }
         }
-        wp = entreGO;
-        while (*wp) {
+        wordPtr = entreGO;
+        while (*wordPtr) {
           if (automateMode == TRANMODE) {
-            TBuff[tPtrCnt++] = *wp;
+            TBuff[tPtrCnt++] = *wordPtr;
           }
-          EBuff[ePtrCnt++] = *wp;
-          wp++;
+          EBuff[ePtrCnt++] = *wordPtr;
+          wordPtr++;
         }
         while (*ep)
           EBuff[ePtrCnt++] = *ep++;
@@ -1928,13 +1974,13 @@ int CFstApp::outWordsOfGraph(int depth) {
           --tPtrCnt;
         }
         --ePtrCnt;
-        wp = entreGF;
-        while (*wp) {
+        wordPtr = entreGF;
+        while (*wordPtr) {
           if (automateMode == TRANMODE) {
-            TBuff[tPtrCnt++] = *wp;
+            TBuff[tPtrCnt++] = *wordPtr;
           }
-          EBuff[ePtrCnt++] = *wp;
-          wp++;
+          EBuff[ePtrCnt++] = *wordPtr;
+          wordPtr++;
         }
         if (outOneWord(0) != 0) {
           return 1;
@@ -1947,14 +1993,14 @@ int CFstApp::outWordsOfGraph(int depth) {
         }
         if (!(pathTagQ[s].stateNo & STOP_PATH_MARK)) {
           // mark the stop
-          wp = entreGO;
-          while (*wp) {
-            EOUTLINE[EOutCnt++] = *wp;
+          wordPtr = entreGO;
+          while (*wordPtr) {
+            EOUTLINE[EOutCnt++] = *wordPtr;
             if ((automateMode == TRANMODE) && (prMode
                 == PR_SEPARATION)) {
-              SOUTLINE[SOutCnt++] = *wp;
+              SOUTLINE[SOutCnt++] = *wordPtr;
             }
-            wp++;
+            wordPtr++;
           }
         }
         while (*ep) {
@@ -1966,18 +2012,18 @@ int CFstApp::outWordsOfGraph(int depth) {
           }
         }
         if (pathTagQ[s].stateNo & STOP_PATH_MARK) {
-          wp = entreGF;
-          while (*wp) {
+          wordPtr = entreGF;
+          while (*wordPtr) {
             if (automateMode == TRANMODE) {
-              TBuff[tPtrCnt++] = *wp;
+              TBuff[tPtrCnt++] = *wordPtr;
               if (prMode == PR_SEPARATION) {
-                EBuff[ePtrCnt++] = *wp;
+                EBuff[ePtrCnt++] = *wordPtr;
               }
             } else {
-              EBuff[ePtrCnt++] = *wp;
+              EBuff[ePtrCnt++] = *wordPtr;
             }
 
-            wp++;
+            wordPtr++;
           }
           if (outOneWord(u_null_string) != 0) {
             return 1;
@@ -2095,7 +2141,7 @@ int CFstApp::outWordsOfGraph(int depth) {
 
 // TODO(jhondoe) Use UnitexGetOpt instead argc, argv
 // FIXME(jhondoe) Use malloc to allocate chars' memory
-// FIXME(jhondoe) Full of possible memory leaks: aa.saveEntre, wp2...
+// FIXME(jhondoe) Full of possible memory leaks: aa.saveEntre, wordPtr2...
 int main_Fst2List(int argc, char* const argv[]) {
   char* ofilename = 0;
   int iargIndex = 1;
@@ -2107,9 +2153,9 @@ int main_Fst2List(int argc, char* const argv[]) {
 
   changeStrToIdx = 0;
 
-  char* wp     = NULL;
-  unichar* wp2 = NULL;
-  unichar* wp3 = NULL;
+  char* wordPtr     = NULL;
+  unichar* wordPtr2 = NULL;
+  unichar* wordPtr3 = NULL;
 
   VersatileEncodingConfig vec = VEC_DEFAULT;
   bool only_verify_arguments = false;
@@ -2210,31 +2256,31 @@ int main_Fst2List(int argc, char* const argv[]) {
       }
       iargIndex++;
       aa.saveEntre = new unichar[strlen(argv[iargIndex]) + 1];
-      wp = argv[iargIndex];
-      wp2 = aa.saveEntre;
-      wp3 = 0;
-      while (*wp) {
-        if ((*wp < 0x20) || (*wp > 0x7e)) {
+      wordPtr = argv[iargIndex];
+      wordPtr2 = aa.saveEntre;
+      wordPtr3 = 0;
+      while (*wordPtr) {
+        if ((*wordPtr < 0x20) || (*wordPtr > 0x7e)) {
           error("Use a separator in ASC code\r\n");
           return DEFAULT_ERROR_CODE;
         }
-        if (*wp == '\\')
-          wp++;
-        else if (*wp == ',')
-          wp3 = wp2;
-        if (*wp != '"')
-          *wp2++ = (unichar) *wp++;
+        if (*wordPtr == '\\')
+          wordPtr++;
+        else if (*wordPtr == ',')
+          wordPtr3 = wordPtr2;
+        if (*wordPtr != '"')
+          *wordPtr2++ = (unichar) *wordPtr++;
         else
-          wp++;
+          wordPtr++;
       }
-      *wp2 = 0;
+      *wordPtr2 = 0;
 
       aa.entreGO = aa.saveEntre;
-      if (wp3) {
-        *wp3++ = 0;
-        aa.entreGF = wp3;
+      if (wordPtr3) {
+        *wordPtr3++ = 0;
+        aa.entreGF = wordPtr3;
       } else
-        aa.entreGF = wp2;
+        aa.entreGF = wordPtr2;
       break;
     case 'c':
       iargIndex++;
@@ -2246,80 +2292,80 @@ int main_Fst2List(int argc, char* const argv[]) {
     case 's': {
       char cc = argv[iargIndex][2];
       iargIndex++;
-      wp = argv[iargIndex];
-      wp3 = 0;
+      wordPtr = argv[iargIndex];
+      wordPtr3 = 0;
       switch (cc) {
       case 0:
-        wp2 = aa.sep1 = new unichar[strlen(wp) + 1];
-        wp3 = 0;
-        while (*wp) {
-          if ((*wp < 0x20) || (*wp > 0x7e)) {
+        wordPtr2 = aa.sep1 = new unichar[strlen(wordPtr) + 1];
+        wordPtr3 = 0;
+        while (*wordPtr) {
+          if ((*wordPtr < 0x20) || (*wordPtr > 0x7e)) {
             error("Use a separator in ASCII code\r\n");
             return DEFAULT_ERROR_CODE;
           }
-          switch (*wp) {
+          switch (*wordPtr) {
           case '\\':
-            wp++;
-            if (*wp == '\0') {
+            wordPtr++;
+            if (*wordPtr == '\0') {
                 // TODO(jhondoe) Put an error message here
               error("");
               return DEFAULT_ERROR_CODE;
             }
-            if (*wp != '"')
+            if (*wordPtr != '"')
               break;
           case '"':
-            wp++;
+            wordPtr++;
             continue;
           case ',':
-            wp3 = wp2;
+            wordPtr3 = wordPtr2;
             break;
           default:
             break;
           }
-          *wp2++ = (unichar) *wp++;
+          *wordPtr2++ = (unichar) *wordPtr++;
         }
-        *wp2 = 0;
+        *wordPtr2 = 0;
         aa.sepL = aa.sep1;
-        if (wp3) {
-          *wp3++ = 0;
-          aa.sepR = wp3;
+        if (wordPtr3) {
+          *wordPtr3++ = 0;
+          aa.sepR = wordPtr3;
         } else {
-          aa.sepR = wp2;
+          aa.sepR = wordPtr2;
         }
 
         break;
       case '0':
-        wp2 = aa.saveSep = new unichar[strlen(wp) + 1];
-        while (*wp) {
-          if ((*wp < 0x20) || (*wp > 0x7e)) {
+        wordPtr2 = aa.saveSep = new unichar[strlen(wordPtr) + 1];
+        while (*wordPtr) {
+          if ((*wordPtr < 0x20) || (*wordPtr > 0x7e)) {
             error("Use a separator in ASC code\r\n");
             return DEFAULT_ERROR_CODE;
           }
-          if (*wp == '\\') {
-            wp++;
-            if (*wp == '\0') {
+          if (*wordPtr == '\\') {
+            wordPtr++;
+            if (*wordPtr == '\0') {
                 // TODO(jhondoe) Put an error message here
               error("");
               return DEFAULT_ERROR_CODE;
             }
           }
-          if (*wp == '"')
+          if (*wordPtr == '"')
             continue;
-          *wp2++ = (unichar) *wp++;
+          *wordPtr2++ = (unichar) *wordPtr++;
         }
-        *wp2 = 0;
+        *wordPtr2 = 0;
         break;
       case 's':
-        wp2 = aa.stopSignal = new unichar[strlen(wp) + 3];
+        wordPtr2 = aa.stopSignal = new unichar[strlen(wordPtr) + 3];
         ;
-        *wp2++ = (unichar) '<';
-        while (*wp) {
-          if (*wp == '"')
+        *wordPtr2++ = (unichar) '<';
+        while (*wordPtr) {
+          if (*wordPtr == '"')
             continue;
-          *wp2++ = (unichar) *wp++;
+          *wordPtr2++ = (unichar) *wordPtr++;
         }
-        *wp2++ = (unichar) '>';
-        *wp2 = 0;
+        *wordPtr2++ = (unichar) '>';
+        *wordPtr2 = 0;
         break;
       }
       break;
