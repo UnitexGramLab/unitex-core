@@ -2107,7 +2107,7 @@ int main_Fst2List(int argc, char* const argv[]) {
     case 'm':
       aa.niveau_traite_mot = 0;
       break;
-    case 'r':  // TODO(kalkhas) document this option
+    case 'r':
       switch (options.vars()->optarg[0]) { 
       case 's':
         aa.recursiveMode = SYMBOL;
@@ -2123,7 +2123,7 @@ int main_Fst2List(int argc, char* const argv[]) {
         return USAGE_ERROR_CODE;
       }
       // we consume more than 1 argument which is not expected by getopt
-      // we need to increment manually optind
+      // we need to manually increment optind
       options.vars()->optind++;
       // parse the "L[,R]" string
       aa.saveEntre = new unichar[strlen(&options.vars()->optarg[1]) + 1];
@@ -2181,7 +2181,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       *wp2 = 0;
       break;
 
-    case 2:
+    case 2:  // option '--stop_expl'
       wp = (char*) &options.vars()->optarg[1];
       wp3 = 0;
       wp2 = aa.stopSignal = new unichar[strlen(wp) + 3];
