@@ -42,10 +42,10 @@ namespace unitex {
 const char
     * usage_Fst2List =
         "Usage:\n"
-          "Fst2List [-o outFile][-p s/f/d][-[a/t] s/m] [-m] [-d] [-f s/a][-s[0s] \"Str\"] [-r[s/l] \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"
+          "Fst2List [-o outFile][-p s/f/d][-[a/t] s/m] [-m] [-d] [-f s/a] [--io_separator \"Str\"] [--stop_expl \"Str\"][-s \"Str\"] [-r [s/l/x] \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"
           " fname : name of the input file name with extension \".fst2\"\r\n"
           " -S : write path on standard output\r\n"
-          " -o outFile : if this option and -S not exist, save paths at \"file\"lst.txt\r\n"
+          " -o outFile : if this option and -S are not used, save paths in \"file\"lst.txt\r\n"
           " -[a/t] s/m : mode de automata or transducteur, s=single initial, m = multi-inital\r\n"
           "              by default \"-a s\"\r\n"
           " -l line#  :  max number of line to save[decimal].\r\n"
@@ -56,16 +56,16 @@ const char
           "                to a unicode character(0xXXXX)\r\n"
           " -s \"L[,R]\" : use two strings L, R as the separator each item\r\n"
           "                   default null\r\n"
-          " -s0 \"Str\" : if transductor mode,set \"str\" as the separator between input and out\r\n"
+          " --io_separator \"Str\" : if transductor mode,set \"str\" as the separator between input and out\r\n"
           "                   default null\r\n"
-          " -f  a/s :  if the mode is transductor,the format of output line i0i1SOS1(:s) or i0S0i1S1(:a),i0,i1: input, S0,S1:out\r\n"
+          " -f a/s :  if the mode is transductor,the format of output line i0i1SOS1(:s) or i0S0i1S1(:a),i0,i1: input, S0,S1:out\r\n"
           "       default value is \'s\'\r\n"
-          " -ss \"stop\" : set \"str\" as the mark of stop exploitation at \"<stop>\" \r\n"
+          " --stop_expl \"stop\" : set \"str\" as the mark of stop exploitation at \"<stop>\" \r\n"
           "                    default null\r\n"
           " -m : mode special for description with alphabet\r\n"
           " -d : disable loop check: faster execution at the cost of information about loops\r\n"
           " -v : verbose mode  default null\r\n"
-          " -r[s/l/x] \"L[,R]\"  : present recusive path(c0|...|cn) by Lc0|..|cnR : default null\r\n"
+          " -r [s/l/x] \"L[,R]\"  : present recusive path(c0|...|cn) by Lc0|..|cnR : default null\r\n"
           " -V/--only-verify-arguments: only verify arguments syntax and exit\r\n"
           " -h/--help: this help\r\n";
 
