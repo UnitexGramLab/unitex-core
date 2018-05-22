@@ -1985,10 +1985,9 @@ int CFstApp::outWordsOfGraph(int depth) {
 //
 //
 
-const char* optstring_Fst2List=":o:Sp:a:t:l:i:p:mdf:vVhs:r:c:";
+const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVhs:r:c:";
 const struct option_TS lopts_Fst2List[]= {
   {"output",required_argument_TS,NULL,'o'},
-  {"std_output",required_argument_TS,NULL,'S'},
   {"automaton",required_argument_TS,NULL,'a'},
   {"transductor",required_argument_TS,NULL,'t'},
   {"limit",required_argument_TS,NULL,'l'},
