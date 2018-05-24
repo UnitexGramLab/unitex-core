@@ -42,30 +42,31 @@ namespace unitex {
 const char
     * usage_Fst2List =
         "Usage:\n"
-          "Fst2List [-o outFile][-p s/f/d][-[a/t] s/m] [-m] [-d] [-f s/a] [--io_separator \"Str\"] [--stop_expl \"Str\"][-s \"Str\"] [-r [s/l/x] \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"
-          " fname : name of the input file name with extension \".fst2\"\r\n"
-          " -S : write path on standard output\r\n"
-          " -o outFile : if this option and -S are not used, save paths in \"file\"lst.txt\r\n"
-          " -[a/t] [s/m] : mode de automata or transducteur, s=single initial, m = multi-inital\r\n"
+          "Fst2List [-o outFile][-p s/f/d][-a/t s/m] [-m] [-d] [-f s/a] [--io-separator \"Str\"] [--stop-mark \"Str\"][-s \"Str\"] [-r s/l/x \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"
+          " fname: input file name with extension \".fst2\"\r\n"
+          " -S: write path on standard output\r\n"
+          " -o outFile: if this option and -S are not used, save paths in \"file\"lst.txt\r\n"
+          " -a/t s/m, --automaton/transducer s/m: a = write outputs, t = ignore outputs, \r\n"
+          "     s=single initial state, m = multiples initals states\r\n"
           "              by default \"-a s\"\r\n"
-          " -l line#  :  max number of line to save[decimal].\r\n"
-          " -i sname : stop call of the exploitation at this sub-graphe \"sname\"\r\n"
-          " -p [s/f/d] : mode de extrait word, s=each sub graphs, f=full path(default),\r\n"
-          "            d= debugging. default is 'f'\r\n"
+          " -l line#: max number of line to save[decimal].\r\n"
+          " -i sname: stop exploration at subgraph \"sname\"\r\n"
+          " -p s/f/d: exploration mode, s=independently, printing names of called subgraphs, f=recursively(default),\r\n"
+          "            d=debugging. default is 'f'\r\n"
           " -c SS=0xXXXX: change the symbol string between symbols < and >,\"<SS>\" \r\n"
           "                to a unicode character(0xXXXX)\r\n"
-          " -s \"L[,R]\" : use two strings L, R as the separator each item\r\n"
+          " -s \"L[,R]\": use two strings L, R as parentheses to enclose items\r\n"
           "                   default null\r\n"
-          " --io_separator \"Str\" : if transductor mode,set \"str\" as the separator between input and out\r\n"
+          " -g/--io-separator \"Str\": if transducer mode, set \"str\" as the separator between input and output\r\n"
           "                   default null\r\n"
-          " -f [a/s] :  if the mode is transductor,the format of output line i0i1SOS1(:s) or i0S0i1S1(:a),i0,i1: input, S0,S1:out\r\n"
-          "       default value is \'s\'\r\n"
-          " --stop_expl \"stop\" : set \"str\" as the mark of stop exploitation at \"<stop>\" \r\n"
-          "                    default null\r\n"
-          " -m : mode special for description with alphabet\r\n"
-          " -d : disable loop check: faster execution at the cost of information about loops\r\n"
-          " -v : verbose mode  default null\r\n"
-          " -r [s/l/x] \"L[,R]\"  : present recusive path(c0|...|cn) by Lc0|..|cnR : default null\r\n"
+          " -f a/s: in transducer mode, format of output line: a=i0s0i1s1, s=i0i1s0s1 (i0,i1: input, s0,s1: output)\r\n"
+          "                   default value is \'s\'\r\n"
+          " -q, --stop-mark \"stop\": quit exploration at \"<stop>\" \r\n"
+          "                   default null\r\n"
+          " -m: mode special for description with alphabet\r\n"
+          " -d: disable loop check: faster execution at the cost of information about loops\r\n"
+          " -v: verbose mode, default null\r\n"
+          " -r s/l/x \"L[,R]\": enclose loops in L and R strings as in (c0|...|cn) by Lc0|..|cnR : default null\r\n"
           " -V/--only-verify-arguments: only verify arguments syntax and exit\r\n"
           " -h/--help: this help\r\n";
 
@@ -1149,8 +1150,9 @@ void CFstApp::loadGraph(int& changeStrToIdx,
   if (stopSignal) {
 
     for (i_1 = 0; i_1 < a->number_of_tags; i_1++) {
-      if (u_strcmp((unichar *) a->tags[i_1]->input, stopSignal))
+      if (u_strcmp((unichar *) a->tags[i_1]->input, stopSignal)) {
         continue;
+      }
       for (j_1 = 0; j_1 < a->number_of_states; j_1++) {
         strans = a->states[j_1]->transitions;
         while (strans) {
@@ -1989,23 +1991,23 @@ const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVhs:r:c:";
 const struct option_TS lopts_Fst2List[]= {
   {"output",required_argument_TS,NULL,'o'},
   {"automaton",required_argument_TS,NULL,'a'},
-  {"transductor",required_argument_TS,NULL,'t'},
+  {"transducer",required_argument_TS,NULL,'t'},
   {"limit",required_argument_TS,NULL,'l'},
-  {"stop_graph",required_argument_TS,NULL,'i'},
-  {"print_mode",required_argument_TS,NULL,'p'},
+  {"stop-graph",required_argument_TS,NULL,'i'},
+  {"print-mode",required_argument_TS,NULL,'p'},
   {"mode",no_argument_TS,NULL,'m'},
   {"debug",no_argument_TS,NULL,'d'},
-  {"transductor_mode",required_argument_TS,NULL,'f'},
+  {"transducer-mode",required_argument_TS,NULL,'f'},
   {"separator",required_argument_TS,NULL,'s'},
   {"verbose",no_argument_TS,NULL,'v'},
   {"stdout",no_argument_TS,NULL,'S'},
-  {"only_verify_arguments",no_argument_TS,NULL,'V'},
-  {"cycle_syntax",required_argument_TS,NULL,'r'},
+  {"only-verify-arguments",no_argument_TS,NULL,'V'},
+  {"cycle-syntax",required_argument_TS,NULL,'r'},
   {"unicode",required_argument_TS,NULL,'c'},
-  {"io_separator",required_argument_TS,NULL,1},
-  {"stop_expl",required_argument_TS,NULL,2},
-  {"input_encoding",required_argument_TS,NULL,'k'},
-  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"io-separator",required_argument_TS,NULL,'g'},
+  {"stop-mark",required_argument_TS,NULL,'q'},
+  {"input-encoding",required_argument_TS,NULL,'k'},
+  {"output-encoding",required_argument_TS,NULL,'q'},
   {"help",no_argument_TS,NULL,'h'},
   {NULL,no_argument_TS,NULL,0}
 };
@@ -2157,7 +2159,8 @@ int main_Fst2List(int argc, char* const argv[]) {
       }
       error("Invalid arguments: rerun with --help\n");
       return USAGE_ERROR_CODE;
-    case 1: // option '--io_separator'
+    case 1: // option '--io-separator'
+      io_separator:
       wp = (char*) &options.vars()->optarg[1]-1;
       wp3 = 0;
       wp2 = aa.saveSep = new unichar[strlen(wp) + 1];
@@ -2180,7 +2183,8 @@ int main_Fst2List(int argc, char* const argv[]) {
       *wp2 = 0;
       break;
 
-    case 2:  // option '--stop_expl'
+    case 2:  // option '--stop-mark'
+      stop_mark:
       wp = (char*) &options.vars()->optarg[1];
       wp3 = 0;
       wp2 = aa.stopSignal = new unichar[strlen(wp) + 3];
@@ -2196,6 +2200,22 @@ int main_Fst2List(int argc, char* const argv[]) {
       break;
     case 's':
     {
+      // supports the deprecated options '-ss' and '-s0'
+      switch (options.vars()->optarg[0]) { 
+      case '0':
+        u_printf("Warning: '-s0' is deprecated, use '--io-separator' instead\n");
+        // manually increment optind to consume more args than expected by getopt
+        options.vars()->optind++;
+        // goto the correct switch case to avoid code duplication
+        goto io_separator;
+      case 's':
+        u_printf("Warning: '-ss' is deprecated, use '--stop-mark' instead\n");
+        // manually increment optind to consume more args than expected by getopt
+        options.vars()->optind++;
+        // goto the correct switch case to avoid code duplication
+        goto stop_mark;
+      } // end switch deprecated option
+
       wp = (char*) &options.vars()->optarg[1] - 1;
       wp3 = 0;
       wp2 = aa.sep1 = new unichar[strlen(wp) + 1];
