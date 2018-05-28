@@ -98,8 +98,8 @@ enum autoType {
 };
 
 static unichar *uascToNum(unichar *uasc, int *val);
-#define FILE_PATH_MARK  0x10000000
-#define LOOP_PATH_MARK  0x20000000
+#define SUBGRAPH_PATH_MARK  0x10000000 // indicate call to a subgraph
+#define LOOP_PATH_MARK  0x20000000 // indicate a loop
 #define STOP_PATH_MARK  0x40000000
 #define PATHID_MASK    0x1FFFFFFF
 #define SUB_ID_MASK    0x0fffffff
@@ -187,9 +187,9 @@ public:
   int verboseMode;
   int enableLoopCheck; // controls if the graph is explored to find loops
   //  int control_char; // control the output for control_chars <>
-  #define  PATH_QUEUE_MAX 1024
+  #define  PATH_STACK_MAX 1024
   // history of states explored in the current path
-  struct pathStack_t pathStack[PATH_QUEUE_MAX];
+  struct pathStack_t pathStack[PATH_STACK_MAX];
   int pathIdx;
   #define TAGQ_MAX 1024
 
@@ -206,15 +206,16 @@ public:
   int findCycleSubGraph(int autoNo, int autodep, int testState, int depthState);
   int outWordsOfGraph(int depth);
 
-  // the stack of invocations of sub graphs
+  // the stack of invocations of subgraphs
   // history of invocation for the current path
+  // invocations are popped only when backtracking to explore the next path
   struct {
     int aId;    // automaton ID
     int next;   // next state
   } invocStack[2048];
   int invocStackIdx;  // invocation stack depth
 
-  void printPathQ(U_FILE *f);
+  void printPathNames(U_FILE *f);
 
   int *ignoreTable;  // 1 where the automaton is ignored, else 0
   int *numOfIgnore;
@@ -347,7 +348,7 @@ public:
   }
 
   /**
-   * Call stack for the current path
+   * Call stack for the currently opened automata
    * Identifies each invocation with the transition
    * and a number identifying the calling automaton
    */
@@ -486,7 +487,7 @@ public:
         error("%d : (%08x:%08x) : %08x\n", i, pathStack[i].autoNo, pathStack[i].stateNo, pathStack[i].tag);
       }
 
-      printPathQ(U_STDERR);
+      printPathNames(U_STDERR);
       fatal_error("eu~ak\n");
     }
     if (setflag) {
@@ -835,7 +836,7 @@ public:
         u_fprintf(foutput, "%S%S", saveSep, OUTPUTBUFFER);
       }
       if (display_control == FST2LIST_DEBUG) {
-        printPathQ(foutput);
+        printPathNames(foutput);
       }
       u_fprintf(foutput, "\n");
       numberOfOutLine++;
@@ -1002,7 +1003,7 @@ public:
 
     while (h) {
       tmp = h->pathTagQueue[h->pathCnt - 1].stateNo;
-      if (tmp & FILE_PATH_MARK) {
+      if (tmp & SUBGRAPH_PATH_MARK) {
         tmp = a->initial_states[tmp & SUB_ID_MASK];
       }
       if ((tmp < st) || (tmp >= ed)) {
@@ -1017,7 +1018,7 @@ public:
 
       for (i = 0; i < h->pathCnt; i++) {
         tmp = h->pathTagQueue[i].stateNo;
-        if (tmp & FILE_PATH_MARK) {
+        if (tmp & SUBGRAPH_PATH_MARK) {
           tmp = a->initial_states[tmp & SUB_ID_MASK];
         }
         if ((tmp < st) || (tmp >= ed)) {
@@ -1131,10 +1132,10 @@ public:
   }
 
   /**
-   * prints the invocation stack,
+   * prints the invocation stacks,
    * the path stack and the automaton stack
    */
-  void prAutoStack(int stackDepth) {
+  void printStacks(int autoCallStackDepth) {
     int i;
     u_printf("===== invocStack\n");
     u_printf("i   aId  next_state\n");
@@ -1142,23 +1143,23 @@ public:
       u_printf("%d :: %d :: %d\n", i, invocStack[i].aId,
           invocStack[i].next);
     }
-    u_printf("===== stateQueue\n");
+    u_printf("===== pathStack\n");
     u_printf("i autoNo  stateNo tag\n");
     for (i = 0; i < pathIdx; i++) {
       u_printf("%d (%d ::%d)%d\n", i, pathStack[i].autoNo,
           pathStack[i].stateNo, pathStack[i].tag);
     }
-    u_printf("===== AutoStack\n"); 
+    u_printf("===== autoCallStack\n"); 
     u_printf("i  autoId  stateNb trans_tag\n");
     Transition *k;
-    for (i = 0; i < stackDepth; i++) {
+    for (i = 0; i < autoCallStackDepth; i++) {
       k = autoCallStack[i].tran;
       u_printf("%d %d(%d ::%d)\n", i, autoCallStack[i].autoId,
           k->state_number, k->tag_number);
     }
   }
 
-  void prAutoStackOnly() {
+  void printPathStack() {
     for (int i = 0; i < pathIdx; i++)
       u_fprintf(foutput, "%d (%d ::%d)%d\n", i, pathStack[i].autoNo,
           pathStack[i].stateNo, pathStack[i].tag);
@@ -1231,7 +1232,7 @@ void CFstApp::loadGraph(int& changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SY
     a->states[i_1]->control &= 0x7f; // clean to mark recursive. 0x7f=0b0111_1111
     while (transPtr) {
       if (transPtr->tag_number < 0) {   // transition invokes subgraph
-        transPtr->tag_number = FILE_PATH_MARK | -transPtr->tag_number;
+        transPtr->tag_number = SUBGRAPH_PATH_MARK | -transPtr->tag_number;
       }
       transPtr = transPtr->next;
     }
@@ -1458,7 +1459,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
       i = 0;
 
       for (trans = a->states[0]->transitions; trans != 0; trans = trans->next) {
-        if (!(trans->tag_number & FILE_PATH_MARK)) {
+        if (!(trans->tag_number & SUBGRAPH_PATH_MARK)) {
           continue;
         }
         ignoreTable[trans->tag_number & SUB_ID_MASK] = 1;
@@ -1466,7 +1467,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
       }
       u_fprintf(listFile, " %d\n", i);
       for (trans = a->states[0]->transitions; trans != 0; trans = trans->next) {
-        if (!(trans->tag_number & FILE_PATH_MARK)) {
+        if (!(trans->tag_number & SUBGRAPH_PATH_MARK)) {
           continue;
         }
         cleanCyclePath();
@@ -1539,7 +1540,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
 int CFstApp::exploreSubAuto(int startAutoNo) {
   Transition startCallTr;
   //if(listOut) prCycleNode();
-  startCallTr.tag_number = startAutoNo | FILE_PATH_MARK;
+  startCallTr.tag_number = startAutoNo | SUBGRAPH_PATH_MARK;
   startCallTr.state_number = 0;
   numberOfOutLine = 0; // reset output line counter
 
@@ -1573,13 +1574,13 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
   int tmp;
   int nextState;
   int callId;
-  //prAutoStack(autoDepth);
+  //printStacks(autoDepth);
 
   if (listOut && wasCycleNode(automatonNo, stateNo)) {
     pathStack[pathIdx - 1].stateNo |= LOOP_PATH_MARK;
   }
-  if (pathIdx >= PATH_QUEUE_MAX) {
-    pathIdx = PATH_QUEUE_MAX - 1;
+  if (pathIdx >= PATH_STACK_MAX) {
+    pathIdx = PATH_STACK_MAX - 1;
     if (listOut) {
       errPath++;
       pathStack[pathIdx].stateNo = STOP_PATH_MARK;
@@ -1684,7 +1685,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
       }
       continue;
     }
-    if (trans->tag_number & FILE_PATH_MARK) { // handling sub graph call
+    if (trans->tag_number & SUBGRAPH_PATH_MARK) { // handling sub graph call
       if (ignoreTable[trans->tag_number & SUB_ID_MASK]) {
         // find stop condition path
         if (listOut) {
@@ -1768,7 +1769,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
 //
 //  for debugging, display all stack
 //
-void CFstApp::printPathQ(U_FILE *f) {
+void CFstApp::printPathNames(U_FILE *f) {
   int pidx = -1;
   int i;
   u_fprintf(f, "#");
@@ -1833,7 +1834,7 @@ int CFstApp::outWordsOfGraph(int depth) {
   ePtrCnt = tPtrCnt = 0;
   unichar aaBuffer_for_getLabelNumber[64];
 
-  //  fini = (tagQ[tagQidx - 1] & (FILE_PATH_MARK | LOOP_PATH_MARK)) ?
+  //  fini = (tagQ[tagQidx - 1] & (SUBGRAPH_PATH_MARK | LOOP_PATH_MARK)) ?
   //    tagQ[tagQidx -1 ]:0;
   //
   //  elimine the value signified repete
@@ -1841,12 +1842,12 @@ int CFstApp::outWordsOfGraph(int depth) {
   markCtlChar = markPreCtlChar = 0;
   indicateFirstUsed = 0;
   count_in_line = 0;
-  //prAutoStackOnly();
+  //printPathStack();
   for (s = 0; s < pathIdx; s++) {
     EBuff[ePtrCnt] = TBuff[tPtrCnt] = 0;
     if (!pathStack[s].tag) {
       ep = tp = u_null_string;
-    } else if (pathStack[s].tag & FILE_PATH_MARK) {
+    } else if (pathStack[s].tag & SUBGRAPH_PATH_MARK) {
       ep = (display_control == GRAPH) ? (unichar *) a->graph_names[pathStack[s].tag & SUB_ID_MASK] : u_null_string;
       tp = u_null_string;
     } else {
@@ -2076,7 +2077,7 @@ int CFstApp::outWordsOfGraph(int depth) {
           TBuff[tPtrCnt++] = *tp++;
         }
       }
-      if (pathStack[s].tag & FILE_PATH_MARK) {
+      if (pathStack[s].tag & SUBGRAPH_PATH_MARK) {
         if (outOneWord((unichar *) a->graph_names[pathStack[s].tag
             & SUB_ID_MASK]) != 0) {
           return 1;
@@ -2088,7 +2089,7 @@ int CFstApp::outWordsOfGraph(int depth) {
       }
       break;
     }
-    if (pathStack[s].tag & FILE_PATH_MARK) {
+    if (pathStack[s].tag & SUBGRAPH_PATH_MARK) {
       if (tPtrCnt || (markPreCtlChar && *ep)) {
         if (outOneWord(0) != 0) {
           return 1;
