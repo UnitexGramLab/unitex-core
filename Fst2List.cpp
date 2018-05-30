@@ -39,36 +39,43 @@
 
 namespace unitex {
 
-const char
-    * usage_Fst2List =
-        "Usage:\n"
-          "Fst2List [-o outFile][-p s/f/d][-a/t s/m] [-m] [-d] [-f s/a] [--io-separator \"Str\"] [--stop-mark \"Str\"][-s \"Str\"] [-r s/l/x \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"
-          " fname: input file name with extension \".fst2\"\r\n"
-          " -S: write path on standard output\r\n"
-          " -o outFile: if this option and -S are not used, save paths in \"file\"lst.txt\r\n"
-          " -a/t s/m, --automaton/transducer s/m: a = write outputs, t = ignore outputs, \r\n"
-          "     s=single initial state, m = multiples initals states\r\n"
-          "              by default \"-a s\"\r\n"
-          " -l line#: max number of line to save[decimal].\r\n"
-          " -i sname: stop exploration at subgraph \"sname\"\r\n"
-          " -p s/f/d: exploration mode, s=independently, printing names of called subgraphs, f=recursively(default),\r\n"
-          "            d=debugging. default is 'f'\r\n"
-          " -c SS=0xXXXX: change the symbol string between symbols < and >,\"<SS>\" \r\n"
-          "                to a unicode character(0xXXXX)\r\n"
-          " -s \"L[,R]\": use two strings L, R as parentheses to enclose items\r\n"
-          "                   default null\r\n"
-          " -g/--io-separator \"Str\": if transducer mode, set \"str\" as the separator between input and output\r\n"
-          "                   default null\r\n"
-          " -f a/s: in transducer mode, format of output line: a=i0s0i1s1, s=i0i1s0s1 (i0,i1: input, s0,s1: output)\r\n"
-          "                   default value is \'s\'\r\n"
-          " -q, --stop-mark \"stop\": quit exploration at \"<stop>\" \r\n"
-          "                   default null\r\n"
-          " -m: mode special for description with alphabet\r\n"
-          " -d: disable loop check: faster execution at the cost of information about loops\r\n"
-          " -v: verbose mode, default null\r\n"
-          " -r s/l/x \"L[,R]\": enclose loops in L and R strings as in (c0|...|cn) by Lc0|..|cnR : default null\r\n"
-          " -V/--only-verify-arguments: only verify arguments syntax and exit\r\n"
-          " -h/--help: this help\r\n";
+const char* usage_Fst2List = R"(
+    Usage:
+        Fst2List [-o <file>][-p (s|f|d)][-(a|t) (s|m)] [-m] [-d] [-f (s|a)] [--io_separator <str>] [--stop_mark <str>][-s <str>] [-r (s|l|x) <str>] [-l <line#>] [-i <subgraphname>]... [-c SS=<0xXXXX>]... <fname>
+          
+        <fname>: input file name with extension ".fst2"
+        -S, --print: display result on standard output. Exclusive with -o
+        -o <file>, --output <file>: if this option and -S are not used, save paths in "<file>lst.txt"
+        -(a|t) (s|m), --(ignore_outputs|allow_outputs) (s|m)
+            a: ignore grammars outputs (default)
+            t: take into accout the grammars outputs
+            s: the grammar has only one initial state (default)
+            m: the grammar has several initial states. This mode is useful in Korean
+        -l <line>, --limit <line>: maximum number of lines to be printed in the output file
+        -i <subgraphname>..., --stop_subgraph <subgraphname>... 
+            indicates that the recursive exploration must end when the program enters in graph <subgraphname>. 
+            This parameter can be used several times in order to specify several stop graphs
+        -p (s|f|d), --paths_print_mode (s|f|d)
+            s: displays paths graph by graph 
+            f: (default) displays global paths;
+            d: displays global paths with information on nested graph calls
+        -c <SS>=<0xXXXX>...: replaces symbol <SS> when it appears between angle brackets 
+            by the Unicode character whose hexadecimal number is <0xXXXX>
+        -s <L[,R]>: specifies the left (L) and right (R) delimiters that will enclose items. By default, no delimiters are specified
+        -s0, --io_separator <str>: if the program must take outputs into account (-t), this parameter specifies
+            the sequence <str> that will be inserted between input and output. By default, there is no separator.
+            Prefer the long option --io_separator, the short option -s0 is being deprecated
+        -f (a|s): if the program must take outputs into account (-t), this parameter specifies the format
+            of the lines that will be generated: in0 in1 out0 out1 (s) or in0 out0 in1 out1 (a). The default value is s
+            default value is 's'
+        -ss, --stop_mark <stop>: set <stop> as the mark of stop exploration at "<stop>". The default value is null.
+            Prefer the long option --stop_mark, the short option -ss is being deprecated
+        -m, --word_mode: mode special for description with alphabet
+        -d, --disable_loop_check: faster execution at the cost of information about loops
+        -v, --verbose: prints information during the process
+        -r (s|l|x) <L[,R]>: enclose loops in L and R strings as in (c0|...|cn) by Lc0|..|cnR : default null
+        -V, --only_verify_arguments: only verify arguments syntax and exit
+        -h, --help: display this help and exit)";
 
 static void usage() {
   display_copyright_notice();
@@ -1987,27 +1994,27 @@ int CFstApp::outWordsOfGraph(int depth) {
 //
 //
 
-const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVhs:r:c:";
+const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVhs:qr:c:";
 const struct option_TS lopts_Fst2List[]= {
   {"output",required_argument_TS,NULL,'o'},
-  {"automaton",required_argument_TS,NULL,'a'},
-  {"transducer",required_argument_TS,NULL,'t'},
+  {"ignore_outputs",required_argument_TS,NULL,'a'},
+  {"allow_outputs",required_argument_TS,NULL,'t'},
   {"limit",required_argument_TS,NULL,'l'},
-  {"stop-graph",required_argument_TS,NULL,'i'},
-  {"print-mode",required_argument_TS,NULL,'p'},
-  {"mode",no_argument_TS,NULL,'m'},
-  {"debug",no_argument_TS,NULL,'d'},
-  {"transducer-mode",required_argument_TS,NULL,'f'},
-  {"separator",required_argument_TS,NULL,'s'},
+  {"stop_subgraph",required_argument_TS,NULL,'i'},
+  {"paths_print_mode",required_argument_TS,NULL,'p'},
+  {"word_mode",no_argument_TS,NULL,'m'},
+  {"disable_loop_check",no_argument_TS,NULL,'d'},
+  {"output_format",required_argument_TS,NULL,'f'},
+  {"lr_delimiters",required_argument_TS,NULL,'s'},
   {"verbose",no_argument_TS,NULL,'v'},
-  {"stdout",no_argument_TS,NULL,'S'},
-  {"only-verify-arguments",no_argument_TS,NULL,'V'},
-  {"cycle-syntax",required_argument_TS,NULL,'r'},
+  {"print",no_argument_TS,NULL,'S'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"cycles_format",required_argument_TS,NULL,'r'},
   {"unicode",required_argument_TS,NULL,'c'},
-  {"io-separator",required_argument_TS,NULL,'g'},
-  {"stop-mark",required_argument_TS,NULL,'q'},
-  {"input-encoding",required_argument_TS,NULL,'k'},
-  {"output-encoding",required_argument_TS,NULL,'q'},
+  {"io_separator",required_argument_TS,NULL,'g'},
+  {"stop_mark",required_argument_TS,NULL,'Q'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
   {"help",no_argument_TS,NULL,'h'},
   {NULL,no_argument_TS,NULL,0}
 };
@@ -2159,7 +2166,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       }
       error("Invalid arguments: rerun with --help\n");
       return USAGE_ERROR_CODE;
-    case 1: // option '--io-separator'
+    case 1: // option '--io_separator'
       io_separator:
       wp = (char*) &options.vars()->optarg[1]-1;
       wp3 = 0;
@@ -2183,7 +2190,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       *wp2 = 0;
       break;
 
-    case 2:  // option '--stop-mark'
+    case 'Q':  // option '--stop_mark'
       stop_mark:
       wp = (char*) &options.vars()->optarg[1];
       wp3 = 0;
@@ -2203,7 +2210,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       // supports the deprecated options '-ss' and '-s0'
       switch (options.vars()->optarg[0]) { 
       case '0':
-        u_printf("Warning: '-s0' is deprecated, use '--io-separator' instead\n");
+        u_printf("Warning: '-s0' is deprecated, use '--io_separator' instead\n");
         // manually increment optind to consume more args than expected by getopt
         options.vars()->optind++;
         // goto the correct switch case to avoid code duplication
