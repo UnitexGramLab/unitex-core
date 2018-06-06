@@ -86,7 +86,7 @@ enum ModeOut {
 
 enum printOutType {
   GRAPH, FULL, FST2LIST_DEBUG
-};
+}; // we either print each subgraph independently or whole automaton recursively
 enum initialType {
   SINGLE, MULTI
 }; // 'multi' is used for graph with several starting states
@@ -98,15 +98,24 @@ enum autoType {
 };
 
 static unichar *uascToNum(unichar *uasc, int *val);
-#define SUBGRAPH_PATH_MARK  0x10000000 // indicate call to a subgraph
-#define LOOP_PATH_MARK  0x20000000 // indicate a loop
-#define STOP_PATH_MARK  0x40000000
-#define PATHID_MASK    0x1FFFFFFF
-#define SUB_ID_MASK    0x0fffffff
-#define CTL_MASK    0xe0000000
-#define LOOP_NODE_MARK  0x80
-#define DIS_LINE_LIMIT_MAX  4096
 
+/**
+ * The marks are applied directly to states and transitions on the loaded automaton
+ */
+// mark states and transitions to indicate call to a subgraph
+#define SUBGRAPH_PATH_MARK  0x10000000 // equals 268435456
+// mark states to indicate a loop
+#define LOOP_PATH_MARK  0x20000000 // equals 536870912
+// mark states and transitions to indicate end of a path
+#define STOP_PATH_MARK  0x40000000 // equals 1073741824
+#define LOOP_NODE_MARK  0x80      // equals 128
+
+// mask to have only the state ID without the marks
+#define PATHID_MASK    0x1FFFFFFF // equals 536870911
+#define SUB_ID_MASK    0x0FFFFFFF // equals 268435455
+#define CTL_MASK    0xE0000000    // equals 3758096384
+
+#define DIS_LINE_LIMIT_MAX  4096
 #define MAX_CHANGE_SYMBOL_SIZE 32
 #define MAGIC_OUT_STDOUT "<WRITE_U_STDOUT>"
 
@@ -165,19 +174,16 @@ static const char *StrMemLack = "allocation of memory for cycle data failed";
 
 /* for stack of states, i.e. path */
 struct pathStack_t {
-  int autoNo;        // automaton's number
+  int autoNo;        // automaton's call ID
   int stateNo;       // state's number
   int tag;
 };
 
-//
-//
-//
+
 
 class CFstApp {
 
 public:
-
   struct fst2 *a;
   struct FST2_free_info fst2_free;
   U_FILE* foutput;
@@ -230,16 +236,17 @@ public:
   int errPath;
 
   presentCycleValue recursiveMode;
-  printOutType display_control;
+  // either explore each subgraph independently or all the automaton recursively
+  printOutType display_control; 
   initialType traitAuto; // single or multi initial state
-  int niveau_traite_mot;
+  int wordMode;
   int depthDebug;
 
   unichar *saveSep;     // separator between input and output of a box
   unichar *sepL,*sepR;  // parentheses for enclosing items
   unichar *sep1;        // delimiter introducing each item
   unichar *stopSignal;
-  unichar *saveEntre, *entreGO, *entreGF;
+  unichar *saveEntre, *openingQuote, *closingQuote;
   VersatileEncodingConfig vec;
   char ofdirName[1024];
   char ofExt[16];
@@ -297,13 +304,13 @@ public:
 
         recursiveMode(STOP), display_control(FULL),
         traitAuto(SINGLE),
-        niveau_traite_mot(1), // unit of box is word
+        wordMode(1), // unit of box is word
         depthDebug(0),
 
         saveSep(u_null_string), sepL(u_null_string),
         sepR(u_null_string), sep1(u_null_string), stopSignal(
-            u_null_string), saveEntre(u_null_string), entreGO(
-            u_null_string), entreGF(u_null_string),
+            u_null_string), saveEntre(u_null_string), openingQuote(
+            u_null_string), closingQuote(u_null_string),
 
         autoCallStack(NULL), transitionListHead(NULL), transitionListTail(NULL),
 
@@ -353,13 +360,13 @@ public:
    * and a number identifying the calling automaton
    */
   struct autoCallStack_t {
-    Transition* tran;
+    Transition* tran; // linked list of transitions
     int autoId;
   }*autoCallStack;
 
   /**
    * list of lists of transitions
-   * each list correspond to an automaton
+   * each list corresponds to a subgraph call
    */
   struct transitionList {
     int cnt;
@@ -368,40 +375,42 @@ public:
   }*transitionListHead, *transitionListTail;
 
   /**
-   * compare *cmap and transitionListHead
-   * return the automaton ID corresponding to the transitions in *cmap
+   * Identifies a subgraph call number depending on its transitions
+   * compare autoCallStack and transitionListHead
+   * subgraph calls are compared based on their depth and transitions
+   * return the automaton ID corresponding to the transitions in autoCallStack
    */
-  int callIdentifyId(struct autoCallStack_t *cmap, int count) {
+  int callIdentifyId(int depth) {
     int id = 0;
     struct transitionList *callMapPtr;
     callMapPtr = transitionListHead;
+    // search for list of transitions at the given depth
     while (callMapPtr) {
-      if (callMapPtr->cnt == count) {
+      if (callMapPtr->cnt == depth) {
         int i;
-        // search for the automaton corresponding to the transitions in cmap
-        for (i = 0; i < count; i++) {
-          if (callMapPtr->trans[i] != cmap[i].tran) {
+        // search for the subgraph call corresponding to the transitions in autoCallStack
+        for (i = 0; i < depth; i++) {
+          if (callMapPtr->trans[i] != autoCallStack[i].tran) {
             break;
           }
         }
-        // if *cmap corresponds to transitionListHead then
+        // if autoCallStack corresponds to transitionList then
         // we have found the automaton ID
-        if (i == count) {
+        if (i == depth) {
           return id;
         }
       }
       id++;
       callMapPtr = callMapPtr->next;
     }
-    // if the automaton is not yet in the transitionList we add it
+    // if the subgraph call is not yet in the transitionList we add it
     callMapPtr = new struct transitionList;
-    callMapPtr->cnt = count;
+    callMapPtr->cnt = depth;
     callMapPtr->next = 0;
-    callMapPtr->trans = new Transition*[count];
-    for (int i = 0; i < count; i++) {
-      callMapPtr->trans[i] = cmap[i].tran;
+    callMapPtr->trans = new Transition*[depth];
+    for (int i = 0; i < depth; i++) {
+      callMapPtr->trans[i] = autoCallStack[i].tran;
     }
-
     if (transitionListTail) {
       transitionListTail->next = callMapPtr;
       transitionListTail = callMapPtr;
@@ -504,7 +513,7 @@ public:
 
   /**
    * search for information about a cycle
-   * used in case of exploration in debug mode
+   * used in case of exploration when loop check is enabled
    */
   void setIdentifyValue(int offset, int cntNode) {
     struct cycleNodeId **cnode = &headCycNodes;
@@ -810,7 +819,7 @@ public:
       } // condition de out
       if ((recursiveMode == LABEL) && setOut) {
         if ((automateMode == TRANMODE) && (prMode == PR_SEPARATION)) {
-          wordPtr = entreGO;
+          wordPtr = openingQuote;
           while (*wordPtr) {
             OUTPUTBUFFER[outBufferCnt++] = *wordPtr++;
           }
@@ -819,7 +828,7 @@ public:
             OUTPUTBUFFER[outBufferCnt++] = *wordPtr++;
           }
         } else {
-          wordPtr = entreGO;
+          wordPtr = openingQuote;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr++;
           }
@@ -861,7 +870,7 @@ public:
             }
           }
           //        if(recursiveMode == LABEL){
-          //          wordPtr = entreGO;while(*wordPtr)  INPUTBUFFER[inBufferCnt++] = *wordPtr++;
+          //          wordPtr = openingQuote;while(*wordPtr)  INPUTBUFFER[inBufferCnt++] = *wordPtr++;
           //          }
           wordPtr = sepR;
           while (*wordPtr) {
@@ -889,7 +898,7 @@ public:
             }
           }
           if (recursiveMode == LABEL) {
-            wordPtr = entreGO;
+            wordPtr = openingQuote;
             while (*wordPtr) {
               INPUTBUFFER[inBufferCnt++] = *wordPtr++;
             }
@@ -923,7 +932,7 @@ public:
       wordPtr = sepR;
       while (*wordPtr)
         INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-      wordPtr = entreGO;
+      wordPtr = openingQuote;
       while (*wordPtr)
         INPUTBUFFER[inBufferCnt++] = *wordPtr++;
     }
@@ -956,7 +965,7 @@ public:
     //        unichar *wwordPtr;
     Fst2Tag Tag;
     while (h) {
-      u_fprintf(foutput, "C%d%S", h->index, entreGO);
+      u_fprintf(foutput, "C%d%S", h->index, openingQuote);
       ePtrCnt = tPtrCnt = 0;
       for (i = 0; i < h->pathCnt; i++) {
         //        putInt(0,h->pathTagQueue[i].path);
@@ -978,7 +987,7 @@ public:
           }
         }
       }
-      if (outOneWord(entreGF) != 0) {
+      if (outOneWord(closingQuote) != 0) {
         return 1;
       }
       h = h->next;
@@ -1132,8 +1141,12 @@ public:
   }
 
   /**
-   * prints the invocation stacks,
+   * Prints the invocation stacks,
    * the path stack and the automaton stack
+   * hints :
+   * -1 aId means the automaton reached final state
+   * `trans_tag` are `tag_number` which is the ID of 
+   * the targeted automaton with marks describing the transition
    */
   void printStacks(int autoCallStackDepth) {
     int i;
@@ -1144,18 +1157,43 @@ public:
           invocStack[i].next);
     }
     u_printf("===== pathStack\n");
-    u_printf("i autoNo  stateNo tag\n");
+    u_printf("i call_id  stateNo tag\n");
     for (i = 0; i < pathIdx; i++) {
       u_printf("%d (%d ::%d)%d\n", i, pathStack[i].autoNo,
           pathStack[i].stateNo, pathStack[i].tag);
     }
     u_printf("===== autoCallStack\n"); 
-    u_printf("i  autoId  stateNb trans_tag\n");
+    u_printf("i  call_id  stateNb trans_tag\n");
     Transition *k;
     for (i = 0; i < autoCallStackDepth; i++) {
       k = autoCallStack[i].tran;
       u_printf("%d %d(%d ::%d)\n", i, autoCallStack[i].autoId,
           k->state_number, k->tag_number);
+    }
+  }
+
+  void printTransitionList () {
+    struct transitionList *callMapPtr;
+    callMapPtr = transitionListHead;
+    int cnt = 0;
+    while (callMapPtr) {
+      u_printf("list %d\n",cnt);
+      for (int i = 0; i < callMapPtr->cnt; i++) {
+        u_printf("depth %d trans_tag %d state %d\n",i,callMapPtr->trans[i]->tag_number,callMapPtr->trans[i]->state_number);
+      }
+      cnt++;
+      callMapPtr = callMapPtr->next;
+    }
+  }
+
+  void printAutoCallStack(int autoCallStackDepth) {
+    u_printf("===== autoCallStack\n"); 
+    u_printf("i  autoId  stateNb trans_tag\n");
+    Transition *k;
+    for (int i = 0; i < autoCallStackDepth; i++) {
+      k = autoCallStack[i].tran;
+      u_printf("%d %d(%d ::%d)\n", i, autoCallStack[i].autoId,k->state_number
+          , k->tag_number);
     }
   }
 
@@ -1183,13 +1221,13 @@ private:
 
         recursiveMode(STOP), display_control(FULL),
         traitAuto(SINGLE),
-        niveau_traite_mot(1), // unit of box is word
+        wordMode(1), // unit of box is word
         depthDebug(0),
 
         saveSep(u_null_string), sepL(u_null_string),
         sepR(u_null_string), sep1(u_null_string), stopSignal(
-            u_null_string), saveEntre(u_null_string), entreGO(
-            u_null_string), entreGF(u_null_string),
+            u_null_string), saveEntre(u_null_string), openingQuote(
+            u_null_string), closingQuote(u_null_string),
 
         autoCallStack(NULL), transitionListHead(NULL), transitionListTail(NULL),
 
@@ -1339,7 +1377,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
   case GRAPH: {    // explore each graph separately
     if (enableLoopCheck) {
       listOut = 0;
-      niveau_traite_mot = 1;
+      wordMode = 1;
       exploreSubAuto(1); // mark loop path start nodes
       printSubGraphCycle();
     }
@@ -1545,7 +1583,7 @@ int CFstApp::exploreSubAuto(int startAutoNo) {
   numberOfOutLine = 0; // reset output line counter
 
   autoCallStack[0].tran = &startCallTr;
-  int callSubGraphId = callIdentifyId(autoCallStack, 1);
+  int callSubGraphId = callIdentifyId(1);
   autoCallStack[0].autoId = callSubGraphId;
 
   invocStackIdx = 0;
@@ -1574,7 +1612,9 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
   int tmp;
   int nextState;
   int callId;
-  //printStacks(autoDepth);
+
+  printStacks(autoDepth);
+  printTransitionList();
 
   if (listOut && wasCycleNode(automatonNo, stateNo)) {
     pathStack[pathIdx - 1].stateNo |= LOOP_PATH_MARK;
@@ -1718,7 +1758,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
       }
       autoCallStack[autoDepth].tran = trans; // add the transition to the stack
       if (scanner == autoDepth) { // didn't find a recursive call
-        callId = callIdentifyId(autoCallStack, autoDepth + 1);
+        callId = callIdentifyId(autoDepth + 1);
       } else { // found a recursive call
         pathStack[pathIdx].tag = 0;
         pathStack[pathIdx].autoNo = autoCallStack[scanner].autoId;
@@ -1728,8 +1768,11 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
         if (!isCyclePath(stateDepth)) { 
           // no cycle was found we identify the automaton
           // and continue the exploration
-          callId = callIdentifyId(autoCallStack, autoDepth + 1);
+          callId = callIdentifyId(autoDepth + 1);
+          //u_printf("FALSE LOOP is cycle path\n");
+          //printStacks(autoDepth);
           --pathIdx;
+          //fatal_error("FALSE LOOP\n");
           goto noCycle;
           // previous error
           //fatal_error("failed to find the recursive call\n");
@@ -1743,6 +1786,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
       pathStack[pathIdx].stateNo = a->initial_states[tmp];
       ++pathIdx;
       autoCallStack[autoDepth].autoId = callId;
+
 
       invocStackIdx++;
       invocStack[invocStackIdx].aId = callId;
@@ -1863,7 +1907,7 @@ int CFstApp::outWordsOfGraph(int depth) {
     }
     //wordPtrrintf(L"{%d,%x,%x,%s,%s}",s,pathStack[s].stateNo,pathStack[s].tag,ep,tp);
     markCtlChar = 0;
-    if (!(pathStack[s].stateNo & STOP_PATH_MARK) && !niveau_traite_mot && (*ep == '<')) {
+    if (!(pathStack[s].stateNo & STOP_PATH_MARK) && !wordMode && (*ep == '<')) {
       chp = ep + 1;
       while (*chp) {
         chp++;
@@ -1903,7 +1947,7 @@ int CFstApp::outWordsOfGraph(int depth) {
             }
           }
 
-          if (niveau_traite_mot) {
+          if (wordMode) {
             if (ePtrCnt || tPtrCnt) {
               if (outOneWord(0) != 0) {
                 return 1;
@@ -1932,18 +1976,18 @@ int CFstApp::outWordsOfGraph(int depth) {
         }
         while (*sp)
           INPUTBUFFER[inBufferCnt++] = *sp++;
-        wordPtr = entreGF;
+        wordPtr = closingQuote;
         while (*wordPtr)
           INPUTBUFFER[inBufferCnt++] = *wordPtr++;
         markPreCtlChar = markCtlChar;
         continue;
       } else if (recursiveMode == SYMBOL) { // SYMBOL
-        if (tPtrCnt && niveau_traite_mot) {
+        if (tPtrCnt && wordMode) {
           if (outOneWord(0) != 0) {
             return 1;
           }
         }
-        wordPtr = entreGO;
+        wordPtr = openingQuote;
         while (*wordPtr) {
           if (automateMode == TRANMODE) {
             TBuff[tPtrCnt++] = *wordPtr;
@@ -1986,7 +2030,7 @@ int CFstApp::outWordsOfGraph(int depth) {
           --tPtrCnt;
         }
         --ePtrCnt;
-        wordPtr = entreGF;
+        wordPtr = closingQuote;
         while (*wordPtr) {
           if (automateMode == TRANMODE) {
             TBuff[tPtrCnt++] = *wordPtr;
@@ -2005,7 +2049,7 @@ int CFstApp::outWordsOfGraph(int depth) {
         }
         if (!(pathStack[s].stateNo & STOP_PATH_MARK)) {
           // mark the stop
-          wordPtr = entreGO;
+          wordPtr = openingQuote;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr;
             if ((automateMode == TRANMODE) && (prMode
@@ -2024,7 +2068,7 @@ int CFstApp::outWordsOfGraph(int depth) {
           }
         }
         if (pathStack[s].stateNo & STOP_PATH_MARK) {
-          wordPtr = entreGF;
+          wordPtr = closingQuote;
           while (*wordPtr) {
             if (automateMode == TRANMODE) {
               TBuff[tPtrCnt++] = *wordPtr;
@@ -2041,7 +2085,7 @@ int CFstApp::outWordsOfGraph(int depth) {
             return 1;
           }
         } else {
-          if (niveau_traite_mot) {
+          if (wordMode) {
             if (ePtrCnt || tPtrCnt) {
               if (outOneWord(0) != 0) {
                 return 1;
@@ -2131,7 +2175,7 @@ int CFstApp::outWordsOfGraph(int depth) {
         TBuff[tPtrCnt++] = *tp++;
       }
     }
-    if (niveau_traite_mot) {
+    if (wordMode) {
       if (ePtrCnt || tPtrCnt) {
         if (outOneWord(0) != 0) {
           return 1;
@@ -2249,7 +2293,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       aa.verboseMode = 1;
       break;
     case 'm':
-      aa.niveau_traite_mot = 0;
+      aa.wordMode = 0;
       break;
     case 'r':
       switch (argv[iargIndex][2]) {
@@ -2287,12 +2331,12 @@ int main_Fst2List(int argc, char* const argv[]) {
       }
       *wordPtr2 = 0;
 
-      aa.entreGO = aa.saveEntre;
+      aa.openingQuote = aa.saveEntre;
       if (wordPtr3) {
         *wordPtr3++ = 0;
-        aa.entreGF = wordPtr3;
+        aa.closingQuote = wordPtr3;
       } else
-        aa.entreGF = wordPtr2;
+        aa.closingQuote = wordPtr2;
       break;
     case 'c':
       iargIndex++;
