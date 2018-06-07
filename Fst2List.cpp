@@ -110,10 +110,12 @@ static unichar *uascToNum(unichar *uasc, int *val);
 #define STOP_PATH_MARK  0x40000000 // equals 1073741824
 #define LOOP_NODE_MARK  0x80      // equals 128
 
-// mask to have only the state ID without the marks
+// mask STOP_PATH_MARK and LOOP_PATH_MARK
 #define PATHID_MASK    0x1FFFFFFF // equals 536870911
+// mask STOP_PATH_MARK, LOOP_PATH_MARK and SUBGRAPH_PATH_MARK
 #define SUB_ID_MASK    0x0FFFFFFF // equals 268435455
-#define CTL_MASK    0xE0000000    // equals 3758096384
+// unused mask
+//#define CTL_MASK       0xE0000000    // equals 3758096384
 
 #define DIS_LINE_LIMIT_MAX  4096
 #define MAX_CHANGE_SYMBOL_SIZE 32
@@ -174,8 +176,8 @@ static const char *StrMemLack = "allocation of memory for cycle data failed";
 
 /* for stack of states, i.e. path */
 struct pathStack_t {
-  int autoNo;        // automaton's call ID
-  int stateNo;       // state's number
+  int stackStateID;
+  int stateNo;      // state's number
   int tag;
 };
 
@@ -209,15 +211,16 @@ public:
   void loadGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fname);
   int exploreSubAuto(int startSubAutoNum);
   int getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fst2_file_name);
-  int findCycleSubGraph(int autoNo, int autodep, int testState, int depthState);
+  int findCycleSubGraph(int stackStateID, int autodep, int testState, int depthState);
   int outWordsOfGraph(int depth);
 
   // the stack of invocations of subgraphs
+  // also contains the sign of exit from a subgraph (-1)
   // history of invocation for the current path
   // invocations are popped only when backtracking to explore the next path
   struct {
-    int aId;    // automaton ID
-    int next;   // next state
+    int stackStateID;    // automaton ID
+    int targetState; 
   } invocStack[2048];
   int invocStackIdx;  // invocation stack depth
 
@@ -356,17 +359,18 @@ public:
 
   /**
    * Call stack for the currently opened automata
-   * Identifies each invocation with the transition
-   * and a number identifying the calling automaton
    */
   struct autoCallStack_t {
-    Transition* tran; // linked list of transitions
-    int autoId;
+    // transition that invoked the current subgraph
+    Transition* tran;
+    // identifies the state of autoCallStack when `tran` is on top
+    int stackStateID; 
   }*autoCallStack;
 
   /**
-   * list of lists of transitions
-   * each list corresponds to a subgraph call
+   * Linked list of lists of transitions
+   * each transitionList identifies a state of autoCallStack
+   * they're all pairwise distinct
    */
   struct transitionList {
     int cnt;
@@ -482,7 +486,7 @@ public:
   unichar *getLabelNumber(unichar*aa, int numOfPath, int &flag, int curidx, int setflag) {
     struct cycleNodeId *cnode = headCycNodes;
     int searchState = pathStack[curidx].stateNo & PATHID_MASK;
-    int searchStateAuto = pathStack[curidx].autoNo;
+    int searchStateAuto = pathStack[curidx].stackStateID;
     int searchTag = pathStack[curidx].tag;
     while (cnode) {
       if ((searchStateAuto == cnode->autoNo) && (searchState == cnode->stateNo) && (searchTag == cnode->tag)) {
@@ -493,7 +497,7 @@ public:
     if (!cnode) {
       error("%d/%d stack\n", numOfPath, curidx);
       for (int i = 0; i < pathIdx; i++) {
-        error("%d : (%08x:%08x) : %08x\n", i, pathStack[i].autoNo, pathStack[i].stateNo, pathStack[i].tag);
+        error("%d : (%08x:%08x) : %08x\n", i, pathStack[i].stackStateID, pathStack[i].stateNo, pathStack[i].tag);
       }
 
       printPathNames(U_STDERR);
@@ -519,7 +523,7 @@ public:
     struct cycleNodeId **cnode = &headCycNodes;
 
     int cycStateNo = pathStack[cntNode - 1].stateNo & PATHID_MASK;
-    int cycStateAutoNo = pathStack[cntNode - 1].autoNo;
+    int cycStateAutoNo = pathStack[cntNode - 1].stackStateID;
     int cycStateTag = pathStack[cntNode - 1].tag;
     while (*cnode) {
       if (((*cnode)->autoNo == cycStateAutoNo) && ((*cnode)->stateNo == cycStateNo) && ((*cnode)->tag == cycStateTag)) {
@@ -572,8 +576,8 @@ public:
     while (*h) {
       if ((*h)->pathCnt == numOfPath) {
         for (i = 0; i < numOfPath; i++) {
-          if ((pathStack[offset].autoNo
-              == (*h)->pathTagQueue[i].autoNo)
+          if ((pathStack[offset].stackStateID
+              == (*h)->pathTagQueue[i].stackStateID)
               && ((pathStack[offset].stateNo & PATHID_MASK)
                   == (*h)->pathTagQueue[i].stateNo)
               && (pathStack[offset].tag
@@ -587,8 +591,8 @@ public:
                 != (*h)->pathTagQueue[i].stateNo)
                 || (pathStack[offset + j].tag
                     != (*h)->pathTagQueue[i].tag)
-                || (pathStack[offset + j].autoNo
-                    != (*h)->pathTagQueue[i].autoNo)) {
+                || (pathStack[offset + j].stackStateID
+                    != (*h)->pathTagQueue[i].stackStateID)) {
               break;
             }
             if (++i >= numOfPath) {
@@ -622,7 +626,7 @@ public:
       (*h)->pathTagQueue[i].stateNo = pathStack[i + offset].stateNo
           & PATHID_MASK;
       (*h)->pathTagQueue[i].tag = pathStack[i + offset].tag;
-      (*h)->pathTagQueue[i].autoNo = pathStack[i + offset].autoNo;
+      (*h)->pathTagQueue[i].stackStateID = pathStack[i + offset].stackStateID;
 
     }
     (*h)->pathCnt = numOfPath;
@@ -700,10 +704,10 @@ public:
   int isCyclePath(int depth) {
     int scanner; 
     int curId = pathStack[pathIdx - 1].stateNo & PATHID_MASK;
-    int curAutoId = pathStack[pathIdx - 1].autoNo;
+    int curAutoId = pathStack[pathIdx - 1].stackStateID;
 
     for (scanner = 0; scanner < pathIdx - 1; scanner++) {
-      if (((pathStack[scanner].stateNo & PATHID_MASK) == curId) && (pathStack[scanner].autoNo == curAutoId)) { // find recursive path
+      if (((pathStack[scanner].stateNo & PATHID_MASK) == curId) && (pathStack[scanner].stackStateID == curAutoId)) { // find recursive path
         switch (recursiveMode) {
         case LABEL:
           if (listOut) {
@@ -1144,32 +1148,33 @@ public:
    * Prints the invocation stacks,
    * the path stack and the automaton stack
    * hints :
-   * -1 aId means the automaton reached final state
+   * -1 stackStateID means the automaton reached final state
    * `trans_tag` are `tag_number` which is the ID of 
    * the targeted automaton with marks describing the transition
    */
   void printStacks(int autoCallStackDepth) {
     int i;
     u_printf("===== invocStack\n");
-    u_printf("i   aId  next_state\n");
+    u_printf("i stackStateID next_state\n");
     for (i = 0; i <= invocStackIdx; i++) {
-      u_printf("%d :: %d :: %d\n", i, invocStack[i].aId,
-          invocStack[i].next);
+      u_printf("%d :: %d :: %d\n", i, invocStack[i].stackStateID,
+          invocStack[i].targetState);
     }
     u_printf("===== pathStack\n");
-    u_printf("i call_id  stateNo tag\n");
+    u_printf("i stackStateID stateNo tag\n");
     for (i = 0; i < pathIdx; i++) {
-      u_printf("%d (%d ::%d)%d\n", i, pathStack[i].autoNo,
+      u_printf("%d (%d ::%d)%d\n", i, pathStack[i].stackStateID,
           pathStack[i].stateNo, pathStack[i].tag);
     }
     u_printf("===== autoCallStack\n"); 
-    u_printf("i  call_id  stateNb trans_tag\n");
+    u_printf("i stackStateID stateNb trans_tag\n");
     Transition *k;
     for (i = 0; i < autoCallStackDepth; i++) {
       k = autoCallStack[i].tran;
-      u_printf("%d %d(%d ::%d)\n", i, autoCallStack[i].autoId,
+      u_printf("%d %d(%d ::%d)\n", i, autoCallStack[i].stackStateID,
           k->state_number, k->tag_number);
     }
+    u_printf("\n");
   }
 
   void printTransitionList () {
@@ -1188,18 +1193,18 @@ public:
 
   void printAutoCallStack(int autoCallStackDepth) {
     u_printf("===== autoCallStack\n"); 
-    u_printf("i  autoId  stateNb trans_tag\n");
+    u_printf("i  stackStateID  stateNb trans_tag\n");
     Transition *k;
     for (int i = 0; i < autoCallStackDepth; i++) {
       k = autoCallStack[i].tran;
-      u_printf("%d %d(%d ::%d)\n", i, autoCallStack[i].autoId,k->state_number
+      u_printf("%d %d(%d ::%d)\n", i, autoCallStack[i].stackStateID,k->state_number
           , k->tag_number);
     }
   }
 
   void printPathStack() {
     for (int i = 0; i < pathIdx; i++)
-      u_fprintf(foutput, "%d (%d ::%d)%d\n", i, pathStack[i].autoNo,
+      u_fprintf(foutput, "%d (%d ::%d)%d\n", i, pathStack[i].stackStateID,
           pathStack[i].stateNo, pathStack[i].tag);
   }
 
@@ -1582,15 +1587,16 @@ int CFstApp::exploreSubAuto(int startAutoNo) {
   startCallTr.state_number = 0;
   numberOfOutLine = 0; // reset output line counter
 
+  // start the exploration on a 'fake' transition to the first automaton
   autoCallStack[0].tran = &startCallTr;
   int callSubGraphId = callIdentifyId(1);
-  autoCallStack[0].autoId = callSubGraphId;
+  autoCallStack[0].stackStateID = callSubGraphId;
 
   invocStackIdx = 0;
-  invocStack[invocStackIdx].aId = callSubGraphId;
-  invocStack[invocStackIdx].next = 0;
+  invocStack[invocStackIdx].stackStateID = callSubGraphId;
+  invocStack[invocStackIdx].targetState = 0;
   pathIdx = 0;
-  pathStack[pathIdx].autoNo = callSubGraphId;
+  pathStack[pathIdx].stackStateID = callSubGraphId;
   pathStack[pathIdx].stateNo = a->initial_states[startAutoNo];
   pathStack[pathIdx].tag = 0;
   pathIdx++;
@@ -1605,18 +1611,20 @@ int CFstApp::exploreSubAuto(int startAutoNo) {
 }
 
 /**
- *  find cycle call
+ * Explore automaton recursively to find loops
+ * When backtracking, autoCallStack doesn't push the 
+ * stack call of the automaton it returns to
  */
-int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int stateDepth) {
+int CFstApp::findCycleSubGraph(int stackStateID, int autoDepth, int stateNo, int stateDepth) {
   int skipCnt = 0;
   int tmp;
   int nextState;
   int callId;
 
   printStacks(autoDepth);
-  printTransitionList();
+  //printTransitionList();
 
-  if (listOut && wasCycleNode(automatonNo, stateNo)) {
+  if (listOut && wasCycleNode(stackStateID, stateNo)) {
     pathStack[pathIdx - 1].stateNo |= LOOP_PATH_MARK;
   }
   if (pathIdx >= PATH_STACK_MAX) {
@@ -1650,7 +1658,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
       skipCnt = 0; // find next state
       int i;
       for (i = invocStackIdx; i >= 0; --i) {
-        if (invocStack[i].aId == -1) {
+        if (invocStack[i].stackStateID == -1) {
           skipCnt++;
         }
         else {
@@ -1667,15 +1675,15 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
         error("unwanted state happened");
         return 1;
       }
-      int tauto = invocStack[i].aId;
-      nextState = invocStack[i].next;
+      int tauto = invocStack[i].stackStateID;
+      nextState = invocStack[i].targetState;
       invocStackIdx++;
-      invocStack[invocStackIdx].aId = -1;
-      invocStack[invocStackIdx].next = 0;
+      invocStack[invocStackIdx].stackStateID = -1;
+      invocStack[invocStackIdx].targetState = 0;
 
       pathStack[pathIdx].stateNo = nextState;
       pathStack[pathIdx].tag = 0;
-      pathStack[pathIdx].autoNo = tauto;
+      pathStack[pathIdx].stackStateID = tauto;
       pathIdx++;
       if (findCycleSubGraph(tauto, autoDepth - 1, nextState, stateDepth + 1) != 0) {
         return 1;
@@ -1687,7 +1695,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
         totalPath++;
         pathStack[pathIdx].stateNo = STOP_PATH_MARK;
         pathStack[pathIdx].tag = 0;
-        pathStack[pathIdx].autoNo = automatonNo;
+        pathStack[pathIdx].stackStateID = stackStateID;
         pathIdx++;
         if (outWordsOfGraph(pathIdx) != 0) {
           return 1;
@@ -1701,7 +1709,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
     if (trans->tag_number & STOP_PATH_MARK) {
       if (listOut) {
         totalPath++;
-        pathStack[pathIdx].autoNo = automatonNo;
+        pathStack[pathIdx].stackStateID = stackStateID;
         pathStack[pathIdx].stateNo = STOP_PATH_MARK;
         pathStack[pathIdx].tag = trans->tag_number & ~STOP_PATH_MARK;
         pathIdx++;
@@ -1714,11 +1722,11 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
     }
     if (display_control == GRAPH) {
       if (listOut) {
-        pathStack[pathIdx].autoNo = automatonNo;
+        pathStack[pathIdx].stackStateID = stackStateID;
         pathStack[pathIdx].stateNo = trans->state_number;
         pathStack[pathIdx].tag = trans->tag_number;
         pathIdx++;
-        if (findCycleSubGraph(automatonNo, autoDepth, trans->state_number, stateDepth + 1) != 0) {
+        if (findCycleSubGraph(stackStateID, autoDepth, trans->state_number, stateDepth + 1) != 0) {
           return 1;
         }
         pathIdx--;
@@ -1734,7 +1742,7 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
 
           numOfIgnore[trans->tag_number & SUB_ID_MASK]++;
 
-          pathStack[pathIdx].autoNo = automatonNo;
+          pathStack[pathIdx].stackStateID = stackStateID;
           pathStack[pathIdx].tag = trans->tag_number;
           pathStack[pathIdx].stateNo = STOP_PATH_MARK;
           pathIdx++;
@@ -1761,15 +1769,15 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
         callId = callIdentifyId(autoDepth + 1);
       } else { // found a recursive call
         pathStack[pathIdx].tag = 0;
-        pathStack[pathIdx].autoNo = autoCallStack[scanner].autoId;
+        pathStack[pathIdx].stackStateID = autoCallStack[scanner].stackStateID;
         pathStack[pathIdx].stateNo = a->initial_states[tmp] | LOOP_PATH_MARK;
 
         ++pathIdx;
         if (!isCyclePath(stateDepth)) { 
-          // no cycle was found we identify the automaton
+          // no cycle was found we identify call stack
           // and continue the exploration
           callId = callIdentifyId(autoDepth + 1);
-          //u_printf("FALSE LOOP is cycle path\n");
+          u_printf("FALSE LOOP\n");
           //printStacks(autoDepth);
           --pathIdx;
           //fatal_error("FALSE LOOP\n");
@@ -1782,15 +1790,14 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
       }
       noCycle:
       pathStack[pathIdx].tag = 0;
-      pathStack[pathIdx].autoNo = callId;
+      pathStack[pathIdx].stackStateID = callId;
       pathStack[pathIdx].stateNo = a->initial_states[tmp];
       ++pathIdx;
-      autoCallStack[autoDepth].autoId = callId;
-
+      autoCallStack[autoDepth].stackStateID = callId;
 
       invocStackIdx++;
-      invocStack[invocStackIdx].aId = callId;
-      invocStack[invocStackIdx].next = trans->state_number;
+      invocStack[invocStackIdx].stackStateID = callId;
+      invocStack[invocStackIdx].targetState = trans->state_number;
       if (findCycleSubGraph(callId, autoDepth + 1, a->initial_states[tmp], stateDepth + 1) != 0) {
         return 1;
       }
@@ -1800,9 +1807,9 @@ int CFstApp::findCycleSubGraph(int automatonNo, int autoDepth, int stateNo, int 
     }
     pathStack[pathIdx].stateNo = trans->state_number;
     pathStack[pathIdx].tag = trans->tag_number;
-    pathStack[pathIdx].autoNo = automatonNo;
+    pathStack[pathIdx].stackStateID = stackStateID;
     ++pathIdx;
-    if (findCycleSubGraph(automatonNo, autoDepth, trans->state_number, stateDepth + 1) != 0) {
+    if (findCycleSubGraph(stackStateID, autoDepth, trans->state_number, stateDepth + 1) != 0) {
       return 1;
     }
     pathIdx--;
@@ -1818,8 +1825,8 @@ void CFstApp::printPathNames(U_FILE *f) {
   int i;
   u_fprintf(f, "#");
   for (i = 0; i < pathIdx; i++) {
-    if (pathStack[i].autoNo != pidx) { // skip the same value
-      pidx = pathStack[i].autoNo;
+    if (pathStack[i].stackStateID != pidx) { // skip the same value
+      pidx = pathStack[i].stackStateID;
       u_fprintf(f, "%S>", a->graph_names[pidx]);
     }
   }
