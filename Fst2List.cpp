@@ -176,7 +176,8 @@ static const char *StrMemLack = "allocation of memory for cycle data failed";
 
 /* for stack of states, i.e. path */
 struct pathStack_t {
-  int stackStateID;
+  // saves the state of the call stack (i.e. autoCallStack) at this given point
+  int stackStateID; 
   int stateNo;      // state's number
   int tag;
 };
@@ -213,6 +214,7 @@ public:
   int getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fst2_file_name);
   int findCycleSubGraph(int stackStateID, int autodep, int testState, int depthState);
   int outWordsOfGraph(int depth);
+  int checkAutoCallStack(int autoCallStackDepth);
 
   // the stack of invocations of subgraphs
   // also contains the sign of exit from a subgraph (-1)
@@ -697,7 +699,7 @@ public:
   }
 
   /**
-   * detect a recursive call
+   * Detect a recursive call
    * increment 'totalLoop' if a loop is found
    * return 1 if a cycle is found, else 0
    */
@@ -888,14 +890,14 @@ public:
           wordPtr = sepL;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-	  }
+	        }
           for (int i = 0; i < ePtrCnt; i++) {
             INPUTBUFFER[inBufferCnt++] = EBuff[i];
-	  }
+	        }
           wordPtr = saveSep;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-	  }
+	        }
           if (automateMode == TRANMODE) {
             for (int i = 0; i < tPtrCnt; i++) {
               INPUTBUFFER[inBufferCnt++] = TBuff[i];
@@ -1621,6 +1623,7 @@ int CFstApp::findCycleSubGraph(int stackStateID, int autoDepth, int stateNo, int
   int nextState;
   int callId;
 
+  u_printf("::findCycleSubGraph\n");
   printStacks(autoDepth);
   //printTransitionList();
 
@@ -1685,6 +1688,7 @@ int CFstApp::findCycleSubGraph(int stackStateID, int autoDepth, int stateNo, int
       pathStack[pathIdx].tag = 0;
       pathStack[pathIdx].stackStateID = tauto;
       pathIdx++;
+      u_printf("--Backtracking\n");
       if (findCycleSubGraph(tauto, autoDepth - 1, nextState, stateDepth + 1) != 0) {
         return 1;
       }
@@ -1706,6 +1710,17 @@ int CFstApp::findCycleSubGraph(int stackStateID, int autoDepth, int stateNo, int
   } // end if terminal node
 
   for (Transition *trans = a->states[stateNo]->transitions; trans != 0; trans = trans->next) {
+    // print transitions before exploring it
+    /*
+    u_printf("transitions available : \n");
+    for(Transition *t = a->states[stateNo]->transitions; t != 0; t = t-> next) {
+      u_printf("%d::%d\n",t->tag_number,t->state_number);
+    }
+    */
+    checkAutoCallStack(autoDepth);
+
+    //u_printf("next trans\n");
+    //u_printf("autoDepth %d\n",autoDepth);
     if (trans->tag_number & STOP_PATH_MARK) {
       if (listOut) {
         totalPath++;
@@ -1765,6 +1780,8 @@ int CFstApp::findCycleSubGraph(int stackStateID, int autoDepth, int stateNo, int
         }
       }
       autoCallStack[autoDepth].tran = trans; // add the transition to the stack
+      u_printf("adding trans %d to autoCallStack at depth %d\n", trans->tag_number,autoDepth);
+      printStacks(autoDepth);
       if (scanner == autoDepth) { // didn't find a recursive call
         callId = callIdentifyId(autoDepth + 1);
       } else { // found a recursive call
@@ -1798,9 +1815,14 @@ int CFstApp::findCycleSubGraph(int stackStateID, int autoDepth, int stateNo, int
       invocStackIdx++;
       invocStack[invocStackIdx].stackStateID = callId;
       invocStack[invocStackIdx].targetState = trans->state_number;
+      //printStacks(autoDepth);
+      u_printf("--Pushing subgraph\n");
+      u_printf("trans %d\n",trans->tag_number);
       if (findCycleSubGraph(callId, autoDepth + 1, a->initial_states[tmp], stateDepth + 1) != 0) {
         return 1;
       }
+      u_printf("--After\n");
+      printStacks(autoDepth);
       --pathIdx;
       --invocStackIdx;
       continue;
@@ -1809,11 +1831,42 @@ int CFstApp::findCycleSubGraph(int stackStateID, int autoDepth, int stateNo, int
     pathStack[pathIdx].tag = trans->tag_number;
     pathStack[pathIdx].stackStateID = stackStateID;
     ++pathIdx;
+    u_printf("--Continue exploration\n");
     if (findCycleSubGraph(stackStateID, autoDepth, trans->state_number, stateDepth + 1) != 0) {
       return 1;
     }
     pathIdx--;
   } // end for each transition
+  u_printf("findCycleSubGraph::\n");
+  return 0;
+}
+
+/**
+ * Check the state of autoCallStack is coherent
+ * with the last call in invocStack
+ * Used in findCycleSubGraph to fix
+ * previous call stack being erased
+ * before backtracking
+ */
+int CFstApp::checkAutoCallStack(int autoCallStackDepth) {
+  int stackStateID = invocStack[invocStackIdx].stackStateID;
+  struct transitionList *transitionListPtr;
+  transitionListPtr = transitionListHead;
+  int count = 0;
+  while (transitionListPtr) { // search for the transitionList
+    if (count == stackStateID) { // when we found it
+      int i;
+      for (i = 0; i < transitionListPtr->cnt; i++) {
+        if( autoCallStack[i].tran != transitionListPtr->trans[i] ) {
+          // correct autoCallStack if it's different
+          autoCallStack[i].tran = transitionListPtr->trans[i];
+        }
+      }
+      autoCallStack[i-1].stackStateID = stackStateID;
+    }
+    count++;
+    transitionListPtr = transitionListPtr->next;
+  }
   return 0;
 }
 
