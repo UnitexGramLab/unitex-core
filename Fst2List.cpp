@@ -701,6 +701,8 @@ public:
   /**
    * Detect a recursive call
    * increment 'totalLoop' if a loop is found
+   * Check if there is a recursion using pathStack
+   * as a history of exploration
    * return 1 if a cycle is found, else 0
    */
   int isCyclePath(int depth) {
@@ -1717,7 +1719,7 @@ int CFstApp::findCycleSubGraph(int stackStateID, int autoDepth, int stateNo, int
       u_printf("%d::%d\n",t->tag_number,t->state_number);
     }
     */
-    checkAutoCallStack(autoDepth);
+    //checkAutoCallStack(autoDepth);
 
     //u_printf("next trans\n");
     //u_printf("autoDepth %d\n",autoDepth);
@@ -1790,11 +1792,12 @@ int CFstApp::findCycleSubGraph(int stackStateID, int autoDepth, int stateNo, int
         pathStack[pathIdx].stateNo = a->initial_states[tmp] | LOOP_PATH_MARK;
 
         ++pathIdx;
+        // check for a recursion that might not have been detected
+        // in autoCallStack due to backtracking
         if (!isCyclePath(stateDepth)) { 
           // no cycle was found we identify call stack
           // and continue the exploration
           callId = callIdentifyId(autoDepth + 1);
-          u_printf("FALSE LOOP\n");
           //printStacks(autoDepth);
           --pathIdx;
           //fatal_error("FALSE LOOP\n");
