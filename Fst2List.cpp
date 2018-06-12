@@ -39,43 +39,43 @@
 
 namespace unitex {
 
-const char* usage_Fst2List = R"(
-    Usage:
-        Fst2List [-o <file>][-p (s|f|d)][-(a|t) (s|m)] [-m] [-d] [-f (s|a)] [--io_separator <str>] [--stop_mark <str>][-s <str>] [-r (s|l|x) <str>] [-l <line#>] [-i <subgraphname>]... [-c SS=<0xXXXX>]... <fname>
-          
-        <fname>: input file name with extension ".fst2"
-        -S, --print: display result on standard output. Exclusive with -o
-        -o <file>, --output <file>: if this option and -S are not used, save paths in "<file>lst.txt"
-        -(a|t) (s|m), --(ignore_outputs|allow_outputs) (s|m)
-            a: ignore grammars outputs (default)
-            t: take into accout the grammars outputs
-            s: the grammar has only one initial state (default)
-            m: the grammar has several initial states. This mode is useful in Korean
-        -l <line>, --limit <line>: maximum number of lines to be printed in the output file
-        -i <subgraphname>..., --stop_subgraph <subgraphname>... 
-            indicates that the recursive exploration must end when the program enters in graph <subgraphname>. 
-            This parameter can be used several times in order to specify several stop graphs
-        -p (s|f|d), --paths_print_mode (s|f|d)
-            s: displays paths graph by graph 
-            f: (default) displays global paths;
-            d: displays global paths with information on nested graph calls
-        -c <SS>=<0xXXXX>...: replaces symbol <SS> when it appears between angle brackets 
-            by the Unicode character whose hexadecimal number is <0xXXXX>
-        -s <L[,R]>: specifies the left (L) and right (R) delimiters that will enclose items. By default, no delimiters are specified
-        -s0, --io_separator <str>: if the program must take outputs into account (-t), this parameter specifies
-            the sequence <str> that will be inserted between input and output. By default, there is no separator.
-            Prefer the long option --io_separator, the short option -s0 is being deprecated
-        -f (a|s): if the program must take outputs into account (-t), this parameter specifies the format
-            of the lines that will be generated: in0 in1 out0 out1 (s) or in0 out0 in1 out1 (a). The default value is s
-            default value is 's'
-        -ss, --stop_mark <stop>: set <stop> as the mark of stop exploration at "<stop>". The default value is null.
-            Prefer the long option --stop_mark, the short option -ss is being deprecated
-        -m, --word_mode: mode special for description with alphabet
-        -d, --disable_loop_check: faster execution at the cost of information about loops
-        -v, --verbose: prints information during the process
-        -r (s|l|x) <L[,R]>: enclose loops in L and R strings as in (c0|...|cn) by Lc0|..|cnR : default null
-        -V, --only_verify_arguments: only verify arguments syntax and exit
-        -h, --help: display this help and exit)";
+const char* usage_Fst2List =
+    "Usage:\n"
+        "Fst2List [-o <file>][-p (s|f|d)][-(a|t) (s|m)] [-m] [-d] [-f (s|a)] [--io_separator <str>] [--stop_mark <str>][-s <str>] [-r (s|l|x) <str>] [-l <line#>] [-i <subgraphname>]... [-c SS=<0xXXXX>]... <fname>\r\n"
+
+        "<fname>: input file name with extension \".fst2\"\r\n"
+        "-S, --print: display result on standard output. Exclusive with -o\r\n"
+        "-o <file>, --output <file>: if this option and -S are not used, save paths in \"<file>lst.txt\"\r\n"
+        "-(a|t) (s|m), --(ignore_outputs|allow_outputs) (s|m)\r\n"
+        "    a: ignore grammars outputs (default)\r\n"
+        "    t: take into accout the grammars outputs\r\n"
+        "    s: the grammar has only one initial state (default)\r\n"
+        "    m: the grammar has several initial states. This mode is useful in Korean\r\n"
+        "-l <line>, --limit <line>: maximum number of lines to be printed in the output file\r\n"
+        "-i <subgraphname>..., --stop_subgraph <subgraphname>... \r\n"
+        "    indicates that the recursive exploration must end when the program enters in graph <subgraphname>. \r\n"
+        "    This parameter can be used several times in order to specify several stop graphs\r\n"
+        "-p (s|f|d), --paths_print_mode (s|f|d)\r\n"
+        "    s: displays paths graph by graph \r\n"
+        "    f: (default) displays global paths;\r\n"
+        "    d: displays global paths with information on nested graph calls\r\n"
+        "-c <SS>=<0xXXXX>...: replaces symbol <SS> when it appears between angle brackets \r\n"
+        "    by the Unicode character whose hexadecimal number is <0xXXXX>\r\n"
+        "-s <L[,R]>: specifies the left (L) and right (R) delimiters that will enclose items. By default, no delimiters are specified\r\n"
+        "-s0, --io_separator <str>: if the program must take outputs into account (-t), this parameter specifies\r\n"
+        "    the sequence <str> that will be inserted between input and output. By default, there is no separator.\r\n"
+        "    Prefer the long option --io_separator, the short option -s0 is being deprecated\r\n"
+        "-f (a|s): if the program must take outputs into account (-t), this parameter specifies the format\r\n"
+        "    of the lines that will be generated: in0 in1 out0 out1 (s) or in0 out0 in1 out1 (a). The default value is s\r\n"
+        "    default value is 's'\r\n"
+        "-ss, --stop_mark <stop>: set <stop> as the mark of stop exploration at \"<stop>\". The default value is null.\r\n"
+        "    Prefer the long option --stop_mark, the short option -ss is being deprecated\r\n"
+        "-m, --word_mode: mode special for description with alphabet\r\n"
+        "-d, --disable_loop_check: faster execution at the cost of information about loops\r\n"
+        "-v, --verbose: prints information during the process\r\n"
+        "-r (s|l|x) <L[,R]>: enclose loops in L and R strings as in (c0|...|cn) by Lc0|..|cnR : default null\r\n"
+        "-V, --only_verify_arguments: only verify arguments syntax and exit\r\n"
+        "-h, --help: display this help and exit";
 
 static void usage() {
   display_copyright_notice();
@@ -2272,7 +2272,7 @@ int main_Fst2List(int argc, char* const argv[]) {
     case 'V': only_verify_arguments = true; break;
     case 'h': usage(); return SUCCESS_RETURN_CODE;
     case 'q': {
-      char* arg = nullptr;
+      char* arg = NULL;
       if (options.vars()->optarg[0] == '\0') {
         error("couldn't get the argument for option 'q'\n");
         return USAGE_ERROR_CODE;
