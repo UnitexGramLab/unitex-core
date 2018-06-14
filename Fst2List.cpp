@@ -452,8 +452,8 @@ public:
    */
   struct cyclePathMark {
     int index; // number of identify
-    struct pathStack_t *pathTagQueue;
-    int pathCnt;
+    struct pathStack_t *pathTagQueue; // path stack that identifies the cycle
+    int pathCnt; // counter for pathTagQueue
     int flag;
     struct cyclePathMark *next;
   };
@@ -461,7 +461,7 @@ public:
 
   //  save all nodes which have the cycle path
   //  the path from initial to the node is used to identify the node
-  //  in sub graph
+  //  in subgraph
   struct linkCycle {
     struct cyclePathMark *cyc;
     struct linkCycle *next;
@@ -491,7 +491,8 @@ public:
     int searchStateAuto = pathStack[curidx].stackStateID;
     int searchTag = pathStack[curidx].tag;
     while (cnode) {
-      if ((searchStateAuto == cnode->autoNo) && (searchState == cnode->stateNo) && (searchTag == cnode->tag)) {
+      if ((searchStateAuto == cnode->autoNo) 
+          && (searchState == cnode->stateNo) && (searchTag == cnode->tag)) {
         break;
       }
       cnode = cnode->next;
@@ -528,7 +529,9 @@ public:
     int cycStateAutoNo = pathStack[cntNode - 1].stackStateID;
     int cycStateTag = pathStack[cntNode - 1].tag;
     while (*cnode) {
-      if (((*cnode)->autoNo == cycStateAutoNo) && ((*cnode)->stateNo == cycStateNo) && ((*cnode)->tag == cycStateTag)) {
+      if (((*cnode)->autoNo == cycStateAutoNo) 
+          && ((*cnode)->stateNo == cycStateNo) 
+          && ((*cnode)->tag == cycStateTag)) {
         break;
       }
       cnode = &((*cnode)->next);
@@ -629,7 +632,6 @@ public:
           & PATHID_MASK;
       (*h)->pathTagQueue[i].tag = pathStack[i + offset].tag;
       (*h)->pathTagQueue[i].stackStateID = pathStack[i + offset].stackStateID;
-
     }
     (*h)->pathCnt = numOfPath;
     (*h)->index = cyclePathCnt++;
@@ -711,7 +713,9 @@ public:
     int curAutoId = pathStack[pathIdx - 1].stackStateID;
 
     for (scanner = 0; scanner < pathIdx - 1; scanner++) {
-      if (((pathStack[scanner].stateNo & PATHID_MASK) == curId) && (pathStack[scanner].stackStateID == curAutoId)) { // find recursive path
+      // find recursive path
+      if (((pathStack[scanner].stateNo & PATHID_MASK) == curId) 
+                 && (pathStack[scanner].stackStateID == curAutoId)) {
         switch (recursiveMode) {
         case LABEL:
           if (listOut) {
@@ -1181,6 +1185,9 @@ public:
     u_printf("\n");
   }
 
+  /**
+   * Print all the list present in `transitionList`
+   */
   void printTransitionList () {
     struct transitionList *callMapPtr;
     callMapPtr = transitionListHead;
@@ -1719,7 +1726,6 @@ int CFstApp::findCycleSubGraph(int stackStateID, int autoDepth, int stateNo, int
       u_printf("%d::%d\n",t->tag_number,t->state_number);
     }
     */
-    //checkAutoCallStack(autoDepth);
 
     //u_printf("next trans\n");
     //u_printf("autoDepth %d\n",autoDepth);
@@ -1955,7 +1961,8 @@ int CFstApp::outWordsOfGraph(int depth) {
     if (!pathStack[s].tag) {
       ep = tp = u_null_string;
     } else if (pathStack[s].tag & SUBGRAPH_PATH_MARK) {
-      ep = (display_control == GRAPH) ? (unichar *) a->graph_names[pathStack[s].tag & SUB_ID_MASK] : u_null_string;
+      ep = (display_control == GRAPH) ? 
+        (unichar *) a->graph_names[pathStack[s].tag & SUB_ID_MASK] : u_null_string;
       tp = u_null_string;
     } else {
       Tag = a->tags[pathStack[s].tag & SUB_ID_MASK];
