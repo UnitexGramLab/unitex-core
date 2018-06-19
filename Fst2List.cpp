@@ -2166,7 +2166,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       }
       error("Invalid arguments: rerun with --help\n");
       return USAGE_ERROR_CODE;
-    case 1: // option '--io_separator'
+    case 'g': // option '--io_separator'
       io_separator:
       wp = (char*) &options.vars()->optarg[1]-1;
       wp3 = 0;
