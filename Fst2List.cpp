@@ -1815,9 +1815,10 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
           //fatal_error("FALSE LOOP\n");
           //previous error
           //fatal_error("failed to find the recursive call\n");
+        } else {
+          --pathIdx;
+          continue; // skip current transition
         }
-        --pathIdx;
-        continue; // skip current transition
       }
       pathStack[pathIdx].tag = 0;
       pathStack[pathIdx].stackStateID = callId;
