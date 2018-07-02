@@ -175,9 +175,9 @@ static unichar u_epsilon_string[] = { (unichar) '<', (unichar) 'E',(unichar) '>'
 
 static const char *StrMemLack = "allocation of memory for cycle data failed";
 
-/* for stack of states, i.e. path */
+/* stack of states, i.e. path */
 struct pathStack_t {
-  // saves the state of the call stack (i.e. autoCallStack) at this given point
+  // identifies a snapshot of the call stack (i.e. autoCallStack) at this given point
   int stackStateID; 
   int stateNo;      // state's number
   int tag;
@@ -217,12 +217,13 @@ public:
   int outWordsOfGraph(int depth);
   int checkAutoCallStack(int autoCallStackDepth);
 
-  // the stack of invocations of subgraphs
-  // also contains the sign of exit from a subgraph (-1)
-  // history of invocation for the current path
-  // invocations are popped only when backtracking to explore the next path
+  // Stack of invocations of subgraphs
+  // and of exits from subgraphs
+  // History of invocations and exits for the current path
+  // Items are popped only when backtracking to explore the next path
   struct {
-    int stackStateID;    // automaton ID
+    int stackStateID;    // if invocation, identifies a snapshot of autoCallStack
+                         // if exit, equals -1
     int targetState; 
   } invocStack[2048];
   int invocStackIdx;  // invocation stack depth
@@ -362,7 +363,7 @@ public:
 
   /**
    * Call stack for the currently opened automata
-   * transitions can be incoherent after backtracking
+   * Transitions can be out of date after backtracking
    * in exploreSubgraphRecursively
    * The depth of autoCallStack is managed by autoDepth
    * in exploreSubgraphRecursively
@@ -386,8 +387,8 @@ public:
   }*transitionListHead, *transitionListTail;
 
   /**
-   * Searches transitionList for an occurence of autoCallStack current state
-   * return its ID if found, or a new ID if it didn't exist
+   * Searches transitionList for an occurrence of autoCallStack current state
+   * Returns its ID if found, or a new ID if it didn't exist
    */
   int identifyStackState(int depth) {
     int id = 0;
@@ -446,8 +447,8 @@ public:
 
   struct cyclePathMark {
     int index; // number of identify
-    struct pathStack_t *pathTagQueue; // path stack that identifies the cycle
-    int pathCnt; // counter for pathTagQueue
+    struct pathStack_t *pathTagCopy; // copy of cycle
+    int pathCnt; // counter in pathTagCopy
     int flag;
     struct cyclePathMark *next;
   };
@@ -576,22 +577,22 @@ public:
       if ((*h)->pathCnt == numOfPath) {
         for (i = 0; i < numOfPath; i++) {
           if ((pathStack[offset].stackStateID
-              == (*h)->pathTagQueue[i].stackStateID)
+              == (*h)->pathTagCopy[i].stackStateID)
               && ((pathStack[offset].stateNo & PATHID_MASK)
-                  == (*h)->pathTagQueue[i].stateNo)
+                  == (*h)->pathTagCopy[i].stateNo)
               && (pathStack[offset].tag
-                  == (*h)->pathTagQueue[i].tag)) {
+                  == (*h)->pathTagCopy[i].tag)) {
             break;
           }
         }
         if (i != numOfPath) { // find first the position in cycle ring
           for (j = 0; j < numOfPath; j++) {
             if (((pathStack[offset + j].stateNo & PATHID_MASK)
-                != (*h)->pathTagQueue[i].stateNo)
+                != (*h)->pathTagCopy[i].stateNo)
                 || (pathStack[offset + j].tag
-                    != (*h)->pathTagQueue[i].tag)
+                    != (*h)->pathTagCopy[i].tag)
                 || (pathStack[offset + j].stackStateID
-                    != (*h)->pathTagQueue[i].stackStateID)) {
+                    != (*h)->pathTagCopy[i].stackStateID)) {
               break;
             }
             if (++i >= numOfPath) {
@@ -617,15 +618,15 @@ public:
     if (!(*h)) {
       fatal_error(StrMemLack);
     }
-    (*h)->pathTagQueue = new struct pathStack_t[numOfPath];
-    if (!((*h)->pathTagQueue)) {
+    (*h)->pathTagCopy = new struct pathStack_t[numOfPath];
+    if (!((*h)->pathTagCopy)) {
       fatal_error(StrMemLack);
     }
     for (i = 0; i < numOfPath; i++) {
-      (*h)->pathTagQueue[i].stateNo = pathStack[i + offset].stateNo
+      (*h)->pathTagCopy[i].stateNo = pathStack[i + offset].stateNo
           & PATHID_MASK;
-      (*h)->pathTagQueue[i].tag = pathStack[i + offset].tag;
-      (*h)->pathTagQueue[i].stackStateID = pathStack[i + offset].stackStateID;
+      (*h)->pathTagCopy[i].tag = pathStack[i + offset].tag;
+      (*h)->pathTagCopy[i].stackStateID = pathStack[i + offset].stackStateID;
     }
     (*h)->pathCnt = numOfPath;
     (*h)->index = cyclePathCnt++;
@@ -655,7 +656,7 @@ public:
     cp = headCyc;
     while (cp) {
       tc = cp->next;
-      delete cp->pathTagQueue;
+      delete cp->pathTagCopy;
       delete cp;
       cp = tc;
     }
@@ -696,10 +697,10 @@ public:
 
   /**
    * Detect a recursive call
-   * increment 'totalLoop' if a loop is found
+   * Increment 'totalLoop' if a loop is found
    * Check if there is a recursion using pathStack
    * as a history of exploration
-   * return 1 if a cycle is found, else 0
+   * Return 1 if a cycle is found, else 0
    */
   int isCyclePath(int depth) {
     int scanner; 
@@ -974,8 +975,8 @@ public:
       u_fprintf(foutput, "C%d%S", h->index, openingQuote);
       ePtrCnt = tPtrCnt = 0;
       for (i = 0; i < h->pathCnt; i++) {
-        //        putInt(0,h->pathTagQueue[i].path);
-        Tag = a->tags[h->pathTagQueue[i].tag];
+        //        putInt(0,h->pathTagCopy[i].path);
+        Tag = a->tags[h->pathTagCopy[i].tag];
         wordPtr = (unichar *) Tag->input;
 
         if (u_strcmp(wordPtr, u_epsilon_string)) {
@@ -1017,7 +1018,7 @@ public:
     }
 
     while (h) {
-      tmp = h->pathTagQueue[h->pathCnt - 1].stateNo;
+      tmp = h->pathTagCopy[h->pathCnt - 1].stateNo;
       if (tmp & SUBGRAPH_PATH_MARK) {
         tmp = a->initial_states[tmp & SUB_ID_MASK];
       }
@@ -1032,7 +1033,7 @@ public:
       EBuff[ePtrCnt++] = (unichar) ':';
 
       for (i = 0; i < h->pathCnt; i++) {
-        tmp = h->pathTagQueue[i].stateNo;
+        tmp = h->pathTagCopy[i].stateNo;
         if (tmp & SUBGRAPH_PATH_MARK) {
           tmp = a->initial_states[tmp & SUB_ID_MASK];
         }
@@ -1040,7 +1041,7 @@ public:
           break;
         }
 
-        Tag = a->tags[h->pathTagQueue[i].tag];
+        Tag = a->tags[h->pathTagCopy[i].tag];
         wordPtr = (unichar *) Tag->input;
         if (u_strcmp(wordPtr, u_epsilon_string) && *wordPtr) {
           while (*wordPtr) {
@@ -1150,7 +1151,7 @@ public:
    * Prints the invocation stacks,
    * the path stack and the automaton stack
    * hints :
-   * -1 stackStateID means the automaton reached final state
+   * stackStateID is -1 means the automaton reached final state
    * `trans_tag` are `tag_number` which is the ID of 
    * the targeted automaton with marks describing the transition
    */
@@ -1719,7 +1720,7 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
   } // end if terminal node
 
   for (Transition *trans = a->states[stateNo]->transitions; trans != 0; trans = trans->next) {
-    // print transitions before exploring it
+    // print transitions before exploring them
     /*
     u_printf("transitions available : \n");
     for(Transition *t = a->states[stateNo]->transitions; t != 0; t = t-> next) {
@@ -1807,7 +1808,7 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
         // check for a recursion that might not have been detected
         // in autoCallStack due to backtracking
         if (!isCyclePath(stateDepth)) { 
-          // no cycle was found we identify call stack
+          // no cycle was found: we identify call stack
           // and continue the exploration
           callId = identifyStackState(autoDepth + 1);
           //printStacks(autoDepth);
@@ -1857,8 +1858,8 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
 }
 
 /**
- * Check the state of autoCallStack is coherent
- * with the last call in invocStack
+ * Check if state of autoCallStack is consistent
+ * with last call in invocStack
  * Used in exploreSubgraphRecursively to fix
  * previous call stack being erased
  * before backtracking
@@ -2083,7 +2084,7 @@ int CFstApp::outWordsOfGraph(int depth) {
         int findId = pathStack[s].stateNo & PATHID_MASK;
         while (h) {
           for (i = 0; i < h->pathCnt; i++) {
-            if (h->pathTagQueue[i].stateNo == findId) {
+            if (h->pathTagCopy[i].stateNo == findId) {
               break;
             }
           }
