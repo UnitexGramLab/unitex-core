@@ -1770,19 +1770,20 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
       // Scanning autoCallStack isn't necessary to find 
       // recursions as `isCycle()` is called for each
       // instance of exploreSubgraphRecursively
-     
+      /*
       int scanner;
       for (scanner = 0; scanner < autoDepth; scanner++) {
         if ( autoCallStack[scanner].tran->tag_number == trans->tag_number ) {
           break;
         }
       }
+      */
       
       
       autoCallStack[autoDepth].tran = trans; // add the transition to the stack
-      if (scanner == autoDepth) { // didn't find a recursive call
+      //if (scanner == autoDepth) { // didn't find a recursive call
         callId = identifyStackState(autoDepth + 1);
-      } else { // found an item in autoCallStack with same transitions as `trans`
+      /*} else { // found an item in autoCallStack with same transitions as `trans`
         pathStack[pathIdx].tag = 0;
         pathStack[pathIdx].stackStateID = autoCallStack[autoDepth].stackStateID;
         pathStack[pathIdx].stateNo = a->initial_states[tmp] | LOOP_PATH_MARK;
@@ -1799,7 +1800,7 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
           --pathIdx;
           continue; // skip current transition
         }
-      }
+      }*/
       pathStack[pathIdx].tag = 0;
       pathStack[pathIdx].stackStateID = callId;
       pathStack[pathIdx].stateNo = a->initial_states[tmp];
