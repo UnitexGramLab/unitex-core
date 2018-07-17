@@ -132,572 +132,1559 @@ static void usage() {
   u_printf(usage_Cassys);
 }
 
-struct grfInfo {
-    int entity_loc;
-    int annotation_loc;
-    unichar *entity_format;
-    unichar **ignore;
-    int ignore_count;
-    unichar **accept;
-    int accept_count;
-    unichar *annotation;
-    unichar *entities;
-    int entity_count;
-    int negLeftContxt_loc;
-};
+/**
+ * This structure represent the information needed by the generic graph generation algorithm to create the box
+ *
+ * reference_location : The number of the line on which the first box of the graph is defined.
+ * This value is used to allow relative location with other boxes
+ *
+ * begining_location  : The number of the line in the .grf file, based on reference_location, that represent the 'G' box in the graph
+ * end_location       : The number of the line in the .grf file, based on reference_location, that represent the end box (following the 'G') in the graph
+ *
+ * category           : The category searched by the user, indicated below the end box
+ * filter_category    : The category that indicates which kind of box must be found inside the whole token, indicated in the end box. May be empty
+ * final_category     : The category that indicates which category will be written in the final generated graph.
+                      : It is indicated after the filter category in the end box. May be empty
+ */
+typedef struct graphInfo {
 
+  unsigned int reference_location;
+  unsigned int begining_location;
+  unsigned int end_location;
 
-unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec,
-        int *total_lines) {
-    int num_lines = 0;
-    unichar **grf_lines = NULL;
-    unichar *line = NULL;
-    size_t size_buffer_line = 0;
-    U_FILE *grf_file = u_fopen(vec,tmp_file,U_READ);
+  unichar* category;
+  unichar* filter_category;
+  unichar* final_category;
 
-    if(grf_file != NULL) {
-    while(u_fgets_dynamic_buffer(&line, &size_buffer_line, grf_file) != EOF) {
-        grf_lines = (unichar**) realloc(grf_lines, (num_lines+2) * sizeof(unichar*));
-        grf_lines[num_lines] = (unichar*) malloc(sizeof(unichar) * (u_strlen(line) + 1));
-        u_strcpy(grf_lines[num_lines],line);
-        num_lines++;
-        grf_lines[num_lines] = NULL;
+} graphInfo;
+
+/**
+ * Creates a new graphInfo
+ *
+ * Returns the newly created graphInfo or NULL if it couldn't be created
+ */
+graphInfo* new_graph_info() {
+
+    graphInfo* graph_info = (graphInfo*) malloc(sizeof(graphInfo));
+
+    if (graph_info == NULL) {
+
+        return NULL;
     }
-    if(line != NULL)
+
+    graph_info->reference_location = 0;
+    graph_info->begining_location = 0;
+    graph_info->end_location = 0;
+
+    graph_info->category = NULL;
+    graph_info->filter_category = NULL;
+    graph_info->final_category = NULL;
+
+    return graph_info;
+}
+
+/**
+ * Frees a graphInfo
+ *
+ * graph_info : A pointer to the graphInfo that needs to be freed
+ */
+void free_graph_info(graphInfo* graph_info) {
+
+  free(graph_info->category);
+  free(graph_info->filter_category);
+  free(graph_info->final_category);
+
+  free(graph_info);
+}
+
+/**
+ * This structure represent a list of graphInfo. Such a list is returned after anaysing a file because more than one generic graph can be declared
+ * in a single file
+ *
+ * graph_list   : The list of graphInfo
+ * graph_count  : The number of graphs in the list
+ */
+typedef struct graphInfoList {
+
+  graphInfo** graph_list;
+  size_t graph_count;
+
+} graphInfoList;
+
+/**
+ * Creates a new graphInfoList
+ *
+ * Returns the newly created graphInfoList or NULL if the list couldn't be created
+ */
+graphInfoList* new_graph_info_list() {
+
+    graphInfoList* graph_info_list = (graphInfoList*) malloc(sizeof(graphInfoList));
+
+    if (graph_info_list == NULL) {
+
+        return NULL;
+    }
+
+    graph_info_list->graph_list = NULL;
+    graph_info_list->graph_count = 0;
+
+    return graph_info_list;
+}
+
+/**
+ * Adds a graphInfo to a graphInfoList
+ *
+ * graph_info       : The graphInfo to add in the list
+ * graph_info_list  : The graphInfoList in which to add the graph info
+ */
+void add_graph_info_to_list(graphInfo* graph_info, graphInfoList* graph_info_list) {
+
+    // The size of the list is reallocated with one more graphInfo slot
+    graph_info_list->graph_list = (graphInfo**) realloc(graph_info_list->graph_list, sizeof(graphInfo*) * (graph_info_list->graph_count + 1));
+    graph_info_list->graph_list[graph_info_list->graph_count] = graph_info;
+    graph_info_list->graph_count++;
+}
+
+/**
+ * Frees a list of graphInfo
+ *
+ * graph_info_list  : A pointer to the list of graphInfoList that needs to be freed.
+ */
+void free_graph_info_list(graphInfoList* graph_info_list) {
+
+    // For each graph in the list
+    for (unsigned int i = 0; i < graph_info_list->graph_count; i++) {
+
+        free_graph_info(graph_info_list->graph_list[i]);
+    }
+
+    free(graph_info_list->graph_list);
+    free(graph_info_list);
+}
+
+/**
+ * This structure represent a file, as an array a strings
+ *
+ * lines        : The list of strings, representing the loaded file
+ * lines_number : The number of lines inf the file
+ */
+typedef struct graphFile {
+
+    unichar** lines;
+    size_t lines_number;
+
+} graphFile;
+
+/**
+ * Adds a new line to a file. The line is dupplicated, so the line that is sent to the function must be freed manually
+ *
+ * file : The file on which the line will be added
+ * line : The line that will be added to the file
+ *
+ * Returns the number of the line that has beed added, which is the number of lines in the file minus 1
+ */
+unsigned int add_line_to_file(graphFile* file, const unichar* line) {
+
+    file->lines = (unichar**) realloc(file->lines, sizeof(unichar*) * (file->lines_number + 1));
+    file->lines[file->lines_number] = u_strdup(line);
+
+    file->lines_number++;
+    return file->lines_number - 1;
+}
+
+/**
+ * char version of the add_line_to_file function
+ */
+inline unsigned int add_line_to_file(graphFile* file, const char* line) {
+
+    unichar* copy = u_strdup(line);
+    const unsigned int return_value =  add_line_to_file(file, copy);
+    free(copy);
+    return return_value;
+}
+
+/**
+ * Creates a graphFile from a file
+ *
+ * file             : The file to be loaded in the graphFile
+ * encoding_config  : The encoding config
+ *
+ * Returns the created graphFile or NULL if the loading failed
+ */
+graphFile* load_graph_file(const char* file, VersatileEncodingConfig* encoding_config) {
+
+    U_FILE* loaded_file = u_fopen(encoding_config, file, U_READ);
+
+    // If the file can't be loaded we stop there and return NULL to indicate that the loading went wrong
+    if (loaded_file == NULL) {
+
+        return NULL;
+    }
+
+    // Creation and initialization of the graph file
+    graphFile* graph_file = (graphFile*) malloc(sizeof(graphFile));
+    graph_file->lines = NULL;
+    graph_file->lines_number = 0;
+
+    unichar* line = NULL;
+    size_t buffer_size = 0;
+
+    // As long as we're getting new lines to read
+    while (u_fgets_dynamic_buffer(&line, &buffer_size, loaded_file) != EOF) {
+
+        add_line_to_file(graph_file, line);
+    }
+
+    if (line != NULL) {
+
         free(line);
-    u_fclose(grf_file);
     }
-    *total_lines = num_lines;
-    return grf_lines;
+
+    u_fclose(loaded_file);
+
+    return graph_file;
 }
 
+/**
+ * Replaces one line of the file by a new one. The new line is copied, so the replacement line that is sent to the function must be freed manually
+ *
+ * file         : The file in which the line will be replaced
+ * line_number  : The number of the line in the file that need to be replaced. The first line of the file is the number 0
+ * line         : The new line that will replace the previous one
+ */
+void replace_graph_file_line(graphFile* file, const unsigned int line_number, const unichar* line) {
 
-void free_file_in_memory(unichar** grf_lines)
-{
-    if (grf_lines == NULL) return;
-    unichar** walk = grf_lines;
-    while ((*walk) != NULL) {
-        free(*walk);
-        walk++;
-    }
-    free(grf_lines);
+    free(file->lines[line_number]);
+    file->lines[line_number] = u_strdup(line);
 }
 
+/**
+ * char version of the replace_graph_file_line function
+ */
+inline void replace_graph_file_line(graphFile* file, const unsigned int line_number, const char* line) {
 
-void free_grf_info(grfInfo *infos, int num) {
-    for (int i = 0;i < num;i++) {
-        free(infos[i].entity_format);
-        free(infos[i].annotation);
-        if (infos[i].entities!=NULL) free(infos[i].entities);
-
-        if (infos[i].ignore) {
-            unichar** walk = infos[i].ignore;
-            while ((*walk) != NULL) {
-                free(*walk);
-                walk++;
-            }
-            free(infos[i].ignore);
-        }
-
-        if (infos[i].accept) {
-            unichar** walk = infos[i].accept;
-            while ((*walk) != NULL) {
-                free(*walk);
-                walk++;
-            }
-            free(infos[i].accept);
-        }
-
-    }
-
-    free(infos);
+    unichar* copy = u_strdup(line);
+    replace_graph_file_line(file, line_number, copy);
+    free(copy);
 }
 
+/**
+ * Creates a file on the disk from a graphFile
+ *
+ * file : The file that will be printed on the disk
+ * new_graph_file_name  : The name of the new file that will be created
+ * config               : The encoding config
+ *
+ * Returns 1 if the operation was successful, 0 otherwise
+ */
+unsigned int print_graph_file(graphFile* file, const char* new_graph_file_name, VersatileEncodingConfig* config) {
 
-grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc,
-        unichar **start_line, int **locations) {
-    DISCARD_UNUSED_PARAMETER(locations)
-    int start = -1;
-    int num_info = 0;
-    int count = 0;
-    struct grfInfo *infos = NULL;
-    if (lines != NULL) {
-        int num_lines = 0;
-        while (num_lines < total_lines && lines[num_lines] != NULL) {
-            size_t num_char = u_strlen(lines[num_lines]);
-            if (num_char == 1 && lines[num_lines][0] == '#') {
-                start = num_lines;
-            }
-            else if (num_lines == start + 2) {
-                *loc = num_lines;
-                if ((*start_line) != NULL) free(*start_line);
-                *start_line = (unichar*)malloc(sizeof(unichar) * (num_char + 1));
-                u_strcpy(*start_line, lines[num_lines]);
-            }
-            else if (num_char > 3 && lines[num_lines][0] == '"' && lines[num_lines][1] == '$' && lines[num_lines][2] == 'G') {
-                infos = (grfInfo*)realloc(infos, (num_info + 1) * sizeof(grfInfo));
-                infos[num_info].accept = NULL;
-                infos[num_info].ignore = NULL;
-                infos[num_info].annotation = NULL;
-                infos[num_info].entity_format = (unichar*)malloc(sizeof(unichar) * (num_char + 1));
-                infos[num_info].entity_format[0] = '"';
-                infos[num_info].entity_format[1] = '%';
-                infos[num_info].entity_format[2] = 'S';
-                infos[num_info].entity_loc = num_lines - (*loc);
-                infos[num_info].annotation_loc = 0;
-                infos[num_info].entity_count = 0;
-                infos[num_info].entities = NULL;
-                infos[num_info].negLeftContxt_loc = total_lines - (*loc) + count*3; //negative context is made up of 3 lines
-                count++;
-                int spaces = 0;
-                for (size_t i = 3; i <= num_char; i++) {
-                    infos[num_info].entity_format[i] = (unichar)lines[num_lines][i];
-                    if (spaces == 4 && lines[num_lines][i] > 47 && lines[num_lines][i] < 58) { //is digit
-                        infos[num_info].annotation_loc = 10 * infos[num_info].annotation_loc + lines[num_lines][i] - 48;
-                    }
-                    if (lines[num_lines][i] == ' ')
-                        spaces++;
-                }
-                // start extract tag information
-                int annot_pos = infos[num_info].annotation_loc + *loc;
-                int n = u_strlen(lines[annot_pos]);
-                int j, k;
-                int division = -1;
-                int annot_end = -1;
-                int ignore_cnt = 0;
-                int is_accept = 0;
-                for (j = 0; j < n; j++) {
-                    if (lines[annot_pos][j] == '/') {
-                        division = j;
-                    }
-                    else if(lines[annot_pos][j] == '"') {
-                        annot_end = j;
-                        if(j > 0 && lines[annot_pos][j-1] == '}')
-                            annot_end = j-1;
-                    }
-                }
+    enum Status { FAIL = 0, SUCCESS = 1 };
 
-                unichar *temp_annot = (unichar*)malloc(sizeof(unichar) * division);
-                for (k = 1; k < division; k++)
-                    temp_annot[k - 1] = lines[annot_pos][k];
-                temp_annot[k - 1] = '\0';
+    U_FILE* new_graph_file = u_fopen(config, new_graph_file_name, U_WRITE);
 
-                if (u_strcmp(temp_annot, "<E>") != 0) {
-                    unichar *saveptr = NULL;
-                    const unichar DELIMITER[] = { '~', 0 };
-                    unichar *ignore_token = u_strtok_r(temp_annot, DELIMITER, &saveptr);
-                    unichar *ignore = NULL;
-                    while (ignore_token) {
-                        ignore = ignore_token;
-                        if (u_strcmp(ignore, temp_annot) == 0) {
-                            is_accept = 1;
-                            break;
-                        }
-                        ignore_token = u_strtok_r(NULL, DELIMITER, &saveptr);
-                        infos[num_info].ignore = (unichar**)realloc(infos[num_info].ignore, sizeof(unichar*) * (ignore_cnt + 2));
-                        infos[num_info].ignore[ignore_cnt] = (unichar*)malloc(sizeof(unichar) * (u_strlen(ignore) + 1));
-                        u_strcpy(infos[num_info].ignore[ignore_cnt], ignore);
-                        ignore_cnt++;
-                        infos[num_info].ignore[ignore_cnt] = NULL;
-                    }
-                    if (is_accept && infos[num_info].ignore == NULL) {
-                        int accept_cnt = 0;
-                        int prev = 0;
-                        for (k = 0; k < division; k++) {
-                            if (k > 0 && temp_annot[k] == '+' && temp_annot[k - 1] != '\\') {
-                                infos[num_info].accept = (unichar**)realloc(infos[num_info].accept, sizeof(unichar*) * (accept_cnt + 2));
-                                infos[num_info].accept[accept_cnt] = (unichar*)malloc(sizeof(unichar) * (k - prev + 1));
-                                infos[num_info].accept[accept_cnt + 1] = NULL;
-                                n = 0;
-                                for (j = prev; j < k; j++)
-                                    if (temp_annot[j] != '\\') {
-                                        infos[num_info].accept[accept_cnt][n++] = temp_annot[j];
-                                    }
-                                infos[num_info].accept[accept_cnt][n] = '\0';
-                                prev = k+1;
-                                accept_cnt++;
-                            }
-                        }
-                        infos[num_info].accept = (unichar**)realloc(infos[num_info].accept, sizeof(unichar*) * (accept_cnt + 2));
-                        infos[num_info].accept[accept_cnt] = (unichar*)malloc(sizeof(unichar) * (k - prev + 1));
-                        infos[num_info].accept[accept_cnt + 1] = NULL;
-                        n = 0;
-                        for (j = prev; j < k; j++)
-                            if (temp_annot[j] != '\\') {
-                                infos[num_info].accept[accept_cnt][n++] = temp_annot[j];
-                            }
-                        infos[num_info].accept[accept_cnt][n] = '\0';
-                        accept_cnt++;
-                        infos[num_info].accept_count = accept_cnt;
-                    }
-                }
-                free(temp_annot);
-                infos[num_info].ignore_count = ignore_cnt;
-                infos[num_info].annotation = (unichar*)malloc(sizeof(unichar) * (annot_end - division));
+    if (new_graph_file == NULL) {
 
-                for (k = 0, j = division + 1; j < annot_end; k++, j++)
-                    infos[num_info].annotation[k] = lines[annot_pos][j];
-                infos[num_info].annotation[k] = '\0';
-                //end extract tag information
-
-                num_info++;
-            }
-            num_lines++;
-        }
+        return FAIL;
     }
-    *num_annot = num_info;
-    return infos;
+
+    for (unsigned int i = 0; i < file->lines_number; i++) {
+
+        u_fprintf(new_graph_file, "%S\n", file->lines[i]);
+    }
+
+    u_fclose(new_graph_file);
+
+    return SUCCESS;
 }
 
+/**
+ * Frees a graphFile
+ *
+ * graph_file : The graphFile to be freed
+ */
+void free_graph_file(graphFile* graph_file) {
 
-unichar **extract_entities(const char *token_list, const char *token_list_backup, VersatileEncodingConfig *vec, int num, int *updates, grfInfo *infos) {
-    unichar **entity_string = NULL;
-    entity_string = (unichar**) malloc(sizeof(unichar*) * num);
-    for(int i = 0; i < num; i++)
-        entity_string[i] = NULL;
-    U_FILE *dico = u_fopen(vec, token_list, U_READ); //token list in the current _snt folder
-    if(dico == NULL)
-        dico = u_fopen(vec, token_list_backup, U_READ);   //token list in the previous _snt folder
-    if(dico != NULL && infos != NULL) {
-    int * num_entity = (int*)malloc(sizeof(int)*(num+1));
-    for(int i = 0; i < num; i++)
-        num_entity[i] = 0;
-    unichar *line = NULL;
-    size_t size_buffer_line = 0;
-    while(u_fgets_dynamic_buffer(&line, &size_buffer_line, dico) != EOF) {
-        int line_len = u_strlen(line);
-        for(int k = 0; k < num; k++) {
-            int annot_len = u_strlen(infos[k].annotation);
-        if (line != NULL && line[0] == '{' && line_len > annot_len) {
-            int j = 0;
-            int additional_length = 0;
-            while(line[j] != '\0') {
-            int i = 0;
-            additional_length = 0;
-            while(line[j] != '\0' && line[j] != infos[k].annotation[i])
-                j++;
-            while(line[j] != '\0' && infos[k].annotation[i] != '\0' && line[j] == infos[k].annotation[i]) {
-                i++;
-                j++;
-                if(line[j]=='\\' && j+1<line_len) { //in case the annotation is protected
-                    if(infos[k].annotation[i] == line[j+1]) {
-                        j++;
-                        additional_length++;
-                    }
-                }
-            }
-            if(infos[k].annotation[i] == '\0') {
-                int reverse_i =  j; //We will go in reverse to find the entity
-                int num_paren = 1;
-                while(reverse_i >= 0) {
-                    if(line[reverse_i] =='{' && num_paren == 1) {
-                        break;
-                    }
-                    else if(line[reverse_i] =='{' && num_paren > 0 ) {
-                        num_paren--;
-                    }
-                    else if(line[reverse_i] =='}') {
-                        num_paren++;
-                    }
-                    reverse_i--;
-                }
-                reverse_i++;
-                int start = reverse_i;
-                int end = 0;
-                int annot_start = 0;
-                int annot = -1;
-                unichar *prev_char = NULL;
-                unichar *entity_whole = NULL; // test on reverse_i is a quick fix to pass valgrind validation
-                if (infos[k].ignore == NULL && infos[k].accept == NULL) {
-                    end = j - (annot_len + additional_length);
-                    entity_whole = (unichar*) malloc(sizeof(unichar) * (end - reverse_i+1));
-                    int entity_i = 0; 
-                    for(int x = (reverse_i > 0) ? reverse_i : 0; x < end; x++) {
-                        if (line[x] == '\\' || line[x] == '{' || line[x] == '}')
-                            ;
-                        else if (line[x] == ',') {
-                            if ((x + 1 < end && line[x + 1] == '.') ||
-                                (x + 2 < end && line[x + 1] == '\\' && line[x + 2] == '.')) {
-                                while(x < end && line[x] != '}')
-                                    x++;
-                            }
-                            else {
-                                entity_whole[entity_i++] = line[x];
-                            }
-                        }
-                        else {
-                                entity_whole[entity_i++] = line[x];
-                        }
-                    }
-                    entity_whole[entity_i] = '\0';
-                }
-                else {
-                for(int x = (reverse_i > 0) ? reverse_i : 0; x < j; x++) {
-                    if(line[x] == ',') {
-                        annot = 0;
-                        end = x;
-                        if (x-1 > 0 && line[x-1] == '\\') {
-                            end = x-1;
-                        }
-                    }
-                    else if(annot == 0 && line[x] == '.') {
-                        annot = -1;
-                        annot_start = x + 1;
-                    }
-                    else if(line[x] == '\\' || line[x] == '+' || line[x] == '}') {
-                        if(annot_start > 0 ) {
-                            annot = -1;
-                            int matches = 0;
-                            unichar *annot_ = (unichar*) malloc(sizeof(unichar) * ((x - annot_start)+1));
-                            int z = 0;
-                            for(int y = annot_start; y < x; y++)
-                                if(line[y] != '\\') {
-                                annot_[z++] = (unichar) line[y];
-                                }
-                            annot_[z] = '\0';
-                            if(infos[k].ignore != NULL) {
-                                for(int m = 0; m < infos[k].ignore_count; m++)
-                                if(u_strncmp(annot_,infos[k].ignore[m],u_strlen(infos[k].ignore[m])) == 0) {
-                                    matches = 1;
-                                    break;
-                                }
-                            }
-                            if(infos[k].accept != NULL) {
-                                matches = 1;
-                                for(int m = 0; m < infos[k].accept_count; m++) {
-                                    if(u_strncmp(annot_,infos[k].accept[m],u_strlen(infos[k].accept[m])) == 0) {
-                                        matches = 0;
-                                        //search for the start of the word form
-                                        num_paren = 1;
-                                        int reverse_j = end;
-                                        for(  ; reverse_j > reverse_i; reverse_j--) {
-                                            if(line[reverse_j] =='{' && num_paren == 1) {
-                                                break;
-                                            }
-                                            else if(line[reverse_j] =='{' && num_paren > 0 ) {
-                                                num_paren--;
-                                            }
-                                            else if(line[reverse_j] =='}') {
-                                                num_paren++;
-                                            }
-                                        }
-                                        start = reverse_j + 1;
-                                        if (reverse_j > 0) {
-                                            if (prev_char!=NULL) {
-                                                free(prev_char);
-                                            }
-                                            prev_char = (unichar*) malloc(sizeof(unichar) * 2);
-                                            prev_char[0] = line[reverse_j - 1];
-                                            if(line[reverse_j - 1] == '\\')
-                                                prev_char[0] = line[reverse_j - 2];
-                                            prev_char[1] = '\0';
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                            if(matches == 0) {
-                                unichar *entity = NULL;
-                                entity = (unichar*) malloc(sizeof(unichar) * ((end - start)+1));
-                                z = 0;
-                                int nb_expand=0;
-                                for(int y = start; y < end; y++) {
-                                    if(line[y] != '\\' && line[y] != '{') {
-                                        if(line[y] == ',') {
-                                            if((y + 1 < end && line[y+1] == '.') ||
-                                                    (y + 2 < end && line[y+1]=='\\' && line[y+2] == '.')) {
-                                                y += 2;
-                                                while(line[y] !='}') {
-                                                    y++;
-                                                }
-                                                y++;
-                                            }
-                                        }
-                                        if(line[y] == '/') {
-                                           nb_expand++;
-                                           entity = (unichar*) realloc(entity,sizeof(unichar) * ((end - start)+1+nb_expand));
-                                           entity[z++] = '\\';
-                                        }
-                                        if (y < end) {
-                                            entity[z++] = line[y];
-                                        }
-                                    }
-                                }
-                                entity[z] = '\0';
-                                int entity_len = z + 1;
-                                if(entity_whole == NULL) {
-                                entity_whole = (unichar*) malloc(sizeof(unichar) * (entity_len+1));
-                                u_strcpy(entity_whole,entity);
-                                }
-                                else {
-                                int current_len = u_strlen(entity_whole);
-                                entity_whole =  (unichar*) realloc(entity_whole,sizeof(unichar) * (current_len + entity_len + 2));
-                                if(prev_char[0] == '{') { //In case of multi level annotation, there could be multiple '\{' characters before the entity
-                                    prev_char[0] = ' ' ;
-                                }
-                                if(infos[k].accept_count==1) {
-                                    //if same element appears more than once then we store
-                                    // them separately
-                                    prev_char[0] = '+' ;
-                                }
-                                u_strcat(entity_whole,prev_char);
-                                u_strcat(entity_whole,entity);
-                                }
-                                if(entity != NULL)
-                                free(entity);
-                                start = -1;
-                            }
-                            if(annot_ != NULL)
-                                free(annot_);
-                            annot_start = -1;
-                        }
-                    }
-                }
-                }
-                if(entity_whole != NULL) {
-                    int entity_len = u_strlen(entity_whole);
-                    unichar* protected_entity = NULL;
-                    protected_entity = (unichar*) malloc(sizeof(unichar) * ((1+entity_len)*2));
-                    entity_len = escape(entity_whole,protected_entity,P_PLUS_COLON_SLASH);
-                    if(infos[k].entity_count == 0) {
-                        infos[k].entities = (unichar*) malloc(sizeof(unichar) * (entity_len+1));
-                        u_strcpy(infos[k].entities,protected_entity);
-                        infos[k].entity_count++;
-                        *updates = *updates + 1;
-                    }
-                    else {
-                        int current_len = u_strlen(infos[k].entities);
-                        infos[k].entities = (unichar*) realloc(infos[k].entities, sizeof(unichar) * (current_len + entity_len + 2));
-                        infos[k].entities[current_len] = '+';
-                        for(int a = current_len + 1, b = 0; a < current_len + entity_len + 2; a++)
-                        infos[k].entities[a] = protected_entity[b++];
-                        infos[k].entities[current_len + entity_len + 1] = '\0';
-                    }
-                    free(entity_whole);
-                    free(protected_entity);
-                }
-                if (prev_char != NULL)
-                    free(prev_char);
-            }
-            }
-        }
-        }
+    // For each line of the graph file
+    for (unsigned int i = 0; i < graph_file->lines_number; i++) {
+
+        free(graph_file->lines[i]);
     }
-    if(line !=NULL)
-        free(line);
-    u_fclose(dico);
-    free(num_entity);
-    }
-    return entity_string;
+
+    free(graph_file->lines);
+    free(graph_file);
 }
 
+/**
+ * This structure represents a list of token found in a string. Token are considered as elements separated by blanks,
+ * except for the strings (delimited by "") that are considered tokens even if they contain blanks between the quotes
+ *
+ * token_list : The list of found tokens, an array of strings
+ * list_size  : The number of tokens in the list
+ */
+typedef struct stringTokenList {
 
-static void print_entity_param(U_FILE* out, unichar* format, const unichar*param)
-{
-    int len_format = (int)u_strlen(format);
-    int i;
-    for (i = 0; (i + 1) < len_format; i++) {
-        if (((*(format + i)) == '%') && ((*(format + i + 1)) == 'S')) {
-            break;
+    unichar** token_list;
+    size_t list_size;
+
+} stringTokenList;
+
+/**
+ * Adds a token to a stringTokenList. To original token sent to the function is copied, so it must be freed manually
+ *
+ * token              : The token to add to the list
+ * string_token_list  : The list in which to add the new token
+ */
+void add_token_to_token_list(const unichar* token, stringTokenList* string_token_list) {
+
+    string_token_list->token_list = (unichar**) realloc(string_token_list->token_list, sizeof(unichar*) * (string_token_list->list_size + 1));
+    string_token_list->token_list[string_token_list->list_size] = u_strdup(token);
+
+    string_token_list->list_size++;
+}
+
+/**
+ * char version of the add_token_to_token_list function
+ */
+inline void add_token_to_token_list(const char* token, stringTokenList* string_token_list) {
+
+    unichar* copy = u_strdup(token);
+    add_token_to_token_list(copy, string_token_list);
+    free(copy);
+}
+
+/**
+ * Repalces a token in a token list. The new token is copied, so the one that is sent to the function must be freed manually
+ *
+ * string_token_list  : The list in which the token will be replaced
+ * token_number       : The number of the token that will be replaced. The first token is the number 0
+ * new_token          : The token that will replace the previous one
+ */
+void replace_token_in_list(stringTokenList* string_token_list, const unsigned int token_number, const unichar* new_token) {
+
+    free(string_token_list->token_list[token_number]);
+    string_token_list->token_list[token_number] = u_strdup(new_token);
+}
+
+/**
+ * char version of the replace_token_in_list function
+ */
+inline void replace_token_in_list(stringTokenList* string_token_list, const unsigned int token_number, const char* new_token) {
+
+    unichar* copy = u_strdup(new_token);
+    replace_token_in_list(string_token_list, token_number, copy);
+    free(copy);
+}
+
+/**
+ * Returns the token as a string, by concatenating all the tokens with the given separator between them
+ *
+ * string_token_list  : The token list to concatenate
+ * separator          : The separator that will be place between each token
+ *
+ * Returns the concatenation of all the tokens in the list with the given separator between them
+ */
+unichar* token_list_to_string(stringTokenList* string_token_list, unichar separator) {
+
+    if (string_token_list->list_size == 0) {
+
+        return u_strdup("");
+    }
+
+    const unichar separator_string[] = { separator, '\0' };
+
+    Ustring* final_string = new_Ustring(string_token_list->token_list[0]);
+
+    for (unsigned int i = 1; i < string_token_list->list_size; i++) {
+
+        u_strcat(final_string, separator_string);
+        u_strcat(final_string, string_token_list->token_list[i]);
+    }
+
+    unichar* copy = u_strdup(final_string->str);
+    free_Ustring(final_string);
+
+    return copy;
+}
+
+/**
+ * char version of the token_list_to_string function
+ */
+inline unichar* token_list_to_string(stringTokenList* string_token_list, char separator) {
+
+    unichar* return_value = token_list_to_string(string_token_list, (unichar) separator);
+    return return_value;
+}
+
+/**
+ * Creates a new empty string token list
+ *
+ * Returns the newly created stringTokenList, or NULL if it couldn't be created
+ */
+stringTokenList* new_string_token_list() {
+
+    stringTokenList* string_token_list = (stringTokenList*) malloc(sizeof(stringTokenList));
+
+    if (string_token_list == NULL) {
+
+        return NULL;
+    }
+
+    string_token_list->token_list = NULL;
+    string_token_list->list_size = 0;
+
+    return string_token_list;
+}
+
+/**
+ * Creates a stringTokenList from a source string. Each found token in the source string is added to the returned stringTokenList
+ *
+ * string : The source string to extract the tokens from
+ *
+ * Return the newly created token list, of NULL if the list couldn't be created
+ */
+stringTokenList* new_token_list_from_string(const unichar* string) {
+
+    // Initialization
+    stringTokenList* string_token_list = (stringTokenList*) malloc(sizeof(stringTokenList));
+
+    if (string_token_list == NULL) {
+
+        return NULL;
+    }
+
+    string_token_list->token_list = NULL;
+    string_token_list->list_size = 0;
+
+    // Begining of the token finding algorithm
+    const size_t string_length = u_strlen(string);
+
+    /**
+     * normal state : When the cursor is outside any token
+     * in_string    : When the cursor is between quotes
+     * in_token     : When the cursor is on characters composing a token that is not a string
+     */
+    enum tokenState { normal, in_string, in_token } current_state;
+    current_state = normal;
+
+    unsigned int token_beginning = 0;
+    unsigned int cursor = 0;
+
+    while (cursor < string_length) {
+
+        switch (current_state) {
+
+        case normal: {
+
+            // Skip the blanks
+            while (u_strchr(" \t", string[cursor]) != NULL) {
+
+                cursor++;
+            }
+
+            token_beginning = cursor;
+
+            if (string[cursor] == '"') {
+
+                current_state = in_string;
+            }
+            else if (string[cursor] != '\0') {
+
+                current_state = in_token;
+            }
+
+        } break;
+
+        case in_string: {
+
+            // Search the end of the string
+            bool is_escaped = false;
+            cursor++;
+
+            // Until we reach a quote that is not escaped
+            while (string[cursor] != '"' || is_escaped) {
+
+                if (string[cursor] == '\\') {
+
+                    is_escaped = !is_escaped;
+                }
+
+                cursor++;
+            }
+
+            // Creation of the token to add to the token list
+            const size_t token_length = cursor - token_beginning + 1; // +1 to match the correct token length
+            unichar* sub_string = u_strndup(string + token_beginning, token_length);
+
+            add_token_to_token_list(sub_string, string_token_list);
+            free(sub_string);
+
+            current_state = normal;
+            cursor++; // The cursor is placed just after the "
+
+        } break;
+
+        case in_token: {
+
+            // Search the end of the token
+            bool is_escaped = (string[cursor] == '\\');
+
+            // As long as we're not reading a blank character, and the current character is not the beginning of a string
+            while (u_strchr(" \t\n", string[cursor]) == NULL &&
+                    !(string[cursor] == '"' && is_escaped == false) ) {
+
+                if (string[cursor] == '\\') {
+
+                    is_escaped = !is_escaped;
+                }
+
+                cursor++;
+            }
+
+            // Creation of the token to add to the token list
+            const size_t token_length = cursor - token_beginning;
+            unichar* sub_string = u_strdup(string + token_beginning, token_length);
+
+            add_token_to_token_list(sub_string, string_token_list);
+            free(sub_string);
+
+            current_state = normal;
+
+        } break;
+
+        default: {
+        } break;
         }
     }
-    /*if ((i + 1) == len_format) {
-        u_fprintf(out, "%S", format);
+
+    return string_token_list;
+}
+
+/**
+ * Frees a stringTokenList
+ *
+ * string_token_list  : The token list that needs to be freed
+ */
+void free_string_token_list(stringTokenList* string_token_list) {
+
+    // For each token in the list
+    for (unsigned int i = 0; i < string_token_list->list_size; i++) {
+
+        free(string_token_list->token_list[i]);
+    }
+
+    free(string_token_list->token_list);
+    free(string_token_list);
+}
+
+/**
+ * This structure represent a single match, composing a linked list
+ *
+ * content  : The content of the match
+ * next     : The next tokenMatch in the linked list
+ */
+typedef struct tokenMatch {
+
+    unichar* token;
+    tokenMatch* next;
+
+} tokenMatch;
+
+/**
+ * Creates a new tokenMatch with the given content
+ *
+ * content  : The content of the tokenMatch
+ *
+ * Returns the newly created tokenMatch, or NULL if it couldn't be created
+ */
+tokenMatch* new_token_match(const unichar* content) {
+
+    tokenMatch* token_match = (tokenMatch*) malloc(sizeof(tokenMatch));
+
+    if (token_match == NULL) {
+
+        return NULL;
+    }
+
+    token_match->token = u_strdup(content);
+    token_match->next = NULL;
+
+    return token_match;
+}
+
+/**
+ * Frees a tokenMatch
+ *
+ * token_match  : The tokenMatch that needs to be freed
+ */
+void free_token_match(tokenMatch* token_match) {
+
+    free(token_match->token);
+    free(token_match);
+}
+
+/**
+ * This structure represents the list of the tokens in the token list that match a graphInfo
+ *
+ * info   : The associated graphInfo used to search matching tokens
+ * first  : The first tokenMatch of the linked list
+ */
+typedef struct graphInfoMatch {
+
+    graphInfo* info;
+    tokenMatch* first;
+
+} graphInfoMatch;
+
+/**
+ * Creates a new graphInfoMatch from an existing graphInfo.
+ *
+ * graph_info : The graphInfo associated that indicates which kind of tokens should be searched
+ *
+ * Returns the newly created graphInfoMatch, or NULL if it couldn't be created
+ */
+graphInfoMatch* new_graph_info_match(graphInfo* graph_info) {
+
+    graphInfoMatch* graph_info_match = (graphInfoMatch*) malloc(sizeof(graphInfoMatch));
+
+    if (graph_info_match == NULL) {
+
+        return NULL;
+    }
+
+    graph_info_match->info = graph_info;
+    graph_info_match->first = NULL;
+
+    return graph_info_match;
+}
+
+/**
+ * Adds a new match to the list of the given graphInfoMatch. The match is copied so the original needs to be freed manually
+ *
+ * match            : The match to add to the list of the graphInfoMatch
+ * graph_info_match : The graphInfoMatch in which to add the new match
+ */
+void add_match_to_graph_info_match(const unichar* match, graphInfoMatch* graph_info_match) {
+
+    tokenMatch* new_match = new_token_match(match);
+
+    if (new_match == NULL) {
+
         return;
-    }*/
-    u_fprintf(out, "\"%S", param);
-    //*(format + i) = '\0';
-    //u_fprintf(out, "%S", format);
-    //u_printf( "%S", format);
-    //*(format + i) = '%';
+    }
+    
+    tokenMatch* current_match = graph_info_match->first;
 
-    u_fprintf(out, "%S", format+3);
+    int comparison = -1;
+
+    // If the current list is empty or if the new match should be placed at the beginning of the list
+    if (current_match == NULL || (comparison = u_strcmp(new_match->token, current_match->token)) <= 0) {
+
+        if (comparison == 0) {
+
+            free_token_match(new_match);
+            return;
+        }
+
+        graph_info_match->first = new_match;
+        new_match->next = current_match;
+        return;
+    }
+
+    while (current_match->next != NULL &&
+          (comparison = u_strcmp(new_match->token, current_match->next->token)) > 0) {
+
+        current_match = current_match->next;
+    }
+
+    if (comparison == 0) { // If the token already exist, it is not added a second time
+
+        free_token_match(new_match);
+    }
+    else {
+
+        new_match->next = current_match->next;
+        current_match->next = new_match;
+    }
+}
+
+/**
+ * char version of the add_match_to_graph_info_match function
+ */
+inline void add_match_to_graph_info_match(const char* match, graphInfoMatch* graph_info_match) {
+
+    unichar* copy = u_strdup(match);
+    add_match_to_graph_info_match(copy, graph_info_match);
+    free(copy);
+}
+
+/**
+ * Frees a graphInfoMatch.
+ * WARNING, this function DOES NOT free the associated graphInfo, since this one was created separately
+ *
+ * graph_info_match : The graphInfoMatch that needs to be freed
+ */
+void free_graph_info_match(graphInfoMatch* graph_info_match) {
+
+    tokenMatch* to_delete = graph_info_match->first;
+
+    while (to_delete != NULL) {
+
+        tokenMatch* next = to_delete->next;
+        free_token_match(to_delete);
+        to_delete = next;
+    }
+
+    free(graph_info_match);
+}
+
+/**
+ * This structure represents a list of graphInfoMatch
+ *
+ * match_list       : The list of graphInfoMatch
+ * match_list_size  : The number of graphInfoMatch in the list
+ */
+typedef struct graphInfoMatchList {
+
+    graphInfoMatch** match_list;
+    size_t match_list_size;
+
+} graphInfoMatchList;
+
+/**
+ * Creates a new graphInfoMatchList
+ *
+ * Returns the newly created graphInfoMatchList, or NULL if it couldn't be created
+ */
+graphInfoMatchList* new_graph_info_match_list() {
+
+    graphInfoMatchList* graph_info_match_list = (graphInfoMatchList*) malloc(sizeof(graphInfoMatchList));
+
+    if (graph_info_match_list == NULL) {
+
+        return NULL;
+    }
+
+    graph_info_match_list->match_list = NULL;
+    graph_info_match_list->match_list_size = 0;
+
+    return graph_info_match_list;
+}
+
+/**
+ * Adds a graphInfoMatch to a graphInfoMatchList
+ *
+ * graph_info_match : The graphInfoMatch to add to the list
+ * graph_info_match_list  : The graphInfoMatchList in which to add the graphInfoMatch
+ */
+void add_graph_info_match_to_list(graphInfoMatch* graph_info_match, graphInfoMatchList* list) {
+
+    list->match_list = (graphInfoMatch**) realloc(list->match_list, sizeof(graphInfoMatch*) * (list->match_list_size + 1));
+    list->match_list[list->match_list_size] = graph_info_match;
+
+    list->match_list_size++;
+}
+
+/**
+ * Frees a graphInfoMatchList
+ *
+ * graph_info_match_list  : The graphInfoMatchList that needs to be freed
+ */
+void free_graph_info_match_list(graphInfoMatchList* graph_info_match_list) {
+
+    // For each graphInfoMath in the list
+    for (unsigned int i = 0; i < graph_info_match_list->match_list_size; i++) {
+
+        free_graph_info_match(graph_info_match_list->match_list[i]);
+    }
+
+    free(graph_info_match_list->match_list);
+    free(graph_info_match_list);
 }
 
 
-int update_tmp_graph(const char *transducer, VersatileEncodingConfig *vec, unichar **lines, int total_lines, const unichar *start, int start_loc, int num_entities, int num_info, grfInfo *infos, int mode) {
-    int status = 0;
-    U_FILE *graph_file = u_fopen(vec,transducer,U_WRITE);
-    if (graph_file !=NULL) {
-    if(lines != NULL) {
-        int num_lines = 0;
-        int updates = 0;
-        while(num_lines < total_lines && lines[num_lines] !=NULL) {
-        size_t num_char = u_strlen(lines[num_lines]);
-        if (num_lines == start_loc -1 && mode) {
-            u_fprintf(graph_file,"%d\n",total_lines-start_loc+3*num_info); //total number of lines should be updated to reflect the newly added negative contexts
+/**
+ * Extracts the information inside the given line of the file, and fills the given graphInfo with them.
+ *
+ * file         : The file in which to extract the information
+ * line_number  : The number of the line to inspect in the given file
+ * reference_line_number  : The line number of the line on which the description of the graph boxes begins
+ * graph_info             : The graphInfo to fill the extracted information with
+ */
+void extract_G_box_info(graphFile* file, const unsigned int line_number, const unsigned int reference_line_number,
+                        graphInfo* graph_info) {
+
+    graph_info->reference_location = reference_line_number;
+    graph_info->begining_location = line_number - graph_info->reference_location;
+
+    const unichar* current_line = file->lines[line_number];
+
+    // We search the number of the line of the following box, indicated by the last number on the current line
+    // The last token of the token list should be that last number on the line
+    stringTokenList* string_token_list = new_token_list_from_string(current_line);
+
+    // Extracting the number out of the token
+    const unichar* last_token = string_token_list->token_list[string_token_list->list_size - 1];
+    const size_t last_token_size = u_strlen(last_token);
+    unsigned int next_box_line_number = 0;
+
+    // For each digit composing the last number, we get their value as unsigned int by using the ASCII table
+    for (unsigned int i = 0; i < last_token_size; i++) {
+
+        const char c = (char) last_token[i];
+        const unsigned int current_digit_value = (unsigned int) (c - '0'); // All the digits are following '0' in the ASCII table
+        next_box_line_number = next_box_line_number * 10 + current_digit_value;
+    }
+
+    graph_info->end_location = next_box_line_number; // The location is already relative to reference_location here
+
+    free_string_token_list(string_token_list);
+}
+
+/**
+ * Extracts the information of the box following the 'G' box.
+ *
+ * file       : The file in which to extract the information
+ * graph_info : The graphInfo to fill the information with
+ */
+void extract_following_box_info(graphFile* file, graphInfo* graph_info) {
+
+    const unichar* current_line = file->lines[graph_info->reference_location + graph_info->end_location];
+
+    stringTokenList* string_token_list = new_token_list_from_string(current_line);
+    unichar* box_content = u_strdup(string_token_list->token_list[0]); // The first token is the one containing the content of the box
+
+    /** A box content should have a form like :
+     *
+     * "filterCategory[.finalCategory]/,.searchedCategory"
+     *
+     * So the algorithm is the following :
+     *
+     * - We search the index of the '/' in the whole content
+     * - We make a sub string with the part of the content to the left of the '/'
+     * - We search the index of the '.' in that left part
+     * - If the '.' is found, the filter category and the final category are extracted from the left and the right part of the '.'
+     * - Otherwise the whole part is the filter category
+     * - Another sub string is made from the content to the right of the '/'
+     * - The index of the '.' in that sub string is searched
+     * - The part to the right of the '.' is keeped as the searched_category
+     */
+
+    unichar* pointer_to_slash = u_strchr(box_content, '/');
+    const size_t index_of_slash = (size_t) (pointer_to_slash - box_content);
+
+    // The sub string begins one character after the beginning of the box content, bacause of the first "
+    const size_t left_part_length = index_of_slash - 1;
+    unichar* left_part = u_strdup(box_content + 1, left_part_length);
+
+    // For the right part we need to ignore both the final " and the '/'
+    const size_t right_part_length = u_strlen(box_content) - index_of_slash - 1 - 1;
+    unichar* right_part = u_strdup(pointer_to_slash + 1, right_part_length);
+
+    // Searching the '.' in the left part
+    unichar* pointer_to_dot = u_strchr(left_part, '.');
+
+    if (u_strcmp(left_part, "<E>") == 0) {
+
+        graph_info->filter_category = u_strdup("");
+        graph_info->final_category = u_strdup("");
+    }
+    else if (pointer_to_dot != NULL) { // The '.' was found in the left part
+
+        const size_t index_of_dot = (size_t) (pointer_to_dot - left_part);
+
+        const size_t filter_category_length = index_of_dot;
+        const size_t final_category_length = left_part_length - index_of_dot - 1; // -1 to ignore the '.'
+
+        graph_info->filter_category = u_strdup(left_part, filter_category_length);
+        graph_info->final_category = u_strdup(pointer_to_dot + 1, final_category_length); // +1 to ignore the '.'
+    }
+    else {
+
+        graph_info->filter_category = u_strdup(left_part);
+        graph_info->final_category = u_strdup("");
+    }
+
+    // Seeking the searched_category
+    unichar* pointer_to_category_beginning = u_strchr(right_part, '.');
+    const size_t index_of_category_beginning = (size_t) (pointer_to_category_beginning - right_part);
+    const size_t searched_category_length = right_part_length - index_of_category_beginning - 1; // -1 to ignore the '.'
+
+    graph_info->category = u_strdup(pointer_to_category_beginning + 1, searched_category_length);
+
+    free(box_content);
+    free(left_part);
+    free(right_part);
+    free_string_token_list(string_token_list);
+}
+
+/**
+ * Creates a graphInfoList that contains all the graphInfo for a single .grf file
+ *
+ * The algorithm is the following :
+ * For each line of the graph file, we search those containing "$G", which represent the beginning of a generic graph
+ * If such a line is found, a new graphInfo is created.
+ * - The location of the "$G" box is stored
+ * - The location of the box following the "$G" box is stored as well, it indicates the end of the generic graph
+ * - Then the category, the filter category and the final category (see graphInfo definition) are seeked and stored
+ *
+ * See Unitex manual for description of the .grf file format
+ *
+ * The newly created graphInfo is then added to the list, and this list is returned at the end
+ *
+ * graph_file : The file in which the graphInfo are seeked
+ *
+ * Returns the list of all the found graphInfo for the given graphFile. May be empty, or NULL if the creation of the list has failed
+ */
+graphInfoList* get_graph_info_list_from_graph_file(graphFile* graph_file) {
+
+    graphInfoList* graph_info_list = new_graph_info_list();
+
+    if (graph_info_list == NULL) {
+
+        return NULL;
+    }
+
+    unsigned int reference_line_number = 0;
+
+    // For each line of the graph file
+    for (unsigned int current_line_number = 0; current_line_number < graph_file->lines_number; current_line_number++) {
+
+        const unichar* current_line = graph_file->lines[current_line_number];
+        const size_t current_line_length = u_strlen(current_line);
+
+        // If we reach the begining of the graph description ('#' line), we store the number of the line + 2
+        // because the first line only indicates the number of box in the graph
+        if (current_line_length == 1 && current_line[0] == '#') {
+
+            reference_line_number = current_line_number + 2;
         }
-        else if(mode && num_lines == start_loc) {
-            int spaces = 0;
-            for(int i = 0; start[i] !='\0'; i++) {
-            u_fprintf(graph_file,"%C",start[i]);
-            if(start[i] == ' ')
-                spaces++;
-            if(spaces == 3)
-                break;
+
+        // If we find a 'G' box, a new graphInfo is created
+        if (u_starts_with(current_line, "\"$G/{")) {
+
+            graphInfo* graph_info = new_graph_info();
+
+            if (graph_info == NULL) {
+
+                free_graph_info_list(graph_info_list);
+                return NULL;
             }
-            u_fprintf(graph_file,"%d ",num_entities);
-            for(int i = 0; i < num_info; i++) {
-                if(infos[i].entity_count > 0) {
-                    u_fprintf(graph_file,"%d ",infos[i].negLeftContxt_loc); //point to negative context
-                }
-            }
-            u_fprintf(graph_file,"\n");
+
+            extract_G_box_info(graph_file, current_line_number, reference_line_number, graph_info);
+            extract_following_box_info(graph_file, graph_info);
+
+            add_graph_info_to_list(graph_info, graph_info_list);
         }
-        else if(mode && num_char > 3 && lines[num_lines][0] == '"' && lines[num_lines][1] == '$' && lines[num_lines][2] == 'G') {
-            int loc = num_lines - start_loc;
-            for(int i = 0; i < num_info; i++) {
-            if(infos[i].entity_loc == loc) {
-                print_entity_param(graph_file,infos[i].entity_format, infos[i].entities);
-                u_fprintf(graph_file,"\n");
+    }
+
+    return graph_info_list;
+}
+
+/**
+ * Returns the first occurence of a specified token in a given string, or NULL if the token wasn't found in the string
+ * The search starts from the given position and goes forward until it reaches the end of the string
+ *
+ * line           : The string in which the token will be searched
+ * start_position : The starting position of the research, from which the cursor will go forward
+ * token          : The sequance ton find in the given string
+ *
+ * Returns the first occurence of th researched token in the line, or NULL if the token wasn't found
+ */
+unichar* first_occurence_of(const unichar* line, unichar* start_position, const unichar* token) {
+
+    const size_t line_length = u_strlen(line);
+    const size_t token_length = u_strlen(token);
+    unichar* cursor = start_position;
+    unsigned int progress = 0;
+
+    while (cursor < line + line_length) {
+
+        while (cursor[progress] == token[progress]) {
+
+            progress++;
+
+            if (progress == token_length) {
+
+                return cursor;
             }
-            }
-            updates++;
         }
-        else if(mode) {
-            int loc = num_lines - start_loc;
-            int found = 0;
-            for(int i = 0; i < num_info; i++) {
-            if(infos[i].annotation_loc == loc) {
-                u_fprintf(graph_file, "\"<E>");
-                int j = 0;
-                while(lines[num_lines][j] != '\0' && lines[num_lines][j] != '/')
-                j++;
-                for(; j<(int)u_strlen(lines[num_lines]); j++) {
-                    u_fprintf(graph_file,"%C",lines[num_lines][j]);
-                }
-                u_fprintf(graph_file,"\n");
-                found++;
+
+        progress = 0;
+        cursor++;
+    }
+
+    return NULL;
+}
+
+/**
+ * char version of the first_occurence_of function
+ */
+inline unichar* first_occurence_of(const unichar* line, unichar* start_position, const char* token) {
+
+    unichar* copy = u_strdup(token);
+    unichar* result = first_occurence_of(line, start_position, copy);
+    free(copy);
+    return result;
+}
+
+/**
+ * Returns the last occurence of a specified token in a given string, or NULL if the token wasn't found in the string
+ * The search starts from the given position and goes backward until it reaches the beginning of the string
+ *
+ * line           : The string in which the token will be searched
+ * start_position : The starting poisition of the research, from which the cursor will go backward
+ * token          : The sequence to find in the given string
+ *
+ * Returns the last occurence of the researched token in the line, or NULL if the token wasn't found
+ */
+unichar* last_occurence_of(const unichar* line, unichar* start_position, const unichar* token) {
+
+    const size_t token_length = u_strlen(token);
+    unichar* cursor = start_position;
+    unsigned int progress = 0;
+
+    while (cursor >= line) {
+
+        while (cursor[progress] == token[progress]) {
+
+            progress++;
+
+            if (progress == token_length) {
+
+                return cursor;
             }
+        }
+
+        progress = 0;
+        cursor--;
+    }
+
+    return NULL;
+}
+
+/**
+ * char version of the last_occurence_of function
+ */
+inline unichar* last_occurence_of(const unichar* line, unichar* start_position, const char* token) {
+
+    unichar* copy = u_strdup(token);
+    unichar* result = last_occurence_of(line, start_position, copy);
+    free(copy);
+    return result;
+}
+
+/**
+ * Returns the first occurence of a character that is part of a set, in a given line. The research goes forward, and returns NULL if no occurence was found
+ *
+ * line           : The line in which the character will be searched
+ * start_position : The position at which the research will start
+ * set            : The est of characters that must be searched in the line
+ *
+ * Returns the first occurence of any character of the set in the given line, or NULL if nothing was found
+ */
+unichar* first_occurence_in_set_of(const unichar* line, unichar* start_position, const unichar* set) {
+
+    const unichar* line_end = line + u_strlen(line);
+    const size_t set_length = u_strlen(set);
+
+    for (unichar* cursor = start_position; cursor < line_end; cursor++) {
+
+        for (unsigned int i = 0; i < set_length; i++) {
+
+            if (*cursor == set[i]) {
+
+                return cursor;
             }
-            if(found == 0) {
-                u_fprintf(graph_file,"%S\n",lines[num_lines]);
+        }
+    }
+
+    return NULL;
+}
+
+/**
+ * char version of the first_occurence_in_set_of function
+ */
+inline unichar* first_occurence_in_set_of(const unichar* line, unichar* start_position, const char* set) {
+
+    unichar* copy = u_strdup(set);
+    unichar* result = first_occurence_in_set_of(line, start_position, copy);
+    free(copy);
+    return result;
+}
+
+/**
+ * Returns the last occurence of a character that is part of a set, in a given line. The research goes backward, and returns NULL if no occurence was found
+ *
+ * line           : The line in which the character will be searched
+ * start_position : The position at which the research will start
+ * set            : The est of characters that must be searched in the line
+ *
+ * Returns the last occurence of any character of the set in the given line, or NULL if nothing was found
+ */
+unichar* last_occurence_in_set_of(const unichar* line, unichar* start_position, const unichar* set) {
+
+    const size_t set_length = u_strlen(set);
+
+    for (unichar* cursor = start_position; cursor >= line; cursor--) {
+
+        for (unsigned int i = 0; i < set_length; i++) {
+
+            if (*cursor == set[i]) {
+
+                return cursor;
             }
+        }
+    }
+
+    return NULL;
+}
+
+/**
+ * char version of the last_occurence_in_set_of function
+ */
+inline unichar* last_occurence_in_set_of(const unichar* line, unichar* start_position, const char* set) {
+
+    unichar* copy = u_strdup(set);
+    unichar* result = last_occurence_in_set_of(line, start_position, copy);
+    free(copy);
+    return result;
+}
+
+/**
+ * Extracts the category of a token or a sub tokens. The research is done backward, the start position indicated must be placed after the category that needs to be found
+ *
+ * line           : The line representing the token or the sub token
+ * start_position : The position in the line at which the research will begin
+ * is_sub_token   : Indicates if the line represents a token or a sub token. It changes the way the category is searched in the line
+ *
+ * Returns the category of the token or sub token, or NULL if no category was found
+ */
+unichar* extract_token_category(const unichar* line, unichar* start_position, bool is_sub_token) {
+
+    unichar* bracket_occurence = last_occurence_in_set_of(line, start_position, is_sub_token ? "\\}" : "}");
+
+    if (bracket_occurence == NULL) {
+
+        return NULL;
+    }
+
+    unichar* dot_occurence = last_occurence_of(line, bracket_occurence, is_sub_token ? "\\." : ".");
+
+    if (dot_occurence == NULL) {
+
+        return NULL;
+    }
+
+    unichar* category_end = first_occurence_in_set_of(line, dot_occurence + 1, is_sub_token ? "\\" : "+:/}");
+
+    const size_t category_length = category_end - dot_occurence - (is_sub_token ? 2 : 1);
+    unichar* category = u_strndup(dot_occurence + (is_sub_token ? 2 : 1), category_length);
+
+    return category;
+}
+
+/**
+ * Extracts the content of a token. If the token contains sub tokens, the content of the sub tokens is integrated in the final content of the token
+ *
+ * line     : The line that represent the content of the token before the extraction.
+ * The line must contain only the internal content of the token, which is delimited by the first '{' and the ','
+ *
+ * line_end : The delimiter of the end of the line
+ *
+ * Returns the content of the token
+ */
+unichar* extract_token_content(unichar* line, unichar* line_end) {
+
+    stringTokenList* token_list = new_string_token_list();
+    unichar* cursor = line_end;
+    unichar* part_ending = cursor;
+
+    while (cursor >= line) {
+
+        // If we encounter either a '\', a '{' or a '}', we have to skip the part
+        if (u_strchr("\\{}", *cursor) != NULL) {
+
+            unichar* part = u_strndup(cursor + 1, part_ending - cursor);
+            //u_strcat(content, part);
+            add_token_to_token_list(part, token_list);
+            free(part);
+
+            // Depending of the encountered character, the way to skip the part is different
+            if (*cursor == '\\') {
+
+                cursor--;
+            }
+            else if (*cursor == '}') {
+
+                unichar* comma_index = last_occurence_of(line, cursor, ",");
+                cursor = comma_index - 1;
+            }
+            else { // '{'
+
+                cursor -= 2;
+            }
+
+            part_ending = cursor;
         }
         else {
-            u_fprintf(graph_file,"%S\n",lines[num_lines]);
-        }
-        num_lines++;
-        }
-        if(mode) { // add the negative left context for each path
-            for(int i = 0; i < num_info; i++) {
-                u_fprintf(graph_file,"\"$![\" 10 20 1"); //use random coordinates
-                u_fprintf(graph_file," %d \n",infos[i].negLeftContxt_loc+1);
-                u_fprintf(graph_file,"\"<");
-                for(int j=2; infos[i].annotation[j]!='\0'; j++ ) {
-                    u_fprintf(graph_file,"%C",infos[i].annotation[j]);
-                }
-                u_fprintf(graph_file,">\" 10 20 1 %d \n",infos[i].negLeftContxt_loc+2);
-                u_fprintf(graph_file,"\"$]\" 10 20 1 %d \n",infos[i].entity_loc); // point back to the entity
-            }
+
+            cursor--;
         }
     }
-    u_fclose(graph_file);
-    status = 1;
+
+    unichar* part = u_strndup(cursor + 1, part_ending - cursor);
+    add_token_to_token_list(part, token_list);
+    free(part);
+    Ustring* content = new_Ustring();
+
+    // Reversing the found parts
+    for (int i = token_list->list_size - 1; i >= 0; i--) {
+
+        u_strcat(content, token_list->token_list[i]);
     }
-    return status;
+
+    unichar* final_content = u_strdup(content->str);
+    free_string_token_list(token_list);
+    free_Ustring(content);
+
+    return final_content;
 }
 
+/**
+ * Adds the matching tokens in the given line to the graphInfoMatch
+ *
+ * line   : The line in which the tokens must be extracted
+ * match  : The graphInfoMatch in which the found tokens will be added
+ */
+inline void extract_matching_tokens(unichar* line, graphInfoMatch* match) {
+
+    const size_t line_length = u_strlen(line);
+    graphInfo* info = match->info;
+
+    unichar* comma_index = last_occurence_of(line, line + line_length, ",");
+
+    if (u_strlen(info->filter_category) == 0) { // If there is no filter the whole token content is added to the match
+
+        // +1 to skip the first '{'
+        // -1 to skip the ','
+        unichar* content = extract_token_content(line + 1, comma_index - 1);
+        add_match_to_graph_info_match(content, match);
+        free(content);
+    }
+    else { // Otherwise we need to look for sub tokens that match the filter
+
+        unichar* filter = extract_token_category(line, comma_index, true);
+
+        while (filter != NULL) {
+
+            unichar* bracket_index = last_occurence_of(line, comma_index, "}");
+            comma_index = last_occurence_of(line, bracket_index, ",");
+
+            if (u_strcmp(filter, info->filter_category) == 0) {
+
+                // We have to find the beginning of the sub token
+                int opening_ending_counter = 0;
+                unichar* cursor = comma_index;
+
+                while (opening_ending_counter != 1) {
+
+                    cursor--;
+
+                    if (*cursor == '\\') {
+
+                        if (*(cursor + 1) == '{') {
+
+                            opening_ending_counter++;
+                        }
+                        else if (*(cursor + 1) == '}') {
+
+                            opening_ending_counter--;
+                        }
+                    }
+                }
+
+                // +2 to skip the '\{'
+                // -2 to skip the '\,'
+                unichar* content = extract_token_content(cursor + 2, comma_index - 2);
+                add_match_to_graph_info_match(content, match);
+                free(content);
+
+                comma_index = cursor;
+            }
+
+            free(filter);
+            filter = extract_token_category(line, comma_index, true);
+        }
+    }
+}
+
+/**
+ * Creates a list of graphInfoMatch, with each of them containing the matching tokens
+ *
+ * token_file       : The file containing all the tokens previously matched in the cascade
+ * graph_info_list  : The list of graphInfo containing information about the tokens that should be matched
+ *
+ * Returns a graphInfoMatchList containing all the matched tokens for each generic graph
+ */
+graphInfoMatchList* get_matching_list(graphFile* token_file, graphInfoList* graph_info_list) {
+
+    // Initialization *****************************************************************************************
+    graphInfoMatchList* graph_info_match_list = new_graph_info_match_list();
+
+    if (graph_info_match_list == NULL) {
+
+        return NULL;
+    }
+
+    // Creation of the list of graphInfoMatch associated to the graphInfo
+    for (unsigned int i = 0; i < graph_info_list->graph_count; i++)  {
+
+        graphInfo* graph_info = graph_info_list->graph_list[i];
+        graphInfoMatch* graph_info_match = new_graph_info_match(graph_info);
+
+        if (graph_info_match == NULL) {
+
+            free_graph_info_match_list(graph_info_match_list);
+            return NULL;
+        }
+
+        add_graph_info_match_to_list(graph_info_match, graph_info_match_list);
+    }
+
+    // Algorithm **********************************************************************************************
+
+    // For each line of the file, starting from the end of the file to the beginning because all the tokens are at the end
+    for (unsigned int current_line_number = token_file->lines_number - 1; current_line_number >= 0; current_line_number--) {
+
+        unichar* current_line = token_file->lines[current_line_number];
+        const size_t current_line_length = u_strlen(current_line);
+
+        // If the line is not a token created in a previous graph in the cascade
+        // That means that we've reached the end of the token in that file, so we can leave the loop
+        if (current_line[0] != '{') {
+
+            break;
+        }
+
+        unichar* category = extract_token_category(current_line, current_line + current_line_length, false);
+
+        if (category == NULL) {
+
+            continue;
+        }
+
+        // For each graphInfo, if the category matches, we can start to search for filters and extract token content
+        for (unsigned int i = 0; i < graph_info_match_list->match_list_size; i++) {
+
+            graphInfoMatch* graph_info_match = graph_info_match_list->match_list[i];
+
+            if (u_strcmp(category, graph_info_match->info->category) == 0) { // If the category doesn't match for this one, we skip to the next one
+
+                extract_matching_tokens(current_line, graph_info_match);
+            }
+        }
+
+        free(category);
+    }
+
+    return graph_info_match_list;
+}
+
+/**
+ * Replaces the content of a box in a graphFile.
+ * The content is copied so the string that is passed to the function must be freed manually
+ *
+ * file         : The graphFile in which the modification will be done
+ * line_number  : The number of the line in the graph (not based on the reference_location) of the box to replace the content
+ * content      : The content that will replace the previous box content
+ */
+inline void replace_box_content(graphFile* file, const unsigned int line_number, const unichar* content) {
+
+    // Setting the content between quotes
+    Ustring* new_line = new_Ustring();
+    u_strcatf(new_line, "\"%S\" ", content);
+
+    stringTokenList* string_token_list = new_token_list_from_string(file->lines[line_number]);
+
+    for (unsigned int token_number = 1; token_number < string_token_list->list_size; token_number++) {
+
+        u_strcatf(new_line, "%S ", string_token_list->token_list[token_number]);
+    }
+
+    replace_graph_file_line(file, line_number, new_line->str);
+
+    free_Ustring(new_line);
+    free_string_token_list(string_token_list);
+}
+
+/**
+ * char version of the replace_box_content function
+ */
+inline void replace_box_content(graphFile* file, const unsigned int line_number, const char* content) {
+
+    unichar* copy = u_strdup(content);
+    replace_box_content(file, line_number, copy);
+    free(copy);
+}
+
+/**
+ * Creates a box with the given content, and leading to the indicated box. The content is copied so the original string sent to the function
+ * must be freed manually.
+ *
+ * file : The file in which the box will be added
+ * content  : The content of the box that will be created.
+ * next_box_line_number : The number of the line on which the newly created box will leads to. This number must be the line based on
+ * reference_location and not the absolute line location in the file
+ */
+inline void create_box_leading_to(graphFile* file, const unichar* content, const unsigned int next_box_line_number) {
+
+    Ustring* new_box_content = new_Ustring();
+
+    u_strcatf(new_box_content, "\"%S\" 100 100 1 %u ", content, next_box_line_number);
+    add_line_to_file(file, new_box_content->str);
+
+    free_Ustring(new_box_content);
+}
+
+/**
+ * char version of the create_box_leading_to function
+ */
+inline void create_box_leading_to(graphFile* file, const char* content, const unsigned int next_box_line_number) {
+
+    unichar* copy = u_strdup(content);
+    create_box_leading_to(file, copy, next_box_line_number);
+    free(copy);
+}
+
+/**
+ * Creates the updated graph from the graphInfoMatchList extracted from the original generic graph
+ *
+ * The process is the following :
+ * For each graphInfoMatch in the list, we get the useful info in the contained graphInfo
+ * The G box is replaced by a negative right context
+ * In between boxes are created to match the matched tokens
+ * The content of the final box is replaced by the closure
+ *
+ * new_graph_file_name  : The name of the graph that is created
+ * config               : The encoding config
+ * read_file            : The original graph from which the graphInfo has been extracted
+ * info_match_list      : The graphInfoMatchList created from the extracted graphInfo
+ *
+ * Returns 1 if the operation was successful, 0 otherwise
+ */
+unsigned int create_updated_graph(const char* new_graph_file_name, VersatileEncodingConfig* config,
+                                  graphFile* read_file, graphInfoMatchList* info_match_list) {
+
+    enum Status { FAIL = 0, SUCCESS = 1 };
+
+    // Used to put the correct number at the end of lines that indicated the line of the next box
+    unsigned int last_file_line_number = read_file->lines_number;
+
+    // For each graphInfoMatch
+    for (unsigned int i = 0; i < info_match_list->match_list_size; i++) {
+
+        const graphInfoMatch* graph_info_match = info_match_list->match_list[i];
+        const graphInfo* graph_info = graph_info_match->info;
+        const unsigned int start_line_number = graph_info->reference_location;
+        const unsigned int g_box_line_number = graph_info->begining_location + start_line_number;
+        const unsigned int following_box_line_number = graph_info->end_location + start_line_number;
+
+        // String buffer
+        Ustring* box_content = new_Ustring();
+
+        // The G box is replaced by a negative right context box, and the destination is changed to the last line of the file
+        stringTokenList* g_box_token_list = new_token_list_from_string(read_file->lines[g_box_line_number]);
+
+        u_strcatf(box_content, "\"$![\"");
+
+        for (unsigned int token_number = 1; token_number < g_box_token_list->list_size - 1; token_number++) {
+
+            u_strcatf(box_content, " %S", g_box_token_list->token_list[token_number]);
+        }
+
+        u_strcatf(box_content, " %u ", last_file_line_number - start_line_number); // Changing the destination
+
+        replace_graph_file_line(read_file, g_box_line_number, box_content->str);
+
+        // Creation of the new boxes ********************************************************************************
+
+        // Negative right context content
+        empty(box_content);
+
+        u_strcatf(box_content, "<%S>", graph_info->category);
+
+        if (u_strlen(graph_info->filter_category) > 0) { // If the filter category exist
+
+           u_strcatf(box_content, "+<%S>", graph_info->filter_category);
+        }
+
+        if (u_strlen(graph_info->final_category) > 0) { // If the final category exist
+
+            u_strcatf(box_content, "+<%S>", graph_info->final_category);
+        }
+
+        create_box_leading_to(read_file, box_content->str, last_file_line_number + 1 - start_line_number);
+        last_file_line_number++;
+
+        // End of the negative right context
+        create_box_leading_to(read_file, "$]", last_file_line_number + 1 - start_line_number);
+        last_file_line_number++;
+
+        // Creation of the box containing the matched tokens
+        empty(box_content);
+
+        // If there is no match for a G box, an empty box pointing to itself is created to cut the path
+        if (graph_info_match->first == NULL) {
+
+            u_strcatf(box_content, "<E>");
+            create_box_leading_to(read_file, box_content->str, last_file_line_number - start_line_number);
+        }
+        else {
+
+            u_strcatf(box_content, "%S", graph_info_match->first->token);
+
+            for (tokenMatch* token_match = graph_info_match->first->next; token_match != NULL; token_match = token_match->next) {
+
+                u_strcatf(box_content, "+%S", token_match->token);
+            }
+
+            // Two '{' if the filter category exist, only one otherwise
+            u_strcatf(box_content, "/%s", u_strlen(graph_info->filter_category) > 0 ? "{{" : "{");
+
+            create_box_leading_to(read_file, box_content->str, graph_info->end_location); // This box points back to the previous end box
+        }
+
+        last_file_line_number++;
+
+        // Finally, we need to replace the content of the previous end box by the closure of the tokens
+        empty(box_content);
+
+        u_strcatf(box_content, "<E>/");
+
+        if (u_strlen(graph_info->filter_category) > 0) { // If the filter category exist
+
+          u_strcatf(box_content, ",.%S}", graph_info->filter_category);
+        }
+
+        // If the final category exist, it replaces the normal category
+        u_strcatf(box_content, ",.%S",
+          u_strlen(graph_info->final_category) > 0 ? graph_info->final_category : graph_info->category);
+
+        replace_box_content(read_file, following_box_line_number, box_content->str);
+
+        // Finally, the number of boxes in the graph is updated
+        empty(box_content);
+
+        u_strcatf(box_content, "%u", read_file->lines_number - start_line_number);
+        replace_graph_file_line(read_file, start_line_number - 1, box_content->str);
+
+        free_Ustring(box_content);
+    }
+
+    unsigned int file_creation_status = print_graph_file(read_file, new_graph_file_name, config);
+    return file_creation_status;
+}
 
 typedef struct {
     char transducer_list_file_name[FILENAME_MAX];
@@ -1572,56 +2559,88 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
             launch_tokenize_in_Cassys(labeled_text_name, alphabet,
                 snt_text_files->tokens_txt, vec, tokenize_args, display_perf, display_perf ? &time_tokenize : NULL);
 
-            int entity = 0;
+            //int entity = 0;
             char* updated_grf_file_name = NULL;
             char* updated_fst2_file_name = NULL;
+
+            // Used to know if the generic graph has been created or not. If there is at least one match list that is not empty, the graph has to be created
+            bool at_least_one_match_list_not_empty = false;
+
             if (is_template_grf) {
-                int *entity_loc = NULL;
-                int num_annots = 0;
-                unichar *start_node_line = NULL;
-                int start_node_loc = -1;
-                int total_lines = 0;
-                int num_entities = 0;
-                struct grfInfo *grf_infos = NULL;
+                //int *entity_loc = NULL;
+                //int num_annots = 0;
+                //unichar *start_node_line = NULL;
+                //int start_node_loc = -1;
+                //int total_lines = 0;
+                //int num_entities = 0;
+                //struct grfInfo *grf_infos = NULL;
 
                 remove_extension(current_transducer->transducer_file_name, textbuf->template_name_without_extension);
                 sprintf(textbuf->orig_grf, "%s.grf", textbuf->template_name_without_extension);
 
-                unichar **grf_lines = load_file_in_memory(textbuf->orig_grf, vec, &total_lines);
-                grf_infos = extract_info(grf_lines, &num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
+                u_printf("Loaded file : %s\n", textbuf->orig_grf);
+                //unichar **grf_lines = load_file_in_memory(textbuf->orig_grf, vec, &total_lines);
+                graphFile* graph_file = load_graph_file(textbuf->orig_grf, vec);
+                  
+                //grf_infos = extract_info(grf_lines, &num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
+                graphInfoList* graph_info_list = get_graph_info_list_from_graph_file(graph_file);
 
-                if (num_annots > 0) {
-                    char* token_list = get_file_in_current_snt(text, transducer_number, iteration, "tok_by_alph", ".txt");
-                    unichar**entity_string = extract_entities(token_list,snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
+                //if (num_annots > 0) {
+                if (graph_info_list->graph_count > 0) {
+
+                    //char* token_list = get_file_in_current_snt(text, transducer_number, iteration, "tok_by_alph", ".txt");
+                    char* token_list = get_file_in_current_snt(text, transducer_number, iteration, "tokens", ".txt");
+
+                    graphFile* token_file = load_graph_file(token_list, vec);
+                    //unichar**entity_string = extract_entities(token_list,snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
+                    graphInfoMatchList* graph_info_match_list = get_matching_list(token_file, graph_info_list);
                     free(token_list);
-                    free(entity_string);
+                    //free(entity_string);
 
                     updated_grf_file_name = create_updated_graph_filename(text,
                             in_place ? 0 : transducer_number,
                             in_place ? 0 : iteration,
                             filename_without_path(textbuf->template_name_without_extension), ".grf");
 
-                    if (update_tmp_graph(updated_grf_file_name, vec, grf_lines, total_lines, start_node_line, start_node_loc, num_entities, num_annots, grf_infos, 1)) {
-                        if (num_entities > 0) {
+                    //if (update_tmp_graph(updated_grf_file_name, vec, grf_lines, total_lines, start_node_line, start_node_loc, num_entities, num_annots, grf_infos, 1)) {
+                    if (create_updated_graph(updated_grf_file_name, vec, graph_file, graph_info_match_list)) {
+
+                        //if (num_entities > 0) {
+                        for (unsigned int i = 0; i < graph_info_match_list->match_list_size; i++) {
+
+                            graphInfoMatch* graph_info_match = graph_info_match_list->match_list[i];
+
+                            if (graph_info_match->first != NULL) {
+
+                                at_least_one_match_list_not_empty = true;
+                                break;
+                            }
+                        }
+
+                        if (at_least_one_match_list_not_empty) {
+
                             launch_grf2fst2_in_Cassys(updated_grf_file_name, alphabet, vec, display_perf, display_perf ? &time_grf2fst2 : NULL);
 
                             updated_fst2_file_name = create_updated_graph_filename(text,
                                 in_place ? 0 : transducer_number,
                                 in_place ? 0 : iteration,
                                 filename_without_path(textbuf->template_name_without_extension), ".fst2");
-
-                            entity = num_entities;
                         }
 
                     }
                     //update_tmp_graph(orig_grf, vec, grf_lines, total_lines, NULL, -1, -1, -1, NULL, 0);
+                    free_graph_info_match_list(graph_info_match_list);
+                    free_graph_file(token_file);
+
                 }
-                free_file_in_memory(grf_lines);
+                /*free_file_in_memory(grf_lines);
                 free_grf_info(grf_infos, num_annots);
-                free(start_node_line);
+                free(start_node_line);*/
+                free_graph_info_list(graph_info_list);
+                free_graph_file(graph_file);
             }
 
-            if (is_template_grf != 1 || entity > 0) {
+            if (is_template_grf != 1 || at_least_one_match_list_not_empty) {
                 // apply transducer only if the graph is not generic or when the generic graph has been updated
 
                 u_printf("Applying transducer %s (numbered %d)\n",
