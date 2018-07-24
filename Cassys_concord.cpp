@@ -317,6 +317,10 @@ int compare_standoffinfo(standOffInfo* first, standOffInfo* second) {
 
             return -1;
         }
+        else if (first->subtype != NULL && second->subtype == NULL) {
+
+            return 1;
+        }
 
         result = u_strcmp(first->subtype, second->subtype);
     }
