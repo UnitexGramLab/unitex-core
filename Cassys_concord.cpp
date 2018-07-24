@@ -32,6 +32,7 @@
 #include "FIFO.h"
 #include "Snt.h"
 #include "UnitexRevisionInfo.h"
+#include "List_int.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -297,10 +298,93 @@ void replace_variable(U_FILE* out, unichar* xml_line, unichar* type, unichar* su
     free(variable);
 }
 
+/**
+ * Compares two standOffInfo base on their type and subtype, as strcmp
+ *
+ * first  : The first standOffInfo to compare
+ * second : The second standOffInfo to compare
+ *
+ * Returns < 0 if the first < second, 0 if thay are equel, and > 0 if first > second
+ */
+int compare_standoffinfo(standOffInfo* first, standOffInfo* second) {
+
+    int result = u_strcmp(first->type, second->type);
+
+    if (result == 0) {
+
+        // The default behavior of placing a NULL subtype > non NULL subtype is changed
+        if (first->subtype == NULL && second->subtype != NULL) {
+
+            return -1;
+        }
+
+        result = u_strcmp(first->subtype, second->subtype);
+    }
+
+    return result;
+}
+
+/**
+ * Creates a list of integers that indicates in which order the standoffInfo list should be read, based on the type and sub type.
+ * Each element of the list indicates the index of the element in the standOffList that sould be read.
+ *
+ * infos      : The standOffInfo list to analyse
+ * info_count : The number of standOffInfo in the list
+ *
+ * Returns the ordered list
+ */
+list_int* create_ordered_standoff_list(standOffInfo* infos, int info_count) {
+
+    list_int* ordered_list = new_list_int(0);
+
+    // For each standOffInfo in the list
+    for (int i = 1; i < info_count; i++) {
+
+        standOffInfo* current_info = (infos + i);
+        list_int* previous = NULL;
+
+        // For each elements in the ordered list
+        for (list_int* list_pointer = ordered_list; list_pointer != NULL; list_pointer = list_pointer->next) {
+
+            standOffInfo* compared_standoffinfo = (infos + list_pointer->n);
+            const int comparison = compare_standoffinfo(current_info, compared_standoffinfo);
+
+            if (comparison < 0) {
+
+                break;
+            }
+
+            previous = list_pointer;
+        }
+
+        list_int* new_list_element = new_list_int(i);
+
+        // If the element is before the head
+        if (previous == NULL) {
+
+            new_list_element->next = ordered_list;
+            ordered_list = new_list_element;
+        }
+        // Otherwise it is added in the middle of the list
+        else {
+
+            new_list_element->next = previous->next;
+            previous->next = new_list_element;
+        }
+    }
+
+    return ordered_list;
+}
+
 void print_standoff(U_FILE* out,standOffInfo* infos, int num_info, unichar* list_line, unichar* end_line, 
         unichar** block, int block_size, unichar** rest, int rest_size) {
-    for(int i=0; i<num_info; i++) {
+
+    list_int* ordered_list = create_ordered_standoff_list(infos, num_info);
+    list_int* list_index = ordered_list;
+
+    for(int current_info = 0; current_info < num_info; current_info++) {
         int count = 0;
+        const int i = list_index->n;
         int capacity = infos[i].entList->capacity;
         if(infos[i].entList->number_of_elements > 0) {
             replace_variable(out, list_line, infos[i].type, infos[i].subtype, NULL, NULL, 0);
@@ -330,7 +414,11 @@ void print_standoff(U_FILE* out,standOffInfo* infos, int num_info, unichar* list
                 }
             }
             u_fprintf(out,"%S\n", end_line);
+
+            list_index = list_index->next;
         }
+
+        free_list_int(ordered_list);
     }
     for (int rest_i = 0; rest_i < rest_size; rest_i++) {
         u_fprintf(out,"%S\n", rest[rest_i]);
@@ -472,8 +560,8 @@ void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* ve
                         if(subtype !=NULL) {
                             infos[num_info].subtype = (unichar*)malloc(sizeof(unichar) * (u_strlen(subtype) + 1));
                             u_strcpy(infos[num_info].subtype,subtype);
-                            get_value(infos[num_info].entList,entity,HT_INSERT_IF_NEEDED);
                         }
+                        get_value(infos[num_info].entList,entity,HT_INSERT_IF_NEEDED);
                         num_info++;
                     }
                     if(type!=NULL)
