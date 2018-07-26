@@ -1603,6 +1603,8 @@ unsigned int create_updated_graph(const char* new_graph_file_name, VersatileEnco
             u_strcatf(box_content, " %S", g_box_token_list->token_list[token_number]);
         }
 
+        free_string_token_list(g_box_token_list);
+
         u_strcatf(box_content, " %u ", last_file_line_number - start_line_number); // Changing the destination
 
         replace_graph_file_line(read_file, g_box_line_number, box_content->str);
