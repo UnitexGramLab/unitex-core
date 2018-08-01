@@ -20,6 +20,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <locale.h>
 #include "Unicode.h"
@@ -30,6 +31,7 @@
 #include "File.h"
 #include "Error.h"
 #include "Transitions.h"
+#include "UnitexGetOpt.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -37,35 +39,43 @@
 
 namespace unitex {
 
-const char
-    * usage_Fst2List =
-        "Usage:\n"
-          "Fst2List [-o outFile][-p s/f/d][-[a/t] s/m] [-m] [-d] [-f s/a][-s[0s] \"Str\"] [-r[s/l] \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"
-          " fname : name of the input file name with extension \".fst2\"\r\n"
-          " -S : write path on standard output\r\n"
-          " -o outFile : if this option and -S not exist, save paths at \"file\"lst.txt\r\n"
-          " -[a/t] s/m : mode de automata or transducteur, s=single initial, m = multi-inital\r\n"
-          "              by default \"-a s\"\r\n"
-          " -l line#  :  max number of line to save[decimal].\r\n"
-          " -i sname : stop call of the exploitation at this sub-graphe \"sname\"\r\n"
-          " -p s/f/d : mode de extrait word, s=each sub graphs, f=full path(default),\r\n"
-          "            d= debugging. default is 'f'\r\n"
-          " -c SS=0xXXXX: change the symbol string between symbols < and >,\"<SS>\" \r\n"
-          "                to a unicode character(0xXXXX)\r\n"
-          " -s \"L[,R]\" : use two strings L, R as the separator each item\r\n"
-          "                   default null\r\n"
-          " -s0 \"Str\" : if transductor mode,set \"str\" as the separator between input and out\r\n"
-          "                   default null\r\n"
-          " -f  a/s :  if the mode is transductor,the format of output line i0i1SOS1(:s) or i0S0i1S1(:a),i0,i1: input, S0,S1:out\r\n"
-          "       default value is \'s\'\r\n"
-          " -ss \"stop\" : set \"str\" as the mark of stop exploitation at \"<stop>\" \r\n"
-          "                    default null\r\n"
-          " -m : mode special for description with alphabet\r\n"
-          " -d : disable loop check: faster execution at the cost of information about loops\r\n"
-          " -v : verbose mode  default null\r\n"
-          " -r[s/l/x] \"L[,R]\"  : present recusive path(c0|...|cn) by Lc0|..|cnR : default null\r\n"
-          " -V/--only-verify-arguments: only verify arguments syntax and exit\r\n"
-          " -h/--help: this help\r\n";
+const char* usage_Fst2List =
+    "Usage:\n"
+        "Fst2List [-o <file>][-p (s|f|d)][-(a|t) (s|m)] [-m] [-d] [-f (s|a)] [--io_separator <str>] [--stop_mark <str>][-s <str>] [-r (s|l|x) <str>] [-l <line#>] [-i <subgraphname>]... [-c SS=<0xXXXX>]... <fname>\r\n"
+
+        "<fname>: input file name with extension \".fst2\"\r\n"
+        "-S, --print: display result on standard output. Exclusive with -o\r\n"
+        "-o <file>, --output <file>: if this option and -S are not used, save paths in \"<file>lst.txt\"\r\n"
+        "-(a|t) (s|m), --(ignore_outputs|allow_outputs) (s|m)\r\n"
+        "    a: ignore grammars outputs (default)\r\n"
+        "    t: take into accout the grammars outputs\r\n"
+        "    s: the grammar has only one initial state (default)\r\n"
+        "    m: the grammar has several initial states. This mode is useful in Korean\r\n"
+        "-l <line>, --limit <line>: maximum number of lines to be printed in the output file\r\n"
+        "-i <subgraphname>..., --stop_subgraph <subgraphname>... \r\n"
+        "    indicates that the recursive exploration must end when the program enters in graph <subgraphname>. \r\n"
+        "    This parameter can be used several times in order to specify several stop graphs\r\n"
+        "-p (s|f|d), --paths_print_mode (s|f|d)\r\n"
+        "    s: displays paths graph by graph \r\n"
+        "    f: (default) displays global paths;\r\n"
+        "    d: displays global paths with information on nested graph calls\r\n"
+        "-c <SS>=<0xXXXX>...: replaces symbol <SS> when it appears between angle brackets \r\n"
+        "    by the Unicode character whose hexadecimal number is <0xXXXX>\r\n"
+        "-s <L[,R]>: specifies the left (L) and right (R) delimiters that will enclose items. By default, no delimiters are specified\r\n"
+        "-s0, --io_separator <str>: if the program must take outputs into account (-t), this parameter specifies\r\n"
+        "    the sequence <str> that will be inserted between input and output. By default, there is no separator.\r\n"
+        "    Prefer the long option --io_separator, the short option -s0 is being deprecated\r\n"
+        "-f (a|s): if the program must take outputs into account (-t), this parameter specifies the format\r\n"
+        "    of the lines that will be generated: in0 in1 out0 out1 (s) or in0 out0 in1 out1 (a). The default value is s\r\n"
+        "    default value is 's'\r\n"
+        "-ss, --stop_mark <stop>: set <stop> as the mark of stop exploration at \"<stop>\". The default value is null.\r\n"
+        "    Prefer the long option --stop_mark, the short option -ss is being deprecated\r\n"
+        "-m, --word_mode: mode special for description with alphabet\r\n"
+        "-d, --disable_loop_check: faster execution at the cost of information about loops\r\n"
+        "-v, --verbose: prints information during the process\r\n"
+        "-r (s|l|x) <L[,R]>: enclose loops in L and R strings as in (c0|...|cn) by Lc0|..|cnR : default null\r\n"
+        "-V, --only_verify_arguments: only verify arguments syntax and exit\r\n"
+        "-h, --help: display this help and exit";
 
 static void usage() {
   display_copyright_notice();
@@ -1147,8 +1157,9 @@ void CFstApp::loadGraph(int& changeStrToIdx,
   if (stopSignal) {
 
     for (i_1 = 0; i_1 < a->number_of_tags; i_1++) {
-      if (u_strcmp((unichar *) a->tags[i_1]->input, stopSignal))
+      if (u_strcmp((unichar *) a->tags[i_1]->input, stopSignal)) {
         continue;
+      }
       for (j_1 = 0; j_1 < a->number_of_states; j_1++) {
         strans = a->states[j_1]->transitions;
         while (strans) {
@@ -1982,15 +1993,36 @@ int CFstApp::outWordsOfGraph(int depth) {
 //
 //
 //
-//
 
-// TODO(jhondoe) Use UnitexGetOpt instead argc, argv
+const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVhs:qr:c:";
+const struct option_TS lopts_Fst2List[]= {
+  {"output",required_argument_TS,NULL,'o'},
+  {"ignore_outputs",required_argument_TS,NULL,'a'},
+  {"allow_outputs",required_argument_TS,NULL,'t'},
+  {"limit",required_argument_TS,NULL,'l'},
+  {"stop_subgraph",required_argument_TS,NULL,'i'},
+  {"paths_print_mode",required_argument_TS,NULL,'p'},
+  {"word_mode",no_argument_TS,NULL,'m'},
+  {"disable_loop_check",no_argument_TS,NULL,'d'},
+  {"output_format",required_argument_TS,NULL,'f'},
+  {"lr_delimiters",required_argument_TS,NULL,'s'},
+  {"verbose",no_argument_TS,NULL,'v'},
+  {"print",no_argument_TS,NULL,'S'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"cycles_format",required_argument_TS,NULL,'r'},
+  {"unicode",required_argument_TS,NULL,'c'},
+  {"io_separator",required_argument_TS,NULL,'g'},
+  {"stop_mark",required_argument_TS,NULL,'Q'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
+};
+
 // FIXME(jhondoe) Use malloc to allocate chars' memory
 // FIXME(jhondoe) Full of possible memory leaks: aa.saveEntre, wp2...
 int main_Fst2List(int argc, char* const argv[]) {
-
   char* ofilename = 0;
-  int iargIndex = 1;
 
   unichar changeStrTo[16][MAX_CHANGE_SYMBOL_SIZE];
   int changeStrToIdx;
@@ -2003,52 +2035,50 @@ int main_Fst2List(int argc, char* const argv[]) {
   unichar* wp2 = NULL;
   unichar* wp3 = NULL;
 
-  VersatileEncodingConfig vec = VEC_DEFAULT;
+  char fst2_filename[FILENAME_MAX];
+  fst2_filename[0] = '\0';
+  int val,index=-1;
   bool only_verify_arguments = false;
-  while (iargIndex < argc) {
-    if (*argv[iargIndex] != '-')
-      break;
-    switch (argv[iargIndex][1]) {
-    case 'f':
-      iargIndex++;
-      switch (argv[iargIndex][0]) {
-      case 's':
-        aa.prMode = PR_SEPARATION;
-        break;
-      case 'a':
-        aa.prMode = PR_TOGETHER;
-        break;
-      default:
-        error("Invalid arguments: rerun with --help\n");
+  UnitexGetOpt options;
+  VersatileEncodingConfig vec = VEC_DEFAULT;
+
+  while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2List,lopts_Fst2List,&index))) {
+    switch(val) {
+    case 'f': 
+      if (options.vars()->optarg[0] == '\0') {
+        error("You must specify a mode : s/a\nSeparation or Together\n");
         return USAGE_ERROR_CODE;
+      }
+      switch(options.vars()->optarg[0]) {
+        case 's': aa.prMode = PR_SEPARATION; break;
+        case 'a': aa.prMode = PR_TOGETHER; break;
+        default:
+          error("Invalid arguments: rerun with --help\n");
+          return USAGE_ERROR_CODE;
       }
       break;
     case 'd':
       aa.enableLoopCheck = false;
+      break;
     case 'S':
       ofilename = new char[strlen(MAGIC_OUT_STDOUT) + 1];
       strcpy(ofilename, MAGIC_OUT_STDOUT);
       break;
-    case 'o':
-      iargIndex++;
-      ofilename = new char[strlen(argv[iargIndex]) + 1];
-      strcpy(ofilename, argv[iargIndex]);
+    case 'o': // set a name for the output file
+      ofilename = new char[strlen((char*)&options.vars()->optarg[0]) + 1];
+      strcpy(ofilename, (char*) &options.vars()->optarg[0]);
       break;
     case 'l':
-      iargIndex++;
-      aa.outLineLimit = atoi(argv[iargIndex]);
+      aa.outLineLimit = atoi((char*)&options.vars()->optarg[0]);
       break;
     case 'i':
-      iargIndex++; // stop the exploitation
-      aa.arretExpoList(argv[iargIndex]);
+      aa.arretExpoList((char*)&options.vars()->optarg[0]);
       break;
     case 'I':
-      iargIndex++; // stop the exploitation
-      aa.arretExpoListFile(argv[iargIndex]);
+      aa.arretExpoListFile((char*)&options.vars()->optarg[0]);
       break;
     case 'p':
-      iargIndex++;
-      switch (argv[iargIndex][0]) {
+      switch (options.vars()->optarg[0]) {
       case 's':
         aa.display_control = GRAPH;
         break;
@@ -2064,10 +2094,10 @@ int main_Fst2List(int argc, char* const argv[]) {
       }
       break;
     case 'a':
+      // FALLTHROUGH INTENDED
     case 't':
-      aa.automateMode = (argv[iargIndex][1] == 't') ? TRANMODE : AUTOMODE;
-      iargIndex++;
-      switch (argv[iargIndex][0]) {
+      aa.automateMode = (val == 't') ? TRANMODE : AUTOMODE;
+      switch (options.vars()->optarg[0]) {
       case 's':
         aa.traitAuto = SINGLE;
         break;
@@ -2086,7 +2116,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       aa.niveau_traite_mot = 0;
       break;
     case 'r':
-      switch (argv[iargIndex][2]) {
+      switch (options.vars()->optarg[0]) { 
       case 's':
         aa.recursiveMode = SYMBOL;
         break;
@@ -2100,9 +2130,12 @@ int main_Fst2List(int argc, char* const argv[]) {
         error("Invalid arguments: rerun with --help\n");
         return USAGE_ERROR_CODE;
       }
-      iargIndex++;
-      aa.saveEntre = new unichar[strlen(argv[iargIndex]) + 1];
-      wp = argv[iargIndex];
+      // we consume more than 1 argument which is not expected by getopt
+      // we need to manually increment optind
+      options.vars()->optind++;
+      // parse the "L[,R]" string
+      aa.saveEntre = new unichar[strlen(&options.vars()->optarg[1]) + 1];
+      wp = (char*) &options.vars()->optarg[1];
       wp2 = aa.saveEntre;
       wp3 = 0;
       while (*wp) {
@@ -2125,121 +2158,126 @@ int main_Fst2List(int argc, char* const argv[]) {
       if (wp3) {
         *wp3++ = 0;
         aa.entreGF = wp3;
-      } else
-        aa.entreGF = wp2;
-      break;
+      } else aa.entreGF = wp2;
+      break;  // end case 'r'
     case 'c':
-      iargIndex++;
-      if (!changeStrToVal(changeStrToIdx, changeStrTo, argv[iargIndex])) {
+      if (!changeStrToVal(changeStrToIdx, changeStrTo, (char*) &options.vars()->optarg[0])) {
         break;
       }
       error("Invalid arguments: rerun with --help\n");
       return USAGE_ERROR_CODE;
-    case 's': {
-      char cc = argv[iargIndex][2];
-      iargIndex++;
-      wp = argv[iargIndex];
+    case 'g': // option '--io_separator'
+      io_separator:
+      wp = (char*) &options.vars()->optarg[1]-1;
       wp3 = 0;
-      switch (cc) {
-      case 0:
-        wp2 = aa.sep1 = new unichar[strlen(wp) + 1];
-        wp3 = 0;
-        while (*wp) {
-          if ((*wp < 0x20) || (*wp > 0x7e)) {
-            error("Use a separator in ASCII code\r\n");
+      wp2 = aa.saveSep = new unichar[strlen(wp) + 1];
+      while (*wp) {
+        if ((*wp < 0x20) || (*wp > 0x7e)) {
+          error("Use a separator in ASC code\r\n");
+          return DEFAULT_ERROR_CODE;
+        }
+        if (*wp == '\\') {
+          wp++;
+          if (*wp == '\0') {
+            error("You must specify a separator\n");
             return DEFAULT_ERROR_CODE;
           }
-          switch (*wp) {
-          case '\\':
-            wp++;
-            if (*wp == '\0') {
-                // TODO(jhondoe) Put an error message here
-              error("");
-              return DEFAULT_ERROR_CODE;
-            }
-            if (*wp != '"')
-              break;
-          case '"':
-            wp++;
-            continue;
-          case ',':
-            wp3 = wp2;
-            break;
-          default:
-            break;
-          }
-          *wp2++ = (unichar) *wp++;
         }
-        *wp2 = 0;
-        aa.sepL = aa.sep1;
-        if (wp3) {
-          *wp3++ = 0;
-          aa.sepR = wp3;
-        } else {
-          aa.sepR = wp2;
-        }
+        if (*wp == '"')
+          continue;
+        *wp2++ = (unichar) *wp++;
+      }
+      *wp2 = 0;
+      break;
 
-        break;
+    case 'Q':  // option '--stop_mark'
+      stop_mark:
+      wp = (char*) &options.vars()->optarg[1];
+      wp3 = 0;
+      wp2 = aa.stopSignal = new unichar[strlen(wp) + 3];
+      ;
+      *wp2++ = (unichar) '<';
+      while (*wp) {
+        if (*wp == '"')
+          continue;
+        *wp2++ = (unichar) *wp++;
+      }
+      *wp2++ = (unichar) '>';
+      *wp2 = 0;
+      break;
+    case 's':
+    {
+      // supports the deprecated options '-ss' and '-s0'
+      switch (options.vars()->optarg[0]) { 
       case '0':
-        wp2 = aa.saveSep = new unichar[strlen(wp) + 1];
-        while (*wp) {
-          if ((*wp < 0x20) || (*wp > 0x7e)) {
-            error("Use a separator in ASC code\r\n");
+        u_printf("Warning: '-s0' is deprecated, use '--io_separator' instead\n");
+        // manually increment optind to consume more args than expected by getopt
+        options.vars()->optind++;
+        // goto the correct switch case to avoid code duplication
+        goto io_separator;
+      case 's':
+        u_printf("Warning: '-ss' is deprecated, use '--stop-mark' instead\n");
+        // manually increment optind to consume more args than expected by getopt
+        options.vars()->optind++;
+        // goto the correct switch case to avoid code duplication
+        goto stop_mark;
+      } // end switch deprecated option
+
+      wp = (char*) &options.vars()->optarg[1] - 1;
+      wp3 = 0;
+      wp2 = aa.sep1 = new unichar[strlen(wp) + 1];
+      wp3 = 0;
+      while (*wp) {
+        if ((*wp < 0x20) || (*wp > 0x7e)) {
+          error("Use a separator in ASCII code\r\n");
+          return DEFAULT_ERROR_CODE;
+        }
+        switch (*wp) {
+        case '\\':
+          wp++;
+          if (*wp == '\0') {
+            error("You must specify a separator");
             return DEFAULT_ERROR_CODE;
           }
-          if (*wp == '\\') {
-            wp++;
-            if (*wp == '\0') {
-                // TODO(jhondoe) Put an error message here
-              error("");
-              return DEFAULT_ERROR_CODE;
-            }
-          }
-          if (*wp == '"')
-            continue;
-          *wp2++ = (unichar) *wp++;
+          if (*wp != '"')
+            break;
+        case '"':
+          wp++;
+          continue;
+        case ',':
+          wp3 = wp2;
+          break;
+        default:
+          break;
         }
-        *wp2 = 0;
-        break;
-      case 's':
-        wp2 = aa.stopSignal = new unichar[strlen(wp) + 3];
-        ;
-        *wp2++ = (unichar) '<';
-        while (*wp) {
-          if (*wp == '"')
-            continue;
-          *wp2++ = (unichar) *wp++;
-        }
-        *wp2++ = (unichar) '>';
-        *wp2 = 0;
-        break;
+        *wp2++ = (unichar) *wp++;
+      }
+      *wp2 = 0;
+      aa.sepL = aa.sep1;
+      if (wp3) {
+        *wp3++ = 0;
+        aa.sepR = wp3;
+      } else {
+        aa.sepR = wp2;
       }
       break;
-    }
+    } //end case 's'
     case 'k':
-      iargIndex++;
-      if (argv[iargIndex][0] == '\0') {
+      if (options.vars()->optarg[0] == '\0') {
         error("Empty input_encoding argument\n");
         return USAGE_ERROR_CODE;
       }
-      decode_reading_encoding_parameter(
-          &(vec.mask_encoding_compatibility_input), argv[iargIndex]);
+      decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input), &options.vars()->optarg[0]);
       break;
-    case 'V': only_verify_arguments = true;
-              break;
-    case 'h': usage();
-              return SUCCESS_RETURN_CODE;
+    case 'V': only_verify_arguments = true; break;
+    case 'h': usage(); return SUCCESS_RETURN_CODE;
     case 'q': {
-      char* arg;
-      if (argv[iargIndex][2] == '\0') {
-        iargIndex++;
-        arg = argv[iargIndex];
-      } else {
-        arg = &(argv[iargIndex][2]);
-      }
-      if (arg[0] == '\0') {
-        error("Empty output_encoding argument\n");
+      char* arg = NULL;
+      if (options.vars()->optarg[0] == '\0') {
+        error("couldn't get the argument for option 'q'\n");
         return USAGE_ERROR_CODE;
+      } else {
+        arg = (char*)&options.vars()->optarg[0];
       }
       decode_writing_encoding_parameter(&(vec.encoding_output),
           &(vec.bom_output), arg);
@@ -2248,26 +2286,28 @@ int main_Fst2List(int argc, char* const argv[]) {
     default:
       error("Invalid arguments: rerun with --help\n");
       return USAGE_ERROR_CODE;
-    }
-  iargIndex++;
-}
-if (iargIndex != (argc - 1)) {
-  error("Invalid arguments: rerun with --help\n");
-  return USAGE_ERROR_CODE;
-}
+    } // end switch
+    index=-1;
+  } // end while
 
-if (only_verify_arguments) {
-  // freeing all allocated memory
-  // TODO(jhondoe) free all allocated memory
+  // test each option has at most one argument
+  if (options.vars()->optind != argc-1) {
+    error("Invalid arguments: rerun with --help\n");
+    return USAGE_ERROR_CODE;
+  }
+
+  if (only_verify_arguments) {
+    // freeing all allocated memory
+    // TODO(jhondoe) free all allocated memory
+    delete ofilename;
+    return SUCCESS_RETURN_CODE;
+  }
+  strcpy(fst2_filename,argv[options.vars()->optind]);
+  aa.fileNameSet(argv[options.vars()->optind], ofilename);
+  aa.vec = vec;
+  aa.getWordsFromGraph(changeStrToIdx, changeStrTo, fst2_filename);
   delete ofilename;
   return SUCCESS_RETURN_CODE;
-}
-
-aa.fileNameSet(argv[iargIndex], ofilename);
-aa.vec = vec;
-aa.getWordsFromGraph(changeStrToIdx, changeStrTo, argv[iargIndex]);
-delete ofilename;
-return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex
