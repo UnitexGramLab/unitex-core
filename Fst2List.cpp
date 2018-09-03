@@ -1597,13 +1597,13 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo,
       //
       tmp = sui->tag_number & SUB_ID_MASK;
 
-      for (scanner = 0; scanner < autoDepth; scanner++)
+      /*for (scanner = 0; scanner < autoDepth; scanner++)
         if (autoStackMap[scanner].tran->tag_number == sui->tag_number)
-          break;
+          break;*/
       autoStackMap[autoDepth].tran = sui;
-      if (scanner == autoDepth) {
+      //if (scanner == autoDepth) {
         callId = callIdentifyId(autoStackMap, autoDepth + 1);
-      } else { // find recusive call
+      /*} else { // find recusive call
         pathEtiQ[pathEtiQidx].eti = 0;
         pathEtiQ[pathEtiQidx].autoNo = autoStackMap[scanner].autoId;
         ;
@@ -1615,7 +1615,7 @@ int CFstApp::findCycleSubGraph(int automateNo, int autoDepth, int stateNo,
           fatal_error("recursive find fail");
         --pathEtiQidx;
         continue;
-      }
+      }*/
       pathEtiQ[pathEtiQidx].eti = 0;
       pathEtiQ[pathEtiQidx].autoNo = callId;
       pathEtiQ[pathEtiQidx].etatNo = a->initial_states[tmp];
