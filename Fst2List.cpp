@@ -2168,7 +2168,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       return USAGE_ERROR_CODE;
     case 'g': // option '--io_separator'
       io_separator:
-      if(val=='g') { // check the deprcated option '-s0' wasn't used
+      if(val=='g') { // check the deprecated option '-s0' wasn't used
         wp = (char*) &options.vars()->optarg[1]-1;
       }
       wp3 = 0;
