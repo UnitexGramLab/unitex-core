@@ -2253,7 +2253,7 @@ int CFstApp::outWordsOfGraph(int depth) {
 //
 //
 
-const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVhs:qr:c:";
+const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVhs:qr:c:g:";
 const struct option_TS lopts_Fst2List[]= {
   {"output",required_argument_TS,NULL,'o'},
   {"ignore_outputs",required_argument_TS,NULL,'a'},
@@ -2427,7 +2427,9 @@ int main_Fst2List(int argc, char* const argv[]) {
       return USAGE_ERROR_CODE;
     case 'g': // option '--io_separator'
       io_separator:
-      wordPtr = (char*) &options.vars()->optarg[1]-1;
+      if(val=='g') { // check the deprecated option '-s0' wasn't used
+        wordPtr = (char*) &options.vars()->optarg[1]-1;
+      }
       wordPtr3 = 0;
       wordPtr2 = aa.saveSep = new unichar[strlen(wordPtr) + 1];
       while (*wordPtr) {
@@ -2472,6 +2474,7 @@ int main_Fst2List(int argc, char* const argv[]) {
         u_printf("Warning: '-s0' is deprecated, use '--io_separator' instead\n");
         // manually increment optind to consume more args than expected by getopt
         options.vars()->optind++;
+        wp = (char*) &options.vars()->optarg[2];
         // goto the correct switch case to avoid code duplication
         goto io_separator;
       case 's':
