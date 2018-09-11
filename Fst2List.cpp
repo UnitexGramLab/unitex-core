@@ -225,7 +225,7 @@ public:
   int getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fst2_file_name);
   int exploreSubgraphRecursively(int stackStateID, int autodep, int testState, int depthState);
   int outWordsOfGraph(int depth);
-  int checkAutoCallStack(int autoCallStackDepth);
+  int checkAutoCallStack(); // unused function
 
   // Stack of invocations of subgraphs
   // and of exits from subgraphs
@@ -1846,7 +1846,7 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
  * previous call stack being erased
  * before backtracking
  */
-int CFstApp::checkAutoCallStack(int autoCallStackDepth) {
+int CFstApp::checkAutoCallStack() {
   int stackStateID = invocStack[invocStackIdx].stackStateID;
   struct transitionList *transitionListPtr;
   transitionListPtr = transitionListHead;
