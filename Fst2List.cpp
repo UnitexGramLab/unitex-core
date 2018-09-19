@@ -2474,7 +2474,6 @@ int main_Fst2List(int argc, char* const argv[]) {
         u_printf("Warning: '-s0' is deprecated, use '--io_separator' instead\n");
         // manually increment optind to consume more args than expected by getopt
         options.vars()->optind++;
-        //wordPtr = (char*) &options.vars()->optarg[2];
         wordPtr = argv[options.vars()->optind-1];
         // goto the correct switch case to avoid code duplication
         goto io_separator;
