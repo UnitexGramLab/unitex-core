@@ -2428,7 +2428,7 @@ int main_Fst2List(int argc, char* const argv[]) {
     case 'g': // option '--io_separator'
       io_separator:
       if(val=='g') { // check the deprecated option '-s0' wasn't used
-        wordPtr = (char*) &options.vars()->optarg[1]-1;
+        wordPtr = (char*) &options.vars()->optarg[0];
       }
       wordPtr3 = 0;
       wordPtr2 = aa.saveSep = new unichar[strlen(wordPtr) + 1];
@@ -2474,7 +2474,8 @@ int main_Fst2List(int argc, char* const argv[]) {
         u_printf("Warning: '-s0' is deprecated, use '--io_separator' instead\n");
         // manually increment optind to consume more args than expected by getopt
         options.vars()->optind++;
-        wordPtr = (char*) &options.vars()->optarg[2];
+        //wordPtr = (char*) &options.vars()->optarg[2];
+        wordPtr = argv[options.vars()->optind-1];
         // goto the correct switch case to avoid code duplication
         goto io_separator;
       case 's':
