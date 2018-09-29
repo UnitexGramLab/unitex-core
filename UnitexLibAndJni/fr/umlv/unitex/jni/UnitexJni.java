@@ -22,8 +22,8 @@
  * File created and contributed by Gilles Vollant (Ergonotics SAS) 
  * as part of an UNITEX optimization and reliability effort
  *
- * additional information: http://www.ergonotics.com/unitex-contribution/
- * contact : unitex-contribution@ergonotics.com
+ * additional information: http://www.smartversion.com/unitex-contribution/
+ * contact : info@winimage.com
  *
  */
 package fr.umlv.unitex.jni;
@@ -39,7 +39,7 @@ import java.util.List;
  *         created and contributed by Gilles Vollant (Ergonotics SAS) as part of
  *         an UNITEX optimization and reliability effort <br>
  *         https://github.com/ergonotics/JNI-for-Unitex-2.1
- *         http://www.ergonotics.com/unitex-contribution/
+ *         http://www.smartversion.com/unitex-contribution/
  * 
  *         Modified by Sébastien Paumier
  */

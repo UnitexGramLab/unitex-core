@@ -23,8 +23,8 @@
  * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
- * additional information: http://www.ergonotics.com/unitex-contribution/
- * contact : unitex-contribution@ergonotics.com
+ * additional information: http://www.smartversion.com/unitex-contribution/
+ * contact : info@winimage.com
  *
  */
 #if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_LOGGER_AUTOINSTALL))))
