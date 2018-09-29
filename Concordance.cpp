@@ -561,7 +561,7 @@ while ((c=u_fgetc(f))!=EOF) {
          u_to_char(tmp1,indices);
          int start,end;
          sscanf(tmp1,"%d %d",&start,&end);
-         u_fprintf(out,"<concordance start=\"%d\" end=\"%d\">%S</concordance>\n",start,end,middle);
+         u_fprintf(out,"<concordance start=\"%d\" end=\"%d\">%XS</concordance>\n",start,end,middle);
       }
       /* If must must produce an axis file...
          VARIABLES :
