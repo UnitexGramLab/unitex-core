@@ -10,6 +10,8 @@ If you have a feature request for the visual user interface, create rather an is
 https://github.com/UnitexGramLab/gramlab-ide/issues
 
 If your feature request is related with UnitexToolLogger then please fill-out the form below
+
+For help and support, visit the Unitex/GramLab forum: http://forum.unitexgramlab.org
 --->
 
 **Is your feature request related to a problem? Please describe.**
