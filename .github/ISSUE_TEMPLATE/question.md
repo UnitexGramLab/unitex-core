@@ -1,7 +1,6 @@
 ---
-name: Question
+name: "❔ Question"
 about: Have any questions regarding how Unitex/GramLab works?
-
 ---
 
-It's recommended to go to the Unitex/GramLab forum for help and support: http://forum.unitexgramlab.org
+For help and support, it's recommended to visit first the Unitex/GramLab forum: http://forum.unitexgramlab.org
