@@ -561,7 +561,11 @@ while ((c=u_fgetc(f))!=EOF) {
          u_to_char(tmp1,indices);
          int start,end;
          sscanf(tmp1,"%d %d",&start,&end);
-         u_fprintf(out,"<concordance start=\"%d\" end=\"%d\">%XS</concordance>\n",start,end,middle);
+         if (options->escape_matches) {
+           u_fprintf(out,"<concordance start=\"%d\" end=\"%d\">%XS</concordance>\n",start,end,middle);
+         } else {
+           u_fprintf(out,"<concordance start=\"%d\" end=\"%d\">%S</concordance>\n",start,end,middle);
+         }
       }
       /* If must must produce an axis file...
          VARIABLES :
@@ -1625,6 +1629,7 @@ opt->right_context=0;
 opt->left_context_until_eos=0;
 opt->right_context_until_eos=0;
 opt->thai_mode=0;
+opt->escape_matches=0;
 opt->fontname=NULL;
 opt->fontsize=0;
 opt->result_mode=HTML_;

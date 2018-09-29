@@ -76,6 +76,7 @@ struct conc_opt {
   char* fontname;
   int fontsize;
   int result_mode;
+  int escape_matches;
   char output[FILENAME_MAX];
   char* script;
   char* sort_alphabet;
