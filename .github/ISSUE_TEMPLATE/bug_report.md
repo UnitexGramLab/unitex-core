@@ -1,5 +1,5 @@
 ---
-name: 🐞 Bug report
+name: "\U0001F41E Bug report"
 about: Did something not work as expected?
 
 ---
