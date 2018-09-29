@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2018 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,6 @@ static ABSTRACTFILE* (*real_fopen)(const char*,const char*)=af_fopen;
 #endif
 
 #define UNITEX_USE_BASE_UNICODE 1
-
 namespace unitex {
 
 
@@ -2004,8 +2003,8 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
                 {
                     unichar c;
                     unsigned char ch = tab_in[i];
-					int index=kUTF8ByteInfoIndex[static_cast<uint8_t>(ch)];
-					int nbbyte=kUTF8ByteInfo[index].width;
+                    int index=kUTF8ByteInfoIndex[static_cast<uint8_t>(ch)];
+                    int nbbyte=kUTF8ByteInfo[index].width;
 
                     if (i + nbbyte >(int)read_binary_in_file)
                     {
@@ -2016,7 +2015,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
                         break;
                     }
 
-					c=((unichar)ch) & kUTF8ByteInfo[index].mask;
+                    c=((unichar)ch) & kUTF8ByteInfo[index].mask;
                     int nbbyte_loop = nbbyte;
 
                     if (nbbyte_loop>0) {
@@ -2397,6 +2396,7 @@ static void fwriteString(U_FILE* f, const unichar* us, int convLFtoCRLF)
  *   See 'htmlize' for details.
  *
  * - %U works in the same way than %H, but it invokes 'URLize'
+ * - %X works in the same way than %X, but it invokes 'XMLize'
  *
  * Author: Sébastien Paumier
  * Original version with format option restrictions: Olivier Blanc
@@ -2435,12 +2435,13 @@ while (*format) {
          }
 
          case 'H':
-         case 'U': {
+         case 'U':
+         case 'X': {
             int (*XXXize)(const unichar*,unichar*);
-            if (*format=='H') {
-                XXXize=htmlize;
-            } else {
-                XXXize=URLize;
+            switch (*format) {
+              case 'H': XXXize=htmlize; break;
+              case 'U': XXXize=URLize;  break;
+              case 'X': XXXize=XMLize;  break;
             }
             /* If we have a '%H' (or '%U'), it means that we have to print HTML things (or URLs) */
             format++;
@@ -2663,12 +2664,13 @@ while (*format) {
          }
 
          case 'H':
-         case 'U': {
+         case 'U':
+         case 'X': {
             int (*XXXize)(const unichar*,unichar*);
-            if (*format=='H') {
-                XXXize=htmlize;
-            } else {
-                XXXize=URLize;
+            switch (*format) {
+              case 'H': XXXize=htmlize; break;
+              case 'U': XXXize=URLize;  break;
+              case 'X': XXXize=XMLize;  break;
             }
             /* If we have a '%H', it means that we have to print HTML things */
             format++;
@@ -3312,6 +3314,7 @@ register int i=0;
 while (s[i++]) {}
 return (i-1);
 }
+
 #endif
 
 /**
@@ -3329,7 +3332,6 @@ unsigned int u_strlenWithConvLFtoCRLF(const unichar* s, int convLFtoCRLF) {
         i++;
     }
 }
-
 
 
 /**
@@ -3397,6 +3399,7 @@ unichar* u_strcpy(unichar* dst,const unichar* src)
     }
     return s;
 }
+
 
 /**
  * unicode version of strncpy
@@ -3608,6 +3611,7 @@ if ((a!=NULL) && (b!=NULL)) {
   return -1;
   }
 }
+
 #endif
 
 /**
@@ -3661,6 +3665,7 @@ if ((a!=NULL) && (b!=NULL)) {
   }
 }
 #endif
+
 
 #if !UNITEX_USE(BASE_UNICODE)
 /**
@@ -4227,7 +4232,6 @@ res[size]='\0';
 return res;
 }
 
-
 unichar* u_strdup(const char* str,Abstract_allocator prv_alloc) {
 if (str==NULL) return NULL;
 unichar* res=(unichar*)malloc_cb((strlen(str)+1)*sizeof(unichar),prv_alloc);
@@ -4661,6 +4665,7 @@ template size_t u_escape(const unichar* source, char* destination);
 
 #endif
 
+
 /**
  * @brief JSON-escapes a unichar string
  *
@@ -4788,6 +4793,55 @@ template size_t u_quotize(const unichar* source, unichar* destination);
 // Quote-escapes a C-string
 template size_t u_quotize(const char* source, char* destination);
 #endif
+
+/**
+ * @brief XML-escapes a unichar string
+ *
+ * XML-escapes a source string before copy it into destination
+ * this function conforms with "Extensible Markup Language (XML)
+ * 1.0 (Fifth Edition)"
+ *
+ * @param[in]  source unichar string to be escaped
+ * @param[out] destination unichar array where the escaped string is to be copied
+ * @return the length of the destination string
+ */
+int XMLize(const unichar* source,unichar* destination) {
+  if (!source) {
+     fatal_error("NULL error in XMLize\n");
+  }
+
+  const unichar* it = source;
+  int pos = 0;
+
+// U_STRCPY_LITERAL macro copies a literal string, starting at pos position,
+// into a destination unichar buffer, then it increments the pos variable by
+// the length of the literal. In this case the length is computed at compile
+// time
+#define U_STRCPY_LITERAL(destination, pos, literal) \
+        u_strcpy(&*(destination+pos),literal);      \
+        pos+=sizeof(literal)-1
+  // loop till the end of string
+  while (*it != '\0') {
+    switch(*it) {
+      case '\'': U_STRCPY_LITERAL(destination,pos,"&apos;"); break;
+      case '"':  U_STRCPY_LITERAL(destination,pos,"&quot;"); break;
+      case '&':  U_STRCPY_LITERAL(destination,pos,"&amp;");  break;
+      case '<':  U_STRCPY_LITERAL(destination,pos,"&lt;");   break;
+      case '>':  U_STRCPY_LITERAL(destination,pos,"&gt;");   break;
+      default :  destination[pos++] = *it;
+    }
+    // advance the character pointer
+    ++it;
+  }
+// undefines U_STRCPY_LITERAL macro right before we use them
+#undef U_STRCPY_LITERAL
+  // indicate the end of the string
+  destination[pos] = '\0';
+
+  // return the length of the destination string
+  return pos;
+}
+
 
 /**
  * Puts a copy of 'src' into 'dst', replacing:
@@ -5262,7 +5316,7 @@ return (c>=0x1F00 && c<=0x1F15) || (c>=0x1F18 && c<=0x1F1D) ||      //$CD:200211
 //
 int u_is_letter_internal(unichar c) {
 #if !UNITEX_USE(BASE_UNICODE)
-  return u_is_basic_latin_letter(c)
+return u_is_basic_latin_letter(c)
        || u_is_latin1_supplement_letter(c)
        || u_is_latin_extendedA_letter(c)
        || u_is_latin_extendedB_letter(c)
@@ -8162,6 +8216,7 @@ return is_modified;
 
 #else
 
+
 int u_toupper_ismodified (unichar* s) {
 if (s==NULL) return 0;
 int is_modified = 0;
@@ -8209,6 +8264,8 @@ return is_modified;
 
 #else
 
+
+
 int u_tolower_ismodified (unichar* s) {
 if (s==NULL) return 0;
 int is_modified = 0;
@@ -8254,6 +8311,7 @@ return is_modified;
 }
 
 #else
+
 
 int u_deaccentuate_ismodified (unichar* s) {
 if (s==NULL) return 0;

@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2018 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,7 +41,6 @@
 #if UNITEX_USE(BASE_UNICODE)
 #include "base/unicode/unicode.h"
 #endif
-
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
@@ -296,13 +295,10 @@ void free_string_optional_buffer(unichar** allocated_buffer, Abstract_allocator 
 
 int is_str_mono_unichar_string(const unichar*, unichar);
 #define is_str_mono_unichar_string(str,c) (((str)!=NULL) && (*(str)==(c)) && (*((str)+1)==0))
-
 #if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp(const unichar*, const unichar*);
 #endif
-
 int u_strcmp(const unichar*,const char*);
-
 #if !UNITEX_USE(BASE_UNICODE)
 int u_strncmp(const unichar*, const unichar*,size_t num);
 #endif
@@ -360,6 +356,7 @@ void u_to_char(char*,unichar*);
 void u_to_char_n(char *, const unichar *, unsigned int);
 void u_chomp_new_line(unichar*);
 size_t u_jsonize(const unichar* source,unichar* destination);
+int XMLize(const unichar* source,unichar* destination);
 int URLize(const unichar*,unichar*);
 int htmlize(const unichar*,unichar*);
 int mirror(const unichar*,unichar*);
