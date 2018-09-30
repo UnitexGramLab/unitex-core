@@ -1642,11 +1642,11 @@ unsigned int create_updated_graph(const char* new_graph_file_name, VersatileEnco
         }
         else {
 
-            u_strcatf(box_content, "%S", graph_info_match->first->token);
+            u_strcatf(box_content, "<%S>", graph_info_match->first->token);
 
             for (tokenMatch* token_match = graph_info_match->first->next; token_match != NULL; token_match = token_match->next) {
 
-                u_strcatf(box_content, "+%S", token_match->token);
+                u_strcatf(box_content, "+<%S>", token_match->token);
             }
 
             // Two '{' if the filter category exist, only one otherwise
