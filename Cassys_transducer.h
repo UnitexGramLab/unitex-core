@@ -42,7 +42,7 @@
 
 namespace unitex {
 
-#define INFINITY -1
+#define REPEAT_INFINITY -1
 
 /**
   * Structure storing the list of transducer
