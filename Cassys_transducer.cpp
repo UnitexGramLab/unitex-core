@@ -435,7 +435,7 @@ int extract_cassys_tranducer_star(const char *line) {
     }
 
     if(line[i]=='*'){
-        return INFINITY;
+        return REPEAT_INFINITY;
     }
 
     return 1;
