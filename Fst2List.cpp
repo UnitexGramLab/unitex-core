@@ -189,8 +189,8 @@ static const char *StrMemLack = "allocation of memory for cycle data failed";
 struct pathStack_t {
   // identifies a snapshot of the call stack (i.e. autoCallStack) at this given point
   int stackStateID; 
-  int stateNo;      // state's number
-  int tag;
+  int stateNo;      // state's number in fst2 file
+  int tag;          // tag's number in fst2 file
 };
 
 
@@ -490,6 +490,10 @@ public:
   struct cycleNodeId *headCycNodes;
   int cycNodeCnt;
 
+  /**
+   * Search in headCycNodes for an index corresponding to
+   * stateNo, stackStateID and tag from pathStack element at 'curidx'
+   */
   unichar *getLabelNumber(unichar*aa, int numOfPath, int &flag, int curidx, int setflag) {
     struct cycleNodeId *cnode = headCycNodes;
     int searchState = pathStack[curidx].stateNo & PATHID_MASK;
@@ -769,8 +773,9 @@ public:
   }
 
   /**
-   * print the word
-   * return 0 if we can't print it, else 1
+   * fill INPUTBUFFER and OUTPUTBUFFER and 
+   * print their content in 'fouput'
+   * return 0 when output limit has been reached, else 1
    */
   int outOneWord(unichar *suffix) {
     int setOut;
@@ -781,7 +786,7 @@ public:
     }
     if (suffix) {
       setOut = 0;
-      //printf("%d %d %d %d \n",inputPtrCnt,outputPtrCnt,*suffix,count_in_line);
+      //u_printf("%d %d %d %d \n",inputPtrCnt,outputPtrCnt,*suffix,count_in_line);
       if (inputPtrCnt || outputPtrCnt || *suffix || (count_in_line == 0)) {
         setOut = 1;
         if (prMode == PR_SEPARATION) {
@@ -834,6 +839,7 @@ public:
           }
         }
       } // condition de out
+
       if ((recursiveMode == LABEL) && setOut) {
         if ((automateMode == TRANMODE) && (prMode == PR_SEPARATION)) {
           wordPtr = openingQuote;
@@ -1921,17 +1927,17 @@ unichar * uascToNum(unichar *uasc, int *val) {
  * prints the current path
  *
  * Go through pathStack to construct the words
- * return 1 when an error happens, else 0
+ * return 1 when output limit has been reached, else 0
  */
 int CFstApp::outWordsOfGraph(int depth) {
   int s;
   Fst2Tag Tag;
-  unichar *sp; //string ptr ?
+  unichar *suffixPtr;
   unichar *wordPtr;
   unichar *ep; //input buffer ptr
   unichar *tp; //transducer buffer ptr
   unichar *chp;
-  int indicateFirstUsed; //FIXME should probably be a pointer
+  int indicateFirstUsed;
   int i;
   int markCtlChar, markPreCtlChar;
   depthDebug = pathIdx;
@@ -2025,23 +2031,22 @@ int CFstApp::outWordsOfGraph(int depth) {
 
         }
         if (pathStack[s].stateNo & STOP_PATH_MARK) {
-          //FIXME getLabelNumber is expecting a pointer for flag but indicateFirstUsed is of type int
-          sp = getLabelNumber(aaBuffer_for_getLabelNumber, depth,indicateFirstUsed, s, 0);
-          if (outOneWord(sp) != 0) {
+          suffixPtr = getLabelNumber(aaBuffer_for_getLabelNumber, depth,indicateFirstUsed, s, 0);
+          if (outOneWord(suffixPtr) != 0) {
             return 1;
           }
           break;
         }
-        sp = getLabelNumber(aaBuffer_for_getLabelNumber, s,indicateFirstUsed, s, 1);
+        suffixPtr = getLabelNumber(aaBuffer_for_getLabelNumber, s,indicateFirstUsed, s, 1);
         if (!indicateFirstUsed) { // first print out
-          if (outOneWord(sp) != 0) {
+          if (outOneWord(suffixPtr) != 0) {
             return 1;
           }
         } else {
           resetBufferCounters();
         }
-        while (*sp)
-          INPUTBUFFER[inBufferCnt++] = *sp++;
+        while (*suffixPtr)
+          INPUTBUFFER[inBufferCnt++] = *suffixPtr++;
         wordPtr = closingQuote;
         while (*wordPtr)
           INPUTBUFFER[inBufferCnt++] = *wordPtr++;
@@ -2168,10 +2173,10 @@ int CFstApp::outWordsOfGraph(int depth) {
         markPreCtlChar = markCtlChar;
         continue;
       }
-    } // end if pathStack[s].stateNo & LOOP_PATH_MARK
+    } // end if LOOP_PATH_MARK
 
     if (pathStack[s].stateNo & STOP_PATH_MARK) {
-      //printf("stop %d\n",s);
+      //u_printf("stop %d\n",s);
       if (markPreCtlChar && markCtlChar) {
         if (outOneWord(0) != 0) {
           return 1;
@@ -2198,7 +2203,7 @@ int CFstApp::outWordsOfGraph(int depth) {
         }
       }
       break;
-    }
+    } // end if STOP_PATH_MARK
 
     if (pathStack[s].tag & SUBGRAPH_PATH_MARK) {
       if (outputPtrCnt || (markPreCtlChar && *ep)) {
@@ -2223,7 +2228,7 @@ int CFstApp::outWordsOfGraph(int depth) {
       }
       markPreCtlChar = markCtlChar;
       continue;
-    }
+    } // end if SUBGRAPH_PATH_MARK
 
     // make a pair of (input, output)
     if ((*ep == 0) && (*tp == 0)) {
