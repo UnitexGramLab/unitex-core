@@ -2394,7 +2394,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       options.vars()->optind++;
       // parse the "L[,R]" string
       aa.saveEntre = new unichar[strlen(&options.vars()->optarg[1]) + 1];
-      wordPtr = (char*) &options.vars()->optarg[1];
+      wordPtr = (char*) &options.vars()->optarg[2];
       wordPtr2 = aa.saveEntre;
       wordPtr3 = 0;
       while (*wordPtr) {
