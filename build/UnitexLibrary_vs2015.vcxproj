@@ -201,6 +201,8 @@
     <ClInclude Include="..\CompoundWordHashTable.h" />
     <ClInclude Include="..\LocateCache.h" />
     <ClInclude Include="..\OutputTransductionVariables.h" />
+    <ClInclude Include="..\PackFst2.h" />
+    <ClInclude Include="..\PackInf.h" />
     <ClInclude Include="..\PRLG.h" />
     <ClInclude Include="..\RegExFacade.h" />
     <ClInclude Include="..\SelectOutput.h" />
@@ -326,6 +328,8 @@
     <ClCompile Include="..\logger\UnpackFileTool.cpp" />
     <ClCompile Include="..\Offsets.cpp" />
     <ClCompile Include="..\Overlap.cpp" />
+    <ClCompile Include="..\PackFst2.cpp" />
+    <ClCompile Include="..\PackInf.cpp" />
     <ClCompile Include="..\Persistence.cpp" />
     <ClCompile Include="..\PersistenceInterface.cpp" />
     <ClCompile Include="..\PersistResource.cpp" />

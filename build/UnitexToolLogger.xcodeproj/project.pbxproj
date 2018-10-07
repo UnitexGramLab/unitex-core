@@ -251,6 +251,8 @@
 		22E56CB41AC0BD4E0049E174 /* InstallLingResourcePackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22E56CB01AC0BD4E0049E174 /* InstallLingResourcePackage.cpp */; };
 		22E56CB51AC0BD4E0049E174 /* LingResourcePackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22E56CB21AC0BD4E0049E174 /* LingResourcePackage.cpp */; };
 		22EA01E81121EDB000A89AD4 /* AbstractAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */; };
+		22EBA57C216A40A200264E3A /* PackInf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EBA579216A40A100264E3A /* PackInf.cpp */; };
+		22EBA57D216A40A200264E3A /* PackFst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EBA57B216A40A100264E3A /* PackFst2.cpp */; };
 		22F5F1931800BAC8002F0040 /* PackFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F18B1800BAC8002F0040 /* PackFile.cpp */; };
 		22F5F1941800BAC8002F0040 /* PackFileTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F18D1800BAC8002F0040 /* PackFileTool.cpp */; };
 		22F5F1951800BAC8002F0040 /* UnpackFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F18F1800BAC8002F0040 /* UnpackFile.cpp */; };
@@ -778,6 +780,13 @@
 		22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AbstractAllocator.cpp; path = ../AbstractAllocator.cpp; sourceTree = SOURCE_ROOT; };
 		22EA01E61121EDB000A89AD4 /* AbstractAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocator.h; path = ../AbstractAllocator.h; sourceTree = SOURCE_ROOT; };
 		22EA01E71121EDB000A89AD4 /* AbstractAllocatorPlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocatorPlugCallback.h; path = ../AbstractAllocatorPlugCallback.h; sourceTree = SOURCE_ROOT; };
+		22EBA4FF216A3FA500264E3A /* common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
+		22EBA56F216A3FA500264E3A /* inttypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = inttypes.h; sourceTree = "<group>"; };
+		22EBA570216A3FA500264E3A /* pstdint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pstdint.h; sourceTree = "<group>"; };
+		22EBA578216A40A100264E3A /* PackInf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackInf.h; path = ../PackInf.h; sourceTree = "<group>"; };
+		22EBA579216A40A100264E3A /* PackInf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackInf.cpp; path = ../PackInf.cpp; sourceTree = "<group>"; };
+		22EBA57A216A40A100264E3A /* PackFst2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackFst2.h; path = ../PackFst2.h; sourceTree = "<group>"; };
+		22EBA57B216A40A100264E3A /* PackFst2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackFst2.cpp; path = ../PackFst2.cpp; sourceTree = "<group>"; };
 		22F5F18B1800BAC8002F0040 /* PackFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackFile.cpp; path = ../logger/PackFile.cpp; sourceTree = SOURCE_ROOT; };
 		22F5F18C1800BAC8002F0040 /* PackFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackFile.h; path = ../logger/PackFile.h; sourceTree = SOURCE_ROOT; };
 		22F5F18D1800BAC8002F0040 /* PackFileTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackFileTool.cpp; path = ../logger/PackFileTool.cpp; sourceTree = SOURCE_ROOT; };
@@ -815,8 +824,13 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				22EBA4EB216A3FA500264E3A /* base */,
 				1F0B06A11AFD539E00029933 /* yaml-0.1.6 */,
 				2234C61A1B7E034700D3CF5D /* PersistResource.cpp */,
+				22EBA57B216A40A100264E3A /* PackFst2.cpp */,
+				22EBA57A216A40A100264E3A /* PackFst2.h */,
+				22EBA579216A40A100264E3A /* PackInf.cpp */,
+				22EBA578216A40A100264E3A /* PackInf.h */,
 				2234C6191B7E034700D3CF5D /* PersistResource.h */,
 				226063B71AF3A2AC00BC2033 /* DumpOffsets.cpp */,
 				226063B81AF3A2AC00BC2033 /* DumpOffsets.h */,
@@ -1384,6 +1398,25 @@
 			path = lib;
 			sourceTree = "<group>";
 		};
+		22EBA4EB216A3FA500264E3A /* base */ = {
+			isa = PBXGroup;
+			children = (
+				22EBA4FF216A3FA500264E3A /* common.h */,
+				22EBA56E216A3FA500264E3A /* vendor */,
+			);
+			name = base;
+			path = ../base;
+			sourceTree = "<group>";
+		};
+		22EBA56E216A3FA500264E3A /* vendor */ = {
+			isa = PBXGroup;
+			children = (
+				22EBA56F216A3FA500264E3A /* inttypes.h */,
+				22EBA570216A3FA500264E3A /* pstdint.h */,
+			);
+			path = vendor;
+			sourceTree = "<group>";
+		};
 		C6859E8C029090F304C91782 /* Documentation */ = {
 			isa = PBXGroup;
 			children = (
@@ -1514,6 +1547,7 @@
 				222F7BC81107A68E00C91CC7 /* FIFO.cpp in Sources */,
 				222F7BC91107A68E00C91CC7 /* File.cpp in Sources */,
 				222F7BCA1107A68E00C91CC7 /* Flatten.cpp in Sources */,
+				22EBA57D216A40A200264E3A /* PackFst2.cpp in Sources */,
 				222F7BCB1107A68E00C91CC7 /* FlattenFst2.cpp in Sources */,
 				222F7BCC1107A68E00C91CC7 /* Fst2.cpp in Sources */,
 				222F7BCD1107A68E00C91CC7 /* Fst2Automaton.cpp in Sources */,
@@ -1601,6 +1635,7 @@
 				222F7C541107A68E00C91CC7 /* Symbol.cpp in Sources */,
 				222F7C551107A68E00C91CC7 /* SymbolAlphabet.cpp in Sources */,
 				222F7C561107A68E00C91CC7 /* Table2Grf.cpp in Sources */,
+				22EBA57C216A40A200264E3A /* PackInf.cpp in Sources */,
 				222F7C571107A68E00C91CC7 /* Tagset.cpp in Sources */,
 				222F7C581107A68E00C91CC7 /* TagsetNormTfst.cpp in Sources */,
 				222F7C591107A68E00C91CC7 /* TEI2Txt.cpp in Sources */,
@@ -1723,6 +1758,7 @@
 					"YAML_VERSION_STRING=\\\"0.1.6\\\"",
 				);
 				HEADER_SEARCH_PATHS = (
+					.,
 					include_tre,
 					../include_tre,
 					"tre-0.8.0",
@@ -1762,6 +1798,7 @@
 					"YAML_VERSION_STRING=\\\"0.1.6\\\"",
 				);
 				HEADER_SEARCH_PATHS = (
+					.,
 					include_tre,
 					../include_tre,
 					"tre-0.8.0",
