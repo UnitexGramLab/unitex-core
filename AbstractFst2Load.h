@@ -35,6 +35,8 @@
 
 #include "Fst2.h"
 
+#define UNITEX_HAS_BINARY_PACKED_FST2
+
 //#ifndef HAS_UNITEX_NAMESPACE
 //#define HAS_UNITEX_NAMESPACE 1
 //#endif
