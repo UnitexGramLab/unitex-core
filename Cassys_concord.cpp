@@ -33,6 +33,7 @@
 #include "Snt.h"
 #include "UnitexRevisionInfo.h"
 #include "List_int.h"
+#include "UnusedParameter.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -498,6 +499,9 @@ int findEntityList(standOffInfo *infos, int num,
 
 void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* vec, const char* original_file, 
         const char* lang, const char* stdoff_file) {
+
+    DISCARD_UNUSED_PARAMETER(lang);
+
     char text_name_without_extension[FILENAME_MAX];
     char result_file[FILENAME_MAX];
     text_name_without_extension[0] = '\0';
