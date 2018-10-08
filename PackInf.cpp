@@ -147,6 +147,18 @@ static void InvertUnicharOrder(unsigned char*buf,int nb_unichar)
     }
 }
 
+
+static bool is_little_endian_native()
+{
+  unichar c = 0x169;
+  unsigned char check_order[4];
+  memset(&(check_order[0]), 0, 4);
+  memcpy(&(check_order[0]), &c, sizeof(unichar));
+  bool check_little_endian = (check_order[1] == 1);
+  // return true on x86
+  return check_little_endian;
+}
+
 static int DumpInfToInp(const INF_codes* inf,void* rawInp,int iRawSize,int iInvertUnicharOrder)
 {
     int i;
@@ -333,15 +345,20 @@ static bool convert_inf_file_to_inp(const char*filenameInf,const char*filenameIn
     return (res==0) ? false:true;
 }
 
+static int default_invert_unichar_order()
+{
+  return is_little_endian_native() ? 0 : 1;
+}
+
 bool write_pack_inp(struct INF_codes* inf, const char* inf_pack_name)
 {
-  return save_inf_on_inp(inf_pack_name, inf, 0);
+  return save_inf_on_inp(inf_pack_name, inf, default_invert_unichar_order());
 }
 
 bool convert_inf_to_inp_pack_file(const char* inf_name,
                                   const char* inf_pack_name)
 {
-  return convert_inf_file_to_inp(inf_name, inf_pack_name,0);
+  return convert_inf_file_to_inp(inf_name, inf_pack_name, default_invert_unichar_order());
 }
 
 static int CheckInpHeader(const void*rawInp,int sizeBuf)
