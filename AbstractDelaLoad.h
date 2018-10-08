@@ -36,6 +36,8 @@
 #include "LoadInf.h"
 #include "FileEncoding.h"
 
+#define UNITEX_HAS_BINARY_PACKED_INP
+
 //#ifndef HAS_UNITEX_NAMESPACE
 //#define HAS_UNITEX_NAMESPACE 1
 //#endif

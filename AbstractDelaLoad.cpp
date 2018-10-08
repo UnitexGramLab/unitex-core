@@ -33,9 +33,11 @@
 #include "Unicode.h"
 #include "DELA.h"
 #include "LoadInf.h"
+#include "PackInf.h"
 #include "AbstractDelaLoad.h"
 #include "AbstractDelaPlugCallback.h"
 #include "Persistence.h"
+#include "UnusedParameter.h"
 
 //#ifndef HAS_UNITEX_NAMESPACE
 //#define HAS_UNITEX_NAMESPACE 1
@@ -154,6 +156,36 @@ int is_abstract_or_persistent_dictionary_filename(const char* filename)
     return 0;
 }
 
+static struct INF_codes* try_read_inp(const char*fn)
+{
+  char modified_name[256];
+  size_t len_file_name = strlen(fn);
+  char* use_buffer     = modified_name;
+  bool must_free_buffer = false;
+  if (len_file_name == 0)
+    return NULL;
+  if (len_file_name >= 255) {
+    use_buffer = (char*)malloc(len_file_name + 1);
+    if (use_buffer == NULL) {
+      fatal_error("not enought memory in try_read_inp");
+    }
+    must_free_buffer = true;
+  }
+  strcpy(use_buffer, fn);
+  *(use_buffer + len_file_name - 1) = 'p';
+
+  struct INF_codes* res = read_pack_inf_from_file(fn, NULL);
+  if (must_free_buffer)
+    free(use_buffer);
+  return res;
+}
+
+static void ABSTRACT_CALLBACK_UNITEX free_pack_INF(struct INF_codes* INF, struct INF_free_info* p_inf_free_info, void* privateSpacePtr)
+{
+  DISCARD_UNUSED_PARAMETER(p_inf_free_info)
+  DISCARD_UNUSED_PARAMETER(privateSpacePtr)
+  free_pack_inf(INF, NULL);
+}
 
 const struct INF_codes* load_abstract_INF_file(const VersatileEncodingConfig* vec,const char* name,struct INF_free_info* p_inf_free_info)
 {
@@ -161,6 +193,18 @@ const struct INF_codes* load_abstract_INF_file(const VersatileEncodingConfig* ve
     const AbstractDelaSpace * pads = GetDelaSpaceForFileName(name) ;
     if (pads == NULL)
     {
+
+        res = try_read_inp(name);
+        if (res != NULL)
+        {
+            if (p_inf_free_info != NULL) {
+                p_inf_free_info->must_be_free = 1;
+                p_inf_free_info->func_free_inf = (void*)&free_pack_INF;
+                p_inf_free_info->private_ptr = NULL;
+            }
+          return res;
+        }
+
         res = load_INF_file(vec,name);
         if (res != NULL)
         {

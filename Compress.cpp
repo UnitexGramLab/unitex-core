@@ -24,6 +24,7 @@
 #include <string.h>
 #include "Unicode.h"
 #include "DELA.h"
+#include "PackInf.h"
 #include "DictionaryTree.h"
 #include "String_hash.h"
 #include "AutomatonDictionary2Bin.h"
@@ -71,6 +72,7 @@ const char* usage_Compress =
 "                                  in it, i.e. no .inf file is created\n"
 "                                  [default: bin1]\n"
 "  -o BINFILE, --output=BINFILE    filename used to write the produced automaton\n"
+"  -p, --pack_inp                  create packed binary .inp file instead .inf\n"
 " \n"
 "Deprecated options:\n"
 "  --v1                            produces an old style .bin file with a size\n"
@@ -92,10 +94,11 @@ const char* usage_Compress =
 "  --version                       show version and exit\n"
 "";
 
-const char* optstring_Compress = ":fo:hk:t:Vq:s";
+const char* optstring_Compress = ":fpo:hk:t:Vq:s";
 
 const struct option_TS lopts_Compress[] = {
   { (char *) "bin2"                 , no_argument_TS       , NULL,   2  },
+  { (char *) "pack_inp"             , no_argument_TS       , NULL,  'p' },
   { (char *) "flip"                 , no_argument_TS       , NULL,  'f' },
   { (char *) "help"                 , no_argument_TS       , NULL,  'h' },
   { (char *) "only-verify-arguments", no_argument_TS       , NULL,  'V' },
@@ -844,7 +847,7 @@ if (argc == 1) {
 }
 
 // reserve some heap memory to manipulate string buffers
-char* buffer_filename   = (char*) malloc(step_filename_buffer * 4);
+char* buffer_filename   = (char*) malloc(step_filename_buffer * 5);
 if (buffer_filename == NULL) {
   alloc_error("main_Compress");
   return ALLOC_ERROR_CODE;
@@ -858,12 +861,16 @@ char* bin_filename      = (buffer_filename + (step_filename_buffer * 0));
 char* inf_filename      = (buffer_filename + (step_filename_buffer * 1));
 *inf_filename           = '\0';
 
+// name of the file to store the associated inflectional codes packed
+char* inp_filename      = (buffer_filename + (step_filename_buffer * 2));
+*inp_filename           = '\0';
+
 // real path of the dictionary filename that is being processed
-char* resolved_filename = (buffer_filename + (step_filename_buffer * 2));
+char* resolved_filename = (buffer_filename + (step_filename_buffer * 3));
 *resolved_filename      = '\0';
 
 // output_type: "bin1" or "bin2"
-char* output_type       = (buffer_filename + (step_filename_buffer * 3));
+char* output_type       = (buffer_filename + (step_filename_buffer * 4));
 *output_type            = '\0';
 
 // specifies if the inflected and lemma forms must be swapped 0:no 1:yes
@@ -872,6 +879,9 @@ int FLIP = 0;
 //  BIN_CLASSIC  .bin/.inf dictionary
 //  BIN_BIN2     .bin2 dictionary style, with outputs included in the transducer
 BinType bin_type        = BIN_CLASSIC;
+
+// pack_inp = 1 : convert inf to inp
+int pack_inp = 0;
 
 //  0 : produces an old style .bin file
 //  1 : produces a new style  .bin file, with no file size limitation to 16Mb
@@ -890,6 +900,7 @@ UnitexGetOpt options;
 while (EOF != (val = options.parse_long(argc, argv, optstring_Compress, lopts_Compress, &index))) {
   switch (val) {
     case 'f': FLIP    = 1; break;
+    case 'p': pack_inp = 1; break;
     case 's': semitic = 1; break;
     case  1 : // this is according to the "Standards for Command Line Interfaces"
               // https://goo.gl/7UgLC8
@@ -1000,6 +1011,9 @@ if (bin_filename[0] == '\0') {
 // compute the name of the output .inf file associated to a classic .bin
 remove_extension(bin_filename, inf_filename);
 strcat(inf_filename, ".inf");
+
+remove_extension(bin_filename, inp_filename);
+strcat(inp_filename, ".inp");
 
 // list to store the filenames to process
 list_ustring_ptr dictionary_list = NULL;
@@ -1139,8 +1153,12 @@ free_string_hash(INF_codes);
 # endif
 
 free_list_ustring(dictionary_list);
+if (pack_inp && (bin_type!=BIN_BIN2) && (return_value==SUCCESS_RETURN_CODE)) {
+  if (!convert_inf_to_inp_pack_file(inf_filename, inp_filename))
+    return_value = DEFAULT_ERROR_CODE;
+  af_remove(inf_filename);
+}
 free(buffer_filename);
-
 return return_value;
 }  // int main_Compress(int argc, char* const argv[])
 
