@@ -37,6 +37,8 @@
 #include "Unicode.h"
 #include "UnitexGetOpt.h"
 #include "SyncTool.h"
+#include "UnusedParameter.h"
+
 
 #if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEX_TOOL_STACKOPTION)
 #include "logger/SyncLogger.h"
@@ -884,6 +886,8 @@ static int UnitexTool_several_info_ignore_stack_option(int argc,char* const argv
             SyncDoRunThreadsWithStackSize(1, DoWorkUnitexToolInThread, (void**)&pinfos, stack_size);
             return infos.ret;
         }
+#else
+        DISCARD_UNUSED_PARAMETER(ignore_stack_option)
 #endif
 
         pos++;
