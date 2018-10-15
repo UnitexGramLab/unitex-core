@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "Fst2.h"
 #include "Fst2Check_lib.h"
+#include "PackFst2.h"
 #include "Copyright.h"
 #include "Grf2Fst2_lib.h"
 #include "Alphabet.h"
@@ -70,7 +71,8 @@ const char* usage_Grf2Fst2 =
      "                            'let pi=3.14' will be tokenized as:\n"
      "                            'let' space 'pi' # '=' # '3' # '.' # '1' # '4'\n"
      "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
-     " -C/--clean: compile only with outputs\n"
+     "  -C/--clean: compile only with outputs\n"
+     "  -p/--pack-fst2: create a packed fst2 file\n"
      "  -h/--help: this help\n"
      "\n"
      "Compiles the grammar <grf> and saves the result in a FST2 file\n"
@@ -137,7 +139,7 @@ return ret;
 }
 
 
-const char* optstring_Grf2Fst2=":yntsa:d:ecVho:k:q:r:vS:C";
+const char* optstring_Grf2Fst2=":ypntsa:d:ecVho:k:q:r:vS:C";
 const struct option_TS lopts_Grf2Fst2[]= {
   {"loop_check",no_argument_TS,NULL,'y'},
   {"no_loop_check",no_argument_TS,NULL,'n'},
@@ -157,6 +159,7 @@ const struct option_TS lopts_Grf2Fst2[]= {
   {"check_variables",no_argument_TS,NULL,'v'},
   {"strict_tokenization",no_argument_TS,NULL,'S'},
   {"clean",no_argument_TS,NULL,'C'},
+  {"pack-fst2",no_argument_TS,NULL,'p'},
   {NULL,no_argument_TS,NULL,0}
 };
 
@@ -227,16 +230,19 @@ infos->vec.bom_output=DEFAULT_BOM_OUTPUT;
 
 char* named=NULL;
 char fst2_file_name[FILENAME_MAX];
+char fst2_packed_file_name[FILENAME_MAX];
 infos->verbose_name_grf=1;
 char alph[FILENAME_MAX]="";
 int val,index=-1;
 fst2_file_name[0]='\0';
 bool only_verify_arguments = false;
+bool pack_fst2 = false;
 UnitexGetOpt options;
 int clean=0;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&index))) {
    switch(val) {
+   case 'p': pack_fst2=true; break;
    case 'y': check_recursion=1; break;
    case 'n': check_recursion=0; break;
    case 't': tfst_check=1;
@@ -347,6 +353,11 @@ if (fst2_file_name[0]=='\0') {
   strcpy(fst2_file_name,argv[options.vars()->optind]);
 }
 remove_extension(fst2_file_name);
+if (pack_fst2) {
+  strcpy(fst2_packed_file_name, fst2_file_name); 
+  strcat(fst2_packed_file_name, ".fst2");
+  strcat(fst2_file_name, "_unpacked");
+}
 strcat(fst2_file_name,".fst2");
 if ((infos->fst2=u_fopen(&(infos->vec),fst2_file_name,U_WRITE))==NULL) {
    error("Cannot open file %s\n",fst2_file_name);
@@ -380,6 +391,9 @@ if (infos->renumber->tab[infos->graph_names->size-1]!=infos->graph_names->size) 
 if (check_recursion) {
    if (!OK_for_Locate(&(infos->vec),fst2_file_name,infos->no_empty_graph_warning)) {
       free_compilation_info(infos);
+      if (pack_fst2) {
+        af_rename(fst2_file_name,fst2_packed_file_name);
+      }
       return DEFAULT_ERROR_CODE;
    }
 }
@@ -387,11 +401,18 @@ if (check_recursion) {
 if (tfst_check) {
    if (!valid_sentence_automaton(&(infos->vec),fst2_file_name)) {
       free_compilation_info(infos);
-      return DEFAULT_ERROR_CODE;
+      if (pack_fst2) {
+        af_rename(fst2_file_name, fst2_packed_file_name);
+     }
+     return DEFAULT_ERROR_CODE;
    }
 }
 
 free_compilation_info(infos);
+if (pack_fst2) {
+  convert_fst2_to_fst2_pack_file(fst2_file_name, fst2_packed_file_name, true);
+  af_remove(fst2_file_name);
+}
 u_printf("Compilation has succeeded\n");
 return SUCCESS_RETURN_CODE;
 }

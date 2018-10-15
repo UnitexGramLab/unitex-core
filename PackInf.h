@@ -27,37 +27,36 @@
  * contact : info@winimage.com
  *
  */
+ //
+#ifndef PackInfH
+#define PackInfH
 
-
-
-#ifndef ABSTRACT_FST2_LOAD_H
-#define ABSTRACT_FST2_LOAD_H
+#include "AbstractAllocator.h"
+#include "AbstractDelaLoad.h"
 
 #include "Fst2.h"
+#include "Unicode.h"
 
-#define UNITEX_HAS_BINARY_PACKED_FST2
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
 
-//#ifndef HAS_UNITEX_NAMESPACE
-//#define HAS_UNITEX_NAMESPACE 1
-//#endif
+namespace unitex {
 
-//namespace unitex {
-using namespace unitex;
-struct FST2_free_info
-{
-    void *func_free_fst2;
-    void *private_ptr;
-    void *privateSpacePtr;
-    int must_be_free;
-} ;
 
-const struct FST2_free_info FST2_free_info_init={NULL,NULL,NULL,1};
+struct INF_codes* read_pack_inf_from_memory(const void* buf, size_t size_buf,
+                                            Abstract_allocator prv_alloc);
 
-int is_abstract_fst2_filename(const char* filename);
-int is_abstract_or_persistent_fst2_filename(const char* filename);
-Fst2* load_abstract_fst2(const VersatileEncodingConfig*,const char* filename,int read_names,struct FST2_free_info*);
-void free_abstract_Fst2(Fst2*,struct FST2_free_info*);
+bool convert_inf_to_inp_pack_file(const char* inf_name,
+                                  const char* inf_pack_name);
 
-//} // namespace unitex
+bool write_pack_inp(struct INF_codes*, const char* inf_pack_name);
 
+
+struct INF_codes* read_pack_inf_from_file(const char* filename,
+                                          Abstract_allocator prv_alloc);
+
+void free_pack_inf(struct INF_codes*, Abstract_allocator prv_alloc);
+
+}
 #endif
