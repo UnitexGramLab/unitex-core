@@ -121,13 +121,13 @@ struct INP_FILE_HEADER
     unsigned char FullFileSize[4];
 } ;
 
-static int ReadIntOnInp(const unsigned char*p)
+static int read_int_on_inp(const unsigned char*p)
 {
     return (((int)(*(p)))<<0) | (((int)(*(p+1)))<<8) | (((int)(*(p+2)))<<16) | (((int)(*(p+3)))<<24);
 }
 
 
-static void WriteIntOnInp(unsigned char*p,int value)
+static void write_int_on_inp(unsigned char*p,int value)
 {
     *(p+0) = (unsigned char)(value>>0);
     *(p+1) = (unsigned char)(value>>8);
@@ -135,7 +135,7 @@ static void WriteIntOnInp(unsigned char*p,int value)
     *(p+3) = (unsigned char)(value>>24);
 }
 
-static void InvertUnicharOrder(unsigned char*buf,int nb_unichar)
+static void invert_unichar_order(unsigned char*buf,int nb_unichar)
 {
     int i;
     for (i=0;i<nb_unichar;i++)
@@ -159,7 +159,7 @@ static bool is_little_endian_native()
   return check_little_endian;
 }
 
-static int DumpInfToInp(const INF_codes* inf,void* rawInp,int iRawSize,int iInvertUnicharOrder)
+static int dump_inf_to_inp(const INF_codes* inf,void* rawInp,int iRawSize,int iInvertUnicharOrder)
 {
     int i;
     int iNbString = 0;
@@ -201,15 +201,15 @@ static int DumpInfToInp(const INF_codes* inf,void* rawInp,int iRawSize,int iInve
     unichar c=0x169;
     memcpy(&ifh.SignAdd[0],&c,sizeof(unichar));
     if (iInvertUnicharOrder!=0)
-        InvertUnicharOrder(&ifh.SignAdd[0],1);
+        invert_unichar_order(&ifh.SignAdd[0],1);
 
-    WriteIntOnInp(&ifh.nbLine[0],iNbLine);
-    WriteIntOnInp(&ifh.nbString[0],iNbString);
+    write_int_on_inp(&ifh.nbLine[0],iNbLine);
+    write_int_on_inp(&ifh.nbString[0],iNbString);
 
-    WriteIntOnInp(&ifh.SizeUnichar[0],sizeof(unichar));
-    WriteIntOnInp(&ifh.PosBitArray[0],iPosBitArray);
-    WriteIntOnInp(&ifh.PosTextArray[0],iPosTextArray);
-    WriteIntOnInp(&ifh.FullFileSize[0],iFullFileSize);
+    write_int_on_inp(&ifh.SizeUnichar[0],sizeof(unichar));
+    write_int_on_inp(&ifh.PosBitArray[0],iPosBitArray);
+    write_int_on_inp(&ifh.PosTextArray[0],iPosTextArray);
+    write_int_on_inp(&ifh.FullFileSize[0],iFullFileSize);
 
     memcpy(rawInp,&ifh,sizeof(ifh));
     {
@@ -237,7 +237,7 @@ static int DumpInfToInp(const INF_codes* inf,void* rawInp,int iRawSize,int iInve
             int iCurStringLengthByteNeeded = (iCurStringLengthUnichar+1)*((int)sizeof(unichar)) ;
             memcpy(TextArray+iPosOnTextArrayByte,ppool->string,iCurStringLengthByteNeeded);
             if (iInvertUnicharOrder!=0)
-                InvertUnicharOrder(TextArray+iPosOnTextArrayByte,(iCurStringLengthUnichar));
+                invert_unichar_order(TextArray+iPosOnTextArrayByte,(iCurStringLengthUnichar));
             iPosOnTextArrayByte += iCurStringLengthByteNeeded;
 
             if (ppool->next == NULL)
@@ -269,13 +269,13 @@ static int DumpInfToInp(const INF_codes* inf,void* rawInp,int iRawSize,int iInve
 static bool save_inf_on_inp(const char*filename,const struct INF_codes* inf,int iInvertUnicharOrder)
 {
     int res=0;
-    int iSizeInp = DumpInfToInp(inf,NULL,0,iInvertUnicharOrder);
+    int iSizeInp = dump_inf_to_inp(inf,NULL,0,iInvertUnicharOrder);
     if (iSizeInp == 0)
         return false;
     unsigned char* tmp1 = (unsigned char*)malloc(iSizeInp+1);
     if (tmp1==NULL)
         return false;
-    int iSizeInpDone = DumpInfToInp(inf,tmp1,iSizeInp,iInvertUnicharOrder);
+    int iSizeInpDone = dump_inf_to_inp(inf,tmp1,iSizeInp,iInvertUnicharOrder);
 
     ABSTRACTFILE* f=NULL;
     if (iSizeInpDone > 0)
@@ -313,14 +313,13 @@ static bool convert_inf_file_to_inp(const char*filenameInf,const char*filenameIn
 				strcpy(inpNameBuffer+len_name-4,".inp");
 				inpName=inpNameBuffer;
 			}
-		}
-		
+		}	
 	}
-    else
+  else {
         inpName=filenameInp;
-	 
+	}
     
-    struct INF_free_info inf_free;
+  struct INF_free_info inf_free;
 #ifdef VersatileEncodingConfigDefined
 	VersatileEncodingConfig vec=VEC_DEFAULT;
 	const struct INF_codes* inf=load_abstract_INF_file(&vec,filenameInf,&inf_free);
@@ -361,7 +360,7 @@ bool convert_inf_to_inp_pack_file(const char* inf_name,
   return convert_inf_file_to_inp(inf_name, inf_pack_name, default_invert_unichar_order());
 }
 
-static int CheckInpHeader(const void*rawInp,int sizeBuf)
+static int check_inp_header(const void*rawInp,int sizeBuf)
 {
     struct INP_FILE_HEADER ifh;
     if (sizeBuf<(int)sizeof(struct INP_FILE_HEADER))
@@ -374,7 +373,7 @@ static int CheckInpHeader(const void*rawInp,int sizeBuf)
     if (ifh.Sign[2] != 'P') return 0;
     if (ifh.Sign[3] != 'F') return 0;
 
-    if (ReadIntOnInp(&ifh.SizeUnichar[0]) != sizeof(unichar)) return 0;
+    if (read_int_on_inp(&ifh.SizeUnichar[0]) != sizeof(unichar)) return 0;
 
     unichar c=0xabcd;
     memcpy(&c,&ifh.SignAdd[0],sizeof(unichar));
@@ -387,9 +386,9 @@ static int CheckInpHeader(const void*rawInp,int sizeBuf)
 
 
 
-static int GetInpSecondaryBufferSize(const void*rawInp, int sizeBuf,bool fIsPermanentBinInpFile)
+static int get_inp_secondary_buffer_size(const void*rawInp, int sizeBuf,bool fIsPermanentBinInpFile)
 {
-    int iCheckHeader=CheckInpHeader(rawInp,sizeBuf);
+    int iCheckHeader=check_inp_header(rawInp,sizeBuf);
     if (iCheckHeader==0)
         return 0;
 
@@ -399,11 +398,11 @@ static int GetInpSecondaryBufferSize(const void*rawInp, int sizeBuf,bool fIsPerm
     struct INP_FILE_HEADER ifh;
     memcpy(&ifh,rawInp,sizeof(struct INP_FILE_HEADER));
 
-    int iNbLine = ReadIntOnInp(&ifh.nbLine[0]);
-    int iNbString = ReadIntOnInp(&ifh.nbString[0]);
-    int iPosTextArray = ReadIntOnInp(&ifh.PosTextArray[0]);
-    //int iPosBitArray = ReadIntOnInp(&ifh.PosBitArray[0]);
-    int iFullFileSize = ReadIntOnInp(&ifh.FullFileSize[0]);
+    int iNbLine = read_int_on_inp(&ifh.nbLine[0]);
+    int iNbString = read_int_on_inp(&ifh.nbString[0]);
+    int iPosTextArray = read_int_on_inp(&ifh.PosTextArray[0]);
+    //int iPosBitArray = read_int_on_inp(&ifh.PosBitArray[0]);
+    int iFullFileSize = read_int_on_inp(&ifh.FullFileSize[0]);
 
     int size_list_ustring_array = ((int)sizeof(struct list_ustring*)) * (iNbLine+1);
     int size_ustring_pool = ((int)sizeof(struct list_ustring)) * (iNbString+0x10);
@@ -425,13 +424,13 @@ static int GetInpSecondaryBufferSize(const void*rawInp, int sizeBuf,bool fIsPerm
     return ret_size;
 }
 
-static struct INF_codes* BuildInfStructureFromInpFile(const void*rawInp, int sizeBufInp,
+static struct INF_codes* build_inf_structure_from_inp_file(const void*rawInp, int sizeBufInp,
                                  void* SecondaryBuffer=NULL,int sizeSecondaryBuffer=0,bool fIsPermanentBinInpFile=false)
 {
-    int iCheckHeader=CheckInpHeader(rawInp,sizeBufInp);
+    int iCheckHeader=check_inp_header(rawInp,sizeBufInp);
     if (iCheckHeader == 0)
         return NULL;
-    int iSecondaryBufferSizeNeeded = GetInpSecondaryBufferSize(rawInp,sizeBufInp,fIsPermanentBinInpFile);
+    int iSecondaryBufferSizeNeeded = get_inp_secondary_buffer_size(rawInp,sizeBufInp,fIsPermanentBinInpFile);
     void * BufferUse;
 
     if (SecondaryBuffer != NULL)
@@ -451,13 +450,13 @@ static struct INF_codes* BuildInfStructureFromInpFile(const void*rawInp, int siz
     struct INP_FILE_HEADER ifh;
     memcpy(&ifh,rawInp,sizeof(struct INP_FILE_HEADER));
 
-    int iNbLine = ReadIntOnInp(&ifh.nbLine[0]);
-    int iNbString = ReadIntOnInp(&ifh.nbString[0]);
+    int iNbLine = read_int_on_inp(&ifh.nbLine[0]);
+    int iNbString = read_int_on_inp(&ifh.nbString[0]);
 
 
-    int iPosTextArray = ReadIntOnInp(&ifh.PosTextArray[0]);
-    int iPosBitArray = ReadIntOnInp(&ifh.PosBitArray[0]);
-    int iFullFileSize = ReadIntOnInp(&ifh.FullFileSize[0]);
+    int iPosTextArray = read_int_on_inp(&ifh.PosTextArray[0]);
+    int iPosBitArray = read_int_on_inp(&ifh.PosBitArray[0]);
+    int iFullFileSize = read_int_on_inp(&ifh.FullFileSize[0]);
 
 
     int pos_list_ustring_array = my_around(((int)sizeof(struct INF_codes_monopack)),0x10);
@@ -490,7 +489,7 @@ static struct INF_codes* BuildInfStructureFromInpFile(const void*rawInp, int siz
         unsigned char*TextArrayWrite=(((unsigned char*)BufferUse)+my_around(pos_ustring_pool,0x10)+size_ustring_pool);
         memcpy(TextArrayWrite,((const unsigned char*)rawInp) + iPosTextArray,iFullFileSize-iPosTextArray);
         if (iCheckHeader==2)
-            InvertUnicharOrder(TextArrayWrite,(iFullFileSize-iPosTextArray)/2);
+            invert_unichar_order(TextArrayWrite,(iFullFileSize-iPosTextArray)/2);
         TextArray=TextArrayWrite;
     }
 
@@ -564,7 +563,7 @@ if (file_raw==NULL)
 }
 if (file_raw != NULL)
   if (((long)af_fread(file_raw,1,file_size,f)) == file_size)
-    res = BuildInfStructureFromInpFile(file_raw, file_size);
+    res = build_inf_structure_from_inp_file(file_raw, file_size);
 
 af_fclose(f);
 if (file_raw != NULL)
@@ -577,7 +576,7 @@ struct INF_codes* read_pack_inf_from_memory(const void* buf, size_t size_buf,
   Abstract_allocator prv_alloc)
 {
   DISCARD_UNUSED_PARAMETER(prv_alloc)
-  return BuildInfStructureFromInpFile(buf, (int)size_buf);
+  return build_inf_structure_from_inp_file(buf, (int)size_buf);
 }
 
 struct INF_codes* read_pack_inf_from_file(const char* filename,

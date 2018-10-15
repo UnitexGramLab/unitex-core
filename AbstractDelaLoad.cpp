@@ -162,8 +162,9 @@ static struct INF_codes* try_read_inp(const char*fn)
   size_t len_file_name = strlen(fn);
   char* use_buffer     = modified_name;
   bool must_free_buffer = false;
-  if (len_file_name == 0)
+  if (len_file_name == 0) {
     return NULL;
+  }
   if (len_file_name >= 255) {
     use_buffer = (char*)malloc(len_file_name + 1);
     if (use_buffer == NULL) {

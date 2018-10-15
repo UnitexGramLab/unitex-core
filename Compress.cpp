@@ -72,7 +72,7 @@ const char* usage_Compress =
 "                                  in it, i.e. no .inf file is created\n"
 "                                  [default: bin1]\n"
 "  -o BINFILE, --output=BINFILE    filename used to write the produced automaton\n"
-"  -p, --pack_inp                  create packed binary .inp file instead .inf\n"
+"  -p, --pack-inf                  create a packed inf file (.inp)\n"
 " \n"
 "Deprecated options:\n"
 "  --v1                            produces an old style .bin file with a size\n"
@@ -98,7 +98,7 @@ const char* optstring_Compress = ":fpo:hk:t:Vq:s";
 
 const struct option_TS lopts_Compress[] = {
   { (char *) "bin2"                 , no_argument_TS       , NULL,   2  },
-  { (char *) "pack_inp"             , no_argument_TS       , NULL,  'p' },
+  { (char *) "pack-inf"             , no_argument_TS       , NULL,  'p' },
   { (char *) "flip"                 , no_argument_TS       , NULL,  'f' },
   { (char *) "help"                 , no_argument_TS       , NULL,  'h' },
   { (char *) "only-verify-arguments", no_argument_TS       , NULL,  'V' },
@@ -857,11 +857,11 @@ if (buffer_filename == NULL) {
 char* bin_filename      = (buffer_filename + (step_filename_buffer * 0));
 *bin_filename           = '\0';
 
-// name of the file to store the associated inflectional codes
+// name of the file where the packed inflectional codes will be stored
 char* inf_filename      = (buffer_filename + (step_filename_buffer * 1));
 *inf_filename           = '\0';
 
-// name of the file to store the associated inflectional codes packed
+// name of the file where the packed inflectional codes will be stored packed
 char* inp_filename      = (buffer_filename + (step_filename_buffer * 2));
 *inp_filename           = '\0';
 
@@ -1154,8 +1154,9 @@ free_string_hash(INF_codes);
 
 free_list_ustring(dictionary_list);
 if (pack_inp && (bin_type!=BIN_BIN2) && (return_value==SUCCESS_RETURN_CODE)) {
-  if (!convert_inf_to_inp_pack_file(inf_filename, inp_filename))
+  if (!convert_inf_to_inp_pack_file(inf_filename, inp_filename)) {
     return_value = DEFAULT_ERROR_CODE;
+  }
   af_remove(inf_filename);
 }
 free(buffer_filename);

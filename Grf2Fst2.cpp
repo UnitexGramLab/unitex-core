@@ -72,7 +72,7 @@ const char* usage_Grf2Fst2 =
      "                            'let' space 'pi' # '=' # '3' # '.' # '1' # '4'\n"
      "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
      "  -C/--clean: compile only with outputs\n"
-     "  -p/--pack_fst2: create a binary packed fst2 file\n"
+     "  -p/--pack-fst2: create a packed fst2 file\n"
      "  -h/--help: this help\n"
      "\n"
      "Compiles the grammar <grf> and saves the result in a FST2 file\n"
@@ -159,7 +159,7 @@ const struct option_TS lopts_Grf2Fst2[]= {
   {"check_variables",no_argument_TS,NULL,'v'},
   {"strict_tokenization",no_argument_TS,NULL,'S'},
   {"clean",no_argument_TS,NULL,'C'},
-  {"pack_fst2",no_argument_TS,NULL,'p'},
+  {"pack-fst2",no_argument_TS,NULL,'p'},
   {NULL,no_argument_TS,NULL,0}
 };
 
@@ -391,8 +391,9 @@ if (infos->renumber->tab[infos->graph_names->size-1]!=infos->graph_names->size) 
 if (check_recursion) {
    if (!OK_for_Locate(&(infos->vec),fst2_file_name,infos->no_empty_graph_warning)) {
       free_compilation_info(infos);
-      if (pack_fst2)
+      if (pack_fst2) {
         af_rename(fst2_file_name,fst2_packed_file_name);
+      }
       return DEFAULT_ERROR_CODE;
    }
 }
@@ -400,18 +401,19 @@ if (check_recursion) {
 if (tfst_check) {
    if (!valid_sentence_automaton(&(infos->vec),fst2_file_name)) {
       free_compilation_info(infos);
-      if (pack_fst2)
+      if (pack_fst2) {
         af_rename(fst2_file_name, fst2_packed_file_name);
+     }
      return DEFAULT_ERROR_CODE;
    }
 }
 
 free_compilation_info(infos);
-u_printf("Compilation has succeeded\n");
 if (pack_fst2) {
   convert_fst2_to_fst2_pack_file(fst2_file_name, fst2_packed_file_name, true);
   af_remove(fst2_file_name);
 }
+u_printf("Compilation has succeeded\n");
 return SUCCESS_RETURN_CODE;
 }
 

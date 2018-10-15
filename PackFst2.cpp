@@ -105,8 +105,8 @@ bool pack_store_int::AddIntValue(int v) {
 }
 
 
-
-static int GetNbByteIntAfter(int num) {
+// calculate the number of bytes needed to store an integer
+static int get_nb_bytes_int_after(int num) {
   int abs_num = (num >= 0) ? num : (-num);
   if ((abs_num >= 0) && (abs_num <= 0x0f))
     return 0;
@@ -120,7 +120,7 @@ static int GetNbByteIntAfter(int num) {
 }
 
 static size_t flush_int(int num, void* dst, size_t size_buf) {
-  int nb_byte_after_num = GetNbByteIntAfter(num);
+  int nb_byte_after_num = get_nb_bytes_int_after(num);
   size_t size_ret       = (size_t)nb_byte_after_num + 1;
   if ((dst != NULL) && (size_buf >= size_ret)) {
     unsigned char* dst_write = (unsigned char*)dst;
@@ -136,7 +136,7 @@ static size_t flush_int(int num, void* dst, size_t size_buf) {
       cFirst |= 8;
     }
 
-    int nb_byte_after = GetNbByteIntAfter(work_num);
+    int nb_byte_after = get_nb_bytes_int_after(work_num);
     cFirst |= (unsigned char)nb_byte_after;
 
     cFirst |= (((unsigned char)(work_num & 0xf)) * 0x10);
@@ -378,7 +378,7 @@ typedef struct {
   pack_store_string* p_packStr;
 } Context_PackStore;
 
-static bool FlushList_int(const struct list_int* list,
+static bool flush_list_int(const struct list_int* list,
                           pack_store_int* p_packInt) {
   if (list == NULL) {
     return p_packInt->AddIntValue(0);
@@ -395,7 +395,7 @@ static bool FlushList_int(const struct list_int* list,
   }
 }
 
-static bool FlushList_ustring(const struct list_ustring* list,
+static bool flush_list_ustring(const struct list_ustring* list,
                        Context_PackStore* p_packStore) {
   if (list == NULL) {
     return p_packStore->p_packInt->AddIntValue(0);
@@ -416,7 +416,7 @@ static bool FlushList_ustring(const struct list_ustring* list,
   }
 }
 
-static bool FlushPattern(const struct pattern* pattern,
+static bool flush_pattern(const struct pattern* pattern,
                   Context_PackStore* p_packStore) {
   bool fRet = true;
   if (fRet)
@@ -426,16 +426,16 @@ static bool FlushPattern(const struct pattern* pattern,
   if (fRet)
     fRet = p_packStore->p_packStr->AddStringValue(pattern->lemma);
   if (fRet)
-    fRet = FlushList_ustring(pattern->grammatical_codes, p_packStore);
+    fRet = flush_list_ustring(pattern->grammatical_codes, p_packStore);
   if (fRet)
-    fRet = FlushList_ustring(pattern->inflectional_codes, p_packStore);
+    fRet = flush_list_ustring(pattern->inflectional_codes, p_packStore);
   if (fRet)
-    fRet = FlushList_ustring(pattern->forbidden_codes, p_packStore);
+    fRet = flush_list_ustring(pattern->forbidden_codes, p_packStore);
   return fRet;
 }
 
 
-static bool FlushTransition(const Transition* t, Context_PackStore* p_packStore) {
+static bool flush_transition(const Transition* t, Context_PackStore* p_packStore) {
   bool fRet = true;
   if (fRet)
     fRet = p_packStore->p_packInt->AddIntValue(t->tag_number);
@@ -453,7 +453,7 @@ static int length_transition_list(const Transition* list) {
   return n;
 }
 
-static bool FlushTransitionList(const Transition* list,
+static bool flush_transition_list(const Transition* list,
                          Context_PackStore* p_packStore) {
   if (list == NULL) {
     return p_packStore->p_packInt->AddIntValue(0);
@@ -463,24 +463,24 @@ static bool FlushTransitionList(const Transition* list,
 
     const Transition* browse_list = list;
     while (fRet && (browse_list != NULL)) {
-      fRet        = FlushTransition(browse_list, p_packStore);
+      fRet        = flush_transition(browse_list, p_packStore);
       browse_list = browse_list->next;
     }
     return fRet;
   }
 }
 
-static bool FlushFst2State(Fst2State Fst2StateSrc, Context_PackStore* p_packStore) {
+static bool flush_Fst2State(Fst2State Fst2StateSrc, Context_PackStore* p_packStore) {
   bool fRet = true;
   if (Fst2StateSrc == NULL) {
     fRet = p_packStore->p_packInt->AddIntValue(0);
     if (fRet)
-      fRet = FlushTransitionList(NULL, p_packStore);
+      fRet = flush_transition_list(NULL, p_packStore);
   } else {
     fRet = p_packStore->p_packInt->AddIntValue(
         (int)(((unsigned int)Fst2StateSrc->control)));
     if (fRet)
-      fRet = FlushTransitionList(Fst2StateSrc->transitions, p_packStore);
+      fRet = flush_transition_list(Fst2StateSrc->transitions, p_packStore);
   }
   return fRet;
 }
@@ -502,7 +502,7 @@ static bool FlushFst2State(Fst2State Fst2StateSrc, Context_PackStore* p_packStor
 
 
 
-static bool FlushFst2Tag(Fst2Tag Fst2TagSrc, Context_PackStore* p_packStore) {
+static bool flush_Fst2Tag(Fst2Tag Fst2TagSrc, Context_PackStore* p_packStore) {
   bool fRet = true;
 
   if (Fst2TagSrc == NULL) {
@@ -512,21 +512,6 @@ static bool FlushFst2Tag(Fst2Tag Fst2TagSrc, Context_PackStore* p_packStore) {
       fRet = p_packStore->p_packStr->AddStringValue(NULL);
   } else {
     int mask_used_member = 0;
-
-    /*
-FST2TAG_OUTPUT_MEMBER_PRESENT_MASK
-FST2TAG_TYPE_MEMBER_PRESENT_MASK
-FST2TAG_MORPHOLOGICAL_FILTER_MEMBER_PRESENT_MASK
-FST2TAG_FILTER_NUMBER_MEMBER_PRESENT_MASK
-FST2TAG_META_MEMBER_PRESENT_MASK
-FST2TAG_PATTERN_MEMBER_PRESENT_MASK
-FST2TAG_PATTERN_NUMBER_MEMBER_PRESENT_MASK
-FST2TAG_VARIABLE_MEMBER_PRESENT_MASK
-FST2TAG_MATCHING_TOKENS_MEMBER_PRESENT_MASK
-FST2TAG_COMPOUND_PATTERN_MEMBER_PRESENT_MASK
-FST2TAG_CONTROL_MEMBER_PRESENT_MASK
-
-*/
 
 
     if (Fst2TagSrc->type != UNDEFINED_TAG)
@@ -592,7 +577,7 @@ FST2TAG_CONTROL_MEMBER_PRESENT_MASK
 
     if ((fRet) &&
         ((mask_used_member & FST2TAG_MATCHING_TOKENS_MEMBER_PRESENT_MASK) != 0))
-      fRet = FlushList_int(Fst2TagSrc->matching_tokens, p_packStore->p_packInt);
+      fRet = flush_list_int(Fst2TagSrc->matching_tokens, p_packStore->p_packInt);
 
     if ((fRet) &&
         ((mask_used_member & FST2TAG_FILTER_NUMBER_MEMBER_PRESENT_MASK) != 0))
@@ -604,7 +589,7 @@ FST2TAG_CONTROL_MEMBER_PRESENT_MASK
 
     if ((fRet) &&
         ((mask_used_member & FST2TAG_PATTERN_MEMBER_PRESENT_MASK) != 0))
-      fRet = FlushPattern(Fst2TagSrc->pattern, p_packStore);
+      fRet = flush_pattern(Fst2TagSrc->pattern, p_packStore);
 
     if ((fRet) &&
         ((mask_used_member & FST2TAG_PATTERN_NUMBER_MEMBER_PRESENT_MASK) != 0))
@@ -617,7 +602,7 @@ FST2TAG_CONTROL_MEMBER_PRESENT_MASK
   return fRet;
 }
 
-static bool FlushFst2(Fst2* fst2, Context_PackStore* p_packStore) {
+static bool flush_Fst2(Fst2* fst2, Context_PackStore* p_packStore) {
   if (fst2 == NULL)
     return false;
   bool fRet = true;
@@ -637,12 +622,12 @@ static bool FlushFst2(Fst2* fst2, Context_PackStore* p_packStore) {
 
   for (i = 0; i < fst2->number_of_states; i++) {
     if (fRet)
-      fRet = FlushFst2State(fst2->states[i], p_packStore);
+      fRet = flush_Fst2State(fst2->states[i], p_packStore);
   }
 
   for (i = 0; i < fst2->number_of_tags; i++) {
     if (fRet)
-      fRet = FlushFst2Tag(fst2->tags[i], p_packStore);
+      fRet = flush_Fst2Tag(fst2->tags[i], p_packStore);
   }
 
   for (i = 0; i < fst2->number_of_graphs + 1; i++) {
@@ -668,10 +653,10 @@ static bool FlushFst2(Fst2* fst2, Context_PackStore* p_packStore) {
   }
 
   if (fRet)
-    fRet = FlushList_ustring(fst2->input_variables, p_packStore);
+    fRet = flush_list_ustring(fst2->input_variables, p_packStore);
 
   if (fRet)
-    fRet = FlushList_ustring(fst2->output_variables, p_packStore);
+    fRet = flush_list_ustring(fst2->output_variables, p_packStore);
 
 
   if (fRet && (debugValue != 0)) {
@@ -791,61 +776,25 @@ read_stored_string_pack::~read_stored_string_pack() {
     free(item_array);
 }
 
-/*
-const unichar* read_stored_string_pack::get_next_string()
-{
-	if (cur_item>=nb_item_used)
-		return NULL;
-	return *(item_array+(cur_item++));
-}
-*/
 
 
-
-#define GetUtf8Size(ch)                                                       \
-  (((((unsigned char)(ch)) & ((unsigned char)0x80)) == ((unsigned char)0x00)) \
-       ? 1                                                                    \
-       : (((((unsigned char)(ch)) & ((unsigned char)0xe0)) ==                 \
-           ((unsigned char)0xc0))                                             \
-              ? 2                                                             \
-              : (((((unsigned char)(ch)) & ((unsigned char)0xf0)) ==          \
-                  ((unsigned char)0xe0))                                      \
-                     ? 3                                                      \
-                     : (((((unsigned char)(ch)) & ((unsigned char)0xf8)) ==   \
-                         ((unsigned char)0xf0))                               \
-                            ? 4                                               \
-                            : (((((unsigned char)(ch)) &                      \
-                                 ((unsigned char)0xfc)) ==                    \
-                                ((unsigned char)0xf8))                        \
-                                   ? 5                                        \
-                                   : (((((unsigned char)(ch)) &               \
-                                        ((unsigned char)0xfe)) ==             \
-                                       ((unsigned char)0xfc))                 \
-                                          ? 6                                 \
-                                          : 001))))))
+#define GetUtf8Size(ch)  \
+        (((((unsigned char)(ch)) & ((unsigned char)0x80))==((unsigned char)0x00)) ? 1 : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xe0))==((unsigned char)0xc0)) ? 2 : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xf0))==((unsigned char)0xe0)) ? 3 : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xf8))==((unsigned char)0xf0)) ? 4 : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xfc))==((unsigned char)0xf8)) ? 5 : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xfe))==((unsigned char)0xfc)) ? 6 : 001))))))
 
 
-#define GetUtf8Mask(ch)                                                       \
-  (((((unsigned char)(ch)) & ((unsigned char)0x80)) == ((unsigned char)0x00)) \
-       ? ((unsigned char)0x7f)                                                \
-       : (((((unsigned char)(ch)) & ((unsigned char)0xe0)) ==                 \
-           ((unsigned char)0xc0))                                             \
-              ? ((unsigned char)0x1f)                                         \
-              : (((((unsigned char)(ch)) & ((unsigned char)0xf0)) ==          \
-                  ((unsigned char)0xe0))                                      \
-                     ? ((unsigned char)0x0f)                                  \
-                     : (((((unsigned char)(ch)) & ((unsigned char)0xf8)) ==   \
-                         ((unsigned char)0xf0))                               \
-                            ? ((unsigned char)0x07)                           \
-                            : (((((unsigned char)(ch)) &                      \
-                                 ((unsigned char)0xfc)) ==                    \
-                                ((unsigned char)0xf8))                        \
-                                   ? ((unsigned char)0x03)                    \
-                                   : (((((unsigned char)(ch)) &               \
-                                        ((unsigned char)0xfe)) ==             \
-                                       ((unsigned char)0xfc))                 \
-                                          ? ((unsigned char)0x01)             \
-                                          : 0))))))
+#define GetUtf8Mask(ch)  \
+        (((((unsigned char)(ch)) & ((unsigned char)0x80))==((unsigned char)0x00)) ? ((unsigned char)0x7f) : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xe0))==((unsigned char)0xc0)) ? ((unsigned char)0x1f) : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xf0))==((unsigned char)0xe0)) ? ((unsigned char)0x0f) : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xf8))==((unsigned char)0xf0)) ? ((unsigned char)0x07) : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xfc))==((unsigned char)0xf8)) ? ((unsigned char)0x03) : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xfe))==((unsigned char)0xfc)) ? ((unsigned char)0x01) : 0))))))
+
 
 static size_t unpack_string(unichar* write_content_walk_buf,
                             size_t nb_unichar_alloc_walk,
@@ -861,8 +810,6 @@ static size_t unpack_string(unichar* write_content_walk_buf,
     nb_pack_read++;
 
     unichar c;
-
-
 
     if ((ch & 0x80) == 0) {
       c = ch;
@@ -895,6 +842,7 @@ static size_t unpack_string(unichar* write_content_walk_buf,
     }
   }
 }
+
 
 bool read_stored_string_pack::init_from_buf(const void* buf, size_t buf_size) {
   if ((buf == NULL) || (buf_size < (4 * 2)))
@@ -948,7 +896,6 @@ bool read_stored_string_pack::init_from_buf(const void* buf, size_t buf_size) {
     write_content_walk_buf += size_this_string_written;
   }
 
-
   item_array = item_array_read;
 
   nb_item_allocated = nb_item_used = (int)nb_item_buf;
@@ -965,8 +912,8 @@ typedef struct {
   read_stored_string_pack* p_packrStr;
 } Context_PackRead;
 
-static bool ReadList_int(struct list_int** resL, Context_PackRead* p_PackRead,
-                         Abstract_allocator prv_alloc) {
+static bool read_list_int(struct list_int** resL, Context_PackRead* p_PackRead,
+                          Abstract_allocator prv_alloc) {
   int nb_item_list               = 0;
   struct list_int* retList       = NULL;
   struct list_int** next_filling = &retList;
@@ -991,9 +938,9 @@ static bool ReadList_int(struct list_int** resL, Context_PackRead* p_PackRead,
   return fRes;
 }
 
-static bool ReadList_ustring(struct list_ustring** resL,
-                             Context_PackRead* p_PackRead,
-                             Abstract_allocator prv_alloc) {
+static bool read_list_ustring(struct list_ustring** resL,
+                              Context_PackRead* p_PackRead,
+                              Abstract_allocator prv_alloc) {
   int nb_item_list                   = 0;
   struct list_ustring* retList       = NULL;
   struct list_ustring** next_filling = &retList;
@@ -1019,9 +966,9 @@ static bool ReadList_ustring(struct list_ustring** resL,
   return fRes;
 }
 
-static inline bool ReadAndFillString(unichar** dest,
-                                     Context_PackRead* p_PackRead,
-                                     Abstract_allocator prv_alloc) {
+static inline bool read_and_fill_string(unichar** dest,
+                                        Context_PackRead* p_PackRead,
+                                        Abstract_allocator prv_alloc) {
   const unichar* read_str = NULL;
   bool fRet               = p_PackRead->p_packrStr->get_next_string(&read_str);
   if (fRet) {
@@ -1030,7 +977,7 @@ static inline bool ReadAndFillString(unichar** dest,
   return (fRet);
 }
 
-static bool ReadPattern(struct pattern** p_pattern,
+static bool read_pattern(struct pattern** p_pattern,
                         Context_PackRead* p_PackRead,
                         Abstract_allocator prv_alloc) {
   struct pattern* ret_pattern;
@@ -1045,30 +992,30 @@ static bool ReadPattern(struct pattern** p_pattern,
   ret_pattern->type = (pattern_type)pattern_type_int;
 
   if (fRes)
-    fRes = ReadAndFillString(&ret_pattern->inflected, p_PackRead, prv_alloc);
+    fRes = read_and_fill_string(&ret_pattern->inflected, p_PackRead, prv_alloc);
   else
     ret_pattern->inflected = NULL;
 
   if (fRes)
-    fRes = ReadAndFillString(&ret_pattern->lemma, p_PackRead, prv_alloc);
+    fRes = read_and_fill_string(&ret_pattern->lemma, p_PackRead, prv_alloc);
   else
     ret_pattern->lemma = NULL;
 
   if (fRes)
-    fRes = ReadList_ustring(&ret_pattern->grammatical_codes, p_PackRead,
+    fRes = read_list_ustring(&ret_pattern->grammatical_codes, p_PackRead,
                             prv_alloc);
   else
     ret_pattern->grammatical_codes = NULL;
 
   if (fRes)
-    fRes = ReadList_ustring(&ret_pattern->inflectional_codes, p_PackRead,
+    fRes = read_list_ustring(&ret_pattern->inflectional_codes, p_PackRead,
                             prv_alloc);
   else
     ret_pattern->inflectional_codes = NULL;
 
   if (fRes)
     fRes =
-        ReadList_ustring(&ret_pattern->forbidden_codes, p_PackRead, prv_alloc);
+        read_list_ustring(&ret_pattern->forbidden_codes, p_PackRead, prv_alloc);
   else
     ret_pattern->forbidden_codes = NULL;
 
@@ -1080,9 +1027,9 @@ static bool ReadPattern(struct pattern** p_pattern,
 }
 
 
-static bool ReadTransition(Transition** p_transition,
-                           Context_PackRead* p_PackRead,
-                           Abstract_allocator prv_alloc) {
+static bool read_transition(Transition** p_transition,
+                            Context_PackRead* p_PackRead,
+                            Abstract_allocator prv_alloc) {
   Transition* ret_transition = NULL;
 
   bool fRes      = true;
@@ -1108,9 +1055,9 @@ static bool ReadTransition(Transition** p_transition,
 }
 
 
-static bool ReadList_Transition(Transition** p_transition_list,
-                                Context_PackRead* p_PackRead,
-                                Abstract_allocator prv_alloc) {
+static bool read_list_Transition(Transition** p_transition_list,
+                                 Context_PackRead* p_PackRead,
+                                 Abstract_allocator prv_alloc) {
   int nb_item_list          = 0;
   Transition* retList       = NULL;
   Transition** next_filling = &retList;
@@ -1119,7 +1066,7 @@ static bool ReadList_Transition(Transition** p_transition_list,
 
   if (fRes) {
     while ((nb_item_list > 0)) {
-      fRes = ReadTransition(next_filling, p_PackRead, prv_alloc);
+      fRes = read_transition(next_filling, p_PackRead, prv_alloc);
       if (!fRes)
         break;
       next_filling = &((*next_filling)->next);
@@ -1133,8 +1080,8 @@ static bool ReadList_Transition(Transition** p_transition_list,
   return fRes;
 }
 
-static bool ReadFst2State(Fst2State* p_Fst2State, Context_PackRead* p_PackRead,
-                          Abstract_allocator prv_alloc) {
+static bool read_Fst2State(Fst2State* p_Fst2State, Context_PackRead* p_PackRead,
+                           Abstract_allocator prv_alloc) {
   Fst2State Fst2dest = (fst2State*)malloc_cb(sizeof(fst2State), prv_alloc);
   if (Fst2dest == NULL) {
     fatal_error("Not enough memory in new_Fst2State_clone\n");
@@ -1143,7 +1090,7 @@ static bool ReadFst2State(Fst2State* p_Fst2State, Context_PackRead* p_PackRead,
   bool fRes         = p_PackRead->p_packrInt->get_next_int(&read_control);
   Fst2dest->control = (unsigned char)((unsigned int)(read_control));
   if (fRes)
-    fRes = ReadList_Transition(&Fst2dest->transitions, p_PackRead, prv_alloc);
+    fRes = read_list_Transition(&Fst2dest->transitions, p_PackRead, prv_alloc);
 
   if (fRes)
     *p_Fst2State = Fst2dest;
@@ -1154,7 +1101,7 @@ static bool ReadFst2State(Fst2State* p_Fst2State, Context_PackRead* p_PackRead,
   return fRes;
 }
 
-static bool ReadFst2Tag(Fst2Tag* p_Fst2Tag, Context_PackRead* p_PackRead,
+static bool read_Fst2Tag(Fst2Tag* p_Fst2Tag, Context_PackRead* p_PackRead,
                  Abstract_allocator prv_alloc) {
   Fst2Tag Fst2dest = (fst2Tag*)malloc_cb(sizeof(fst2Tag), prv_alloc);
   if (Fst2dest == NULL) {
@@ -1182,31 +1129,31 @@ static bool ReadFst2Tag(Fst2Tag* p_Fst2Tag, Context_PackRead* p_PackRead,
   Fst2dest->control = (unsigned char)((unsigned int)(read_control));
 
   if (fRes)
-    fRes = ReadAndFillString(&Fst2dest->input, p_PackRead, prv_alloc);
+    fRes = read_and_fill_string(&Fst2dest->input, p_PackRead, prv_alloc);
   else
     Fst2dest->input = NULL;
 
   if ((fRes) && ((mask_used_member &
                   FST2TAG_MORPHOLOGICAL_FILTER_MEMBER_PRESENT_MASK) != 0))
-    fRes = ReadAndFillString(&Fst2dest->morphological_filter, p_PackRead,
+    fRes = read_and_fill_string(&Fst2dest->morphological_filter, p_PackRead,
                              prv_alloc);
   else
     Fst2dest->morphological_filter = NULL;
 
   if ((fRes) && ((mask_used_member & FST2TAG_OUTPUT_MEMBER_PRESENT_MASK) != 0))
-    fRes = ReadAndFillString(&Fst2dest->output, p_PackRead, prv_alloc);
+    fRes = read_and_fill_string(&Fst2dest->output, p_PackRead, prv_alloc);
   else
     Fst2dest->output = NULL;
 
   if ((fRes) &&
       ((mask_used_member & FST2TAG_VARIABLE_MEMBER_PRESENT_MASK) != 0))
-    fRes = ReadAndFillString(&Fst2dest->variable, p_PackRead, prv_alloc);
+    fRes = read_and_fill_string(&Fst2dest->variable, p_PackRead, prv_alloc);
   else
     Fst2dest->variable = NULL;
 
   if ((fRes) &&
       ((mask_used_member & FST2TAG_MATCHING_TOKENS_MEMBER_PRESENT_MASK) != 0))
-    fRes = ReadList_int(&Fst2dest->matching_tokens, p_PackRead, prv_alloc);
+    fRes = read_list_int(&Fst2dest->matching_tokens, p_PackRead, prv_alloc);
   else
     Fst2dest->matching_tokens = NULL;
 
@@ -1229,7 +1176,7 @@ static bool ReadFst2Tag(Fst2Tag* p_Fst2Tag, Context_PackRead* p_PackRead,
 
   Fst2dest->pattern = NULL;
   if ((fRes) && ((mask_used_member & FST2TAG_PATTERN_MEMBER_PRESENT_MASK) != 0))
-    fRes = ReadPattern(&Fst2dest->pattern, p_PackRead, prv_alloc);
+    fRes = read_pattern(&Fst2dest->pattern, p_PackRead, prv_alloc);
 
   if ((fRes) &&
       ((mask_used_member & FST2TAG_PATTERN_NUMBER_MEMBER_PRESENT_MASK) != 0)) {
@@ -1266,7 +1213,7 @@ static bool ReadFst2Tag(Fst2Tag* p_Fst2Tag, Context_PackRead* p_PackRead,
 
 
 Fst2* read_fst2_from_pack(Context_PackRead* p_PackRead,
-                       Abstract_allocator prv_alloc) {
+                          Abstract_allocator prv_alloc) {
   int debugValue = 0;
   Fst2* fst2ret;
   fst2ret = (Fst2*)malloc_cb(sizeof(Fst2), prv_alloc);
@@ -1298,8 +1245,7 @@ Fst2* read_fst2_from_pack(Context_PackRead* p_PackRead,
   if (fRes)
     fRes = p_PackRead->p_packrInt->get_next_int(&read_number_of_tags);
   fst2ret->number_of_tags = read_number_of_tags;
-
-
+  
 
   fst2ret->initial_states              = NULL;
   fst2ret->graph_names                 = NULL;
@@ -1311,7 +1257,7 @@ Fst2* read_fst2_from_pack(Context_PackRead* p_PackRead,
       sizeof(Fst2State) * fst2ret->number_of_states, prv_alloc);
   for (i = 0; i < fst2ret->number_of_states; i++) {
     if (fRes)
-      fRes = ReadFst2State(&fst2ret->states[i], p_PackRead, prv_alloc);
+      fRes = read_Fst2State(&fst2ret->states[i], p_PackRead, prv_alloc);
     else
       fst2ret->states[i] = NULL;
   }
@@ -1321,7 +1267,7 @@ Fst2* read_fst2_from_pack(Context_PackRead* p_PackRead,
 
   for (i = 0; i < fst2ret->number_of_tags; i++) {
     if (fRes)
-      fRes = ReadFst2Tag(&fst2ret->tags[i], p_PackRead, prv_alloc);
+      fRes = read_Fst2Tag(&fst2ret->tags[i], p_PackRead, prv_alloc);
     else
       fst2ret->tags[i] = NULL;
   }
@@ -1371,18 +1317,17 @@ Fst2* read_fst2_from_pack(Context_PackRead* p_PackRead,
            i++) {
         fst2ret->graph_names[i] = NULL;
         if (fRes)
-          fRes = ReadAndFillString(&fst2ret->graph_names[i], p_PackRead,
+          fRes = read_and_fill_string(&fst2ret->graph_names[i], p_PackRead,
                                    prv_alloc);
       }
     }
   }
 
   if (fRes)
-    fRes = ReadList_ustring(&fst2ret->input_variables, p_PackRead, prv_alloc);
+    fRes = read_list_ustring(&fst2ret->input_variables, p_PackRead, prv_alloc);
   if (fRes)
-    fRes = ReadList_ustring(&fst2ret->output_variables, p_PackRead, prv_alloc);
-
-
+    fRes = read_list_ustring(&fst2ret->output_variables, p_PackRead, prv_alloc);
+  
 
   int suppFootVersion = 0;
   if (p_PackRead->p_packrInt->get_next_int(&suppFootVersion)) {
@@ -1413,7 +1358,7 @@ bool write_pack_fst2(Fst2* fst2load, const char* fst2_pack_name,
   cps.p_packInt = &packInt;
   cps.p_packStr = &packStr;
 
-  bool fRet = FlushFst2(fst2load, &cps);
+  bool fRet = flush_Fst2(fst2load, &cps);
 
   if (!fRet)
     return false;
@@ -1490,7 +1435,6 @@ bool convert_fst2_to_fst2_pack_file(const char* fst2_name, const char* fst2_pack
 
   bool fRet = true;
 
-
   if (fVerbose)
     u_printf("\n\nload %s and save %s\n", fst2_name, fst2_pack_name);
   write_pack_fst2(fst2load, fst2_pack_name, fVerbose);
@@ -1498,6 +1442,7 @@ bool convert_fst2_to_fst2_pack_file(const char* fst2_name, const char* fst2_pack
   free_abstract_Fst2(fst2load, &fst2load_free);
   return fRet;
 }
+
 
 Fst2* read_pack_fst2_from_memory(const void* buf, size_t size_buf,
                              Abstract_allocator prv_alloc) {
@@ -1554,16 +1499,6 @@ void free_pack_fst2(Fst2* fst2, Abstract_allocator prv_alloc)
   free_Fst2(fst2,NULL);
 }
 
-
-/*
-ULB_VFFUNC BOOL ULIB_CALL SaveFst2OnFst2PackFile(const char* filenameSrc,
-                                                 const char* filenameDest,
-                                                 int iVerbose) {
-  BOOL fRet = FALSE;
-  if (convert_fst2_to_fst2_pack_file(filenameSrc, filenameDest, iVerbose != 0))
-    fRet = TRUE;
-  return fRet;
-}*/
 
 #ifdef _DEBUG
 
