@@ -301,6 +301,8 @@
     <ClInclude Include="..\LocateTrace.h" />
     <ClInclude Include="..\LocateTracePlugCallback.h" />
     <ClInclude Include="..\OutputTransductionVariables.h" />
+    <ClInclude Include="..\PackFst2.h" />
+    <ClInclude Include="..\PackInf.h" />
     <ClInclude Include="..\PersistenceInterface.h" />
     <ClInclude Include="..\PersistResource.h" />
     <ClInclude Include="..\PRLG.h" />
@@ -412,6 +414,8 @@
     <ClCompile Include="..\logger\SyncLoggerWin.cpp" />
     <ClCompile Include="..\Offsets.cpp" />
     <ClCompile Include="..\Overlap.cpp" />
+    <ClCompile Include="..\PackFst2.cpp" />
+    <ClCompile Include="..\PackInf.cpp" />
     <ClCompile Include="..\Persistence.cpp" />
     <ClCompile Include="..\PersistenceInterface.cpp" />
     <ClCompile Include="..\PersistResource.cpp" />

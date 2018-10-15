@@ -172,9 +172,9 @@ return u_strlen(t2+pos);
 /**
  * A function to initialize arrays easily. The last value must be 0.
  */
-static unichar* kdup(unichar first,...) {
+static unichar* kdup(int first,...) {
 unichar* result=new unichar[MAX_ORDER_JAMO_SIZE];
-result[0]=first;
+result[0]=(unichar)first;
 //error("[  %C  ] (%x) => ",first,first);
 int d,n=1;
 if (first!=0) {

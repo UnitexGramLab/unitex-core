@@ -212,6 +212,12 @@
     <ClInclude Include="..\RegExFacade.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\PackFst2.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PackInf.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -966,6 +972,12 @@
     </ClCompile>
     <ClCompile Include="..\yaml-0.1.6\src\writer.c">
       <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PackFst2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PackInf.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

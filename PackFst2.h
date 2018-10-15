@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2018 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,36 +28,34 @@
  *
  */
 
+#ifndef PackFst2H
+#define PackFst2H 
 
-
-#ifndef ABSTRACT_FST2_LOAD_H
-#define ABSTRACT_FST2_LOAD_H
-
+#include "Unicode.h"
+#include "Alphabet.h"
 #include "Fst2.h"
+#include "AbstractAllocator.h"
+#include "AbstractFst2Load.h"
 
-#define UNITEX_HAS_BINARY_PACKED_FST2
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
 
-//#ifndef HAS_UNITEX_NAMESPACE
-//#define HAS_UNITEX_NAMESPACE 1
-//#endif
+namespace unitex {
 
-//namespace unitex {
-using namespace unitex;
-struct FST2_free_info
-{
-    void *func_free_fst2;
-    void *private_ptr;
-    void *privateSpacePtr;
-    int must_be_free;
-} ;
+Fst2* read_pack_fst2_from_memory(const void* buf, size_t size_buf,
+                                 Abstract_allocator prv_alloc);
 
-const struct FST2_free_info FST2_free_info_init={NULL,NULL,NULL,1};
+bool convert_fst2_to_fst2_pack_file(const char* fst2_name,
+                                    const char* fst2_pack_name, bool fVerbose);
 
-int is_abstract_fst2_filename(const char* filename);
-int is_abstract_or_persistent_fst2_filename(const char* filename);
-Fst2* load_abstract_fst2(const VersatileEncodingConfig*,const char* filename,int read_names,struct FST2_free_info*);
-void free_abstract_Fst2(Fst2*,struct FST2_free_info*);
+bool write_pack_fst2(Fst2* fst2load, const char* fst2_pack_name, bool fVerbose);
 
-//} // namespace unitex
+
+Fst2* read_pack_fst2_from_file(const char* filename,
+                               Abstract_allocator prv_alloc);
+
+void free_pack_fst2(Fst2* fst2,Abstract_allocator prv_alloc);
+}
 
 #endif
