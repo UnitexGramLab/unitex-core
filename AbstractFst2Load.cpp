@@ -154,7 +154,8 @@ Fst2* fst2, struct FST2_free_info* p_inf_free_info, void* privateSpacePtr)
   free_pack_fst2(fst2,NULL);
 }
 
-Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename,int read_names,struct FST2_free_info* p_fst2_free_info)
+Fst2* load_abstract_fst2_infos(const VersatileEncodingConfig* vec,const char* filename,int read_names,
+                               struct FST2_free_info* p_fst2_free_info,bool* is_persistent, bool* is_packed)
 {
     Fst2* res = NULL;
     const AbstractFst2Space * pads = GetFst2SpaceForFileName(filename) ;
@@ -168,6 +169,12 @@ Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename
             p_fst2_free_info->func_free_fst2 = (void*)&free_pack_abstract_fst2;
             p_fst2_free_info->private_ptr    = res;
           }
+          if (is_persistent != NULL) {
+            *is_persistent = false;
+          }
+          if (is_packed != NULL) {
+            *is_packed = true;
+          }
           return res;
         }
 
@@ -178,6 +185,12 @@ Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename
             p_fst2_free_info->must_be_free = 1;
             p_fst2_free_info->func_free_fst2 = NULL;
             p_fst2_free_info->private_ptr = NULL;
+        }
+        if (is_persistent != NULL) {
+          *is_persistent = false;
+        }
+        if (is_packed != NULL) {
+          *is_packed = false;
         }
         return res;
     }
@@ -191,9 +204,22 @@ Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename
             p_fst2_free_info->func_free_fst2 = (void*)(pads->func_array.fnc_free_abstract_fst2);
         }
         res = (*(pads->func_array.fnc_load_abstract_fst2))(vec, filename,read_names,p_fst2_free_info,pads->privateSpacePtr);
+          if (is_persistent != NULL) {
+            *is_persistent = true;
+          }
+          if (is_packed != NULL) {
+            *is_packed = false;
+          }
         return res;
     }
 }
+
+
+Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename,int read_names,struct FST2_free_info* p_fst2_free_info)
+{
+  return load_abstract_fst2_infos(vec, filename, read_names, p_fst2_free_info, NULL, NULL);
+}
+
 
 int is_abstract_fst2_filename(const char* filename)
 {
