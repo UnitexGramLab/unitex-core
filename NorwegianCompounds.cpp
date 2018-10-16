@@ -78,7 +78,7 @@ struct norwegian_infos {
 };
 
 
-struct word_decomposition {
+struct norwegian_word_decomposition {
    int n_parts;
    unichar decomposition[4096];
    unichar dela_line[4096];
@@ -87,16 +87,16 @@ struct word_decomposition {
 };
 
 
-struct word_decomposition_list {
-   struct word_decomposition* element;
-   struct word_decomposition_list* next;
+struct norwegian_word_decomposition_list {
+   struct norwegian_word_decomposition* element;
+   struct norwegian_word_decomposition_list* next;
 };
 
 
 void analyse_norwegian_unknown_words(struct norwegian_infos*);
 int analyse_norwegian_word(const unichar* word,struct norwegian_infos*);
 void explore_state(int,unichar*,int,const unichar*,int,const unichar*,const unichar*,
-                    struct word_decomposition_list**,int,struct norwegian_infos*,Ustring*,int);
+                    struct norwegian_word_decomposition_list**,int,struct norwegian_infos*,Ustring*,int);
 void check_valid_right_component(char*,const struct INF_codes*);
 void check_valid_left_component(char*,const struct INF_codes*);
 char check_valid_left_component_for_an_INF_line(const struct list_ustring*);
@@ -110,10 +110,10 @@ char check_Asio(const struct dela_entry*);
 char check_Asie(const struct dela_entry*);
 char check_VW(const struct dela_entry*);
 char check_ADV(const struct dela_entry*);
-struct word_decomposition* new_word_decomposition();
-void free_word_decomposition(struct word_decomposition*);
-struct word_decomposition_list* new_word_decomposition_list();
-void free_word_decomposition_list(struct word_decomposition_list*);
+struct norwegian_word_decomposition* new_word_decomposition();
+void free_word_decomposition(struct norwegian_word_decomposition*);
+struct norwegian_word_decomposition_list* new_word_decomposition_list();
+void free_word_decomposition_list(struct norwegian_word_decomposition_list*);
 
 
 /**
@@ -561,7 +561,7 @@ unichar correct_word[4096];
 decomposition[0]='\0';
 dela_line[0]='\0';
 correct_word[0]='\0';
-struct word_decomposition_list* l=NULL;
+struct norwegian_word_decomposition_list* l=NULL;
 /* We look if there are decompositions for this word */
 Ustring* ustr=new_Ustring();
 explore_state(infos->d->initial_state_offset,correct_word,0,word,0,decomposition,dela_line,&l,1,infos,ustr,0);
@@ -571,7 +571,7 @@ if (l==NULL) {
     return 0;
 }
 /* Otherwise, we will choose the one to keep */
-struct word_decomposition_list* tmp=l;
+struct norwegian_word_decomposition_list* tmp=l;
 int n=1000;
 int is_a_valid_right_N=0;
 int is_a_valid_right_A=0;
@@ -642,9 +642,9 @@ return 1;
 /**
  * Allocates, initializes and returns a word decomposition structure.
  */
-struct word_decomposition* new_word_decomposition() {
-struct word_decomposition* tmp;
-tmp=(struct word_decomposition*)malloc(sizeof(struct word_decomposition));
+struct norwegian_word_decomposition* new_word_decomposition() {
+struct norwegian_word_decomposition* tmp;
+tmp=(struct norwegian_word_decomposition*)malloc(sizeof(struct norwegian_word_decomposition));
 if (tmp==NULL) {
    fatal_alloc_error("new_word_decomposition");
 }
@@ -660,7 +660,7 @@ return tmp;
 /**
  * Frees a word decomposition structure.
  */
-void free_word_decomposition(struct word_decomposition* t) {
+void free_word_decomposition(struct norwegian_word_decomposition* t) {
 if (t==NULL) return;
 free(t);
 }
@@ -669,9 +669,9 @@ free(t);
 /**
  * Allocates, initializes and returns a word decomposition list structure.
  */
-struct word_decomposition_list* new_word_decomposition_list() {
-struct word_decomposition_list* tmp;
-tmp=(struct word_decomposition_list*)malloc(sizeof(struct word_decomposition_list));
+struct norwegian_word_decomposition_list* new_word_decomposition_list() {
+struct norwegian_word_decomposition_list* tmp;
+tmp=(struct norwegian_word_decomposition_list*)malloc(sizeof(struct norwegian_word_decomposition_list));
 if (tmp==NULL) {
    fatal_alloc_error("new_word_decomposition_list");
 }
@@ -684,8 +684,8 @@ return tmp;
 /**
  * Frees a word decomposition list.
  */
-void free_word_decomposition_list(struct word_decomposition_list* l) {
-struct word_decomposition_list* tmp;
+void free_word_decomposition_list(struct norwegian_word_decomposition_list* l) {
+struct norwegian_word_decomposition_list* tmp;
 while (l!=NULL) {
     free_word_decomposition(l->element);
     tmp=l->next;
@@ -731,7 +731,7 @@ while (l!=NULL) {
 static
 void explore_state(int offset,unichar* current_component,int pos_in_current_component,
                    const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
-                   const unichar* output_dela_line,struct word_decomposition_list** L,
+                   const unichar* output_dela_line,struct norwegian_word_decomposition_list** L,
                    int number_of_components,struct norwegian_infos* infos,Ustring* ustr,int base,
                    unichar* dec_buffer,unichar* sia_code_buffer) {
 int final,n_transitions,inf_number;
@@ -811,7 +811,7 @@ if (final) {
                          * We set the number of components, the analysis, the actual
                          * DELA line and information about
                          */
-                        struct word_decomposition* wd=new_word_decomposition();
+                        struct norwegian_word_decomposition* wd=new_word_decomposition();
                         wd->n_parts=number_of_components;
                         u_strcpy(wd->decomposition,dec_);
                         u_strcpy(wd->dela_line,new_dela_line);
@@ -819,7 +819,7 @@ if (final) {
                         wd->is_a_valid_right_A=check_A_right_component(l->string);
                         /* Then we add the decomposition word structure to the list that
                          * contains all the analysis for the word to analyze */
-                        struct word_decomposition_list* wdl=new_word_decomposition_list();
+                        struct norwegian_word_decomposition_list* wdl=new_word_decomposition_list();
                         wdl->element=wd;
                         wdl->next=(*L);
                         (*L)=wdl;
@@ -951,7 +951,7 @@ for (int i=0;i<n_transitions;i++) {
  */
 void explore_state(int offset,unichar* current_component,int pos_in_current_component,
                    const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
-                   const unichar* output_dela_line,struct word_decomposition_list** L,
+                   const unichar* output_dela_line,struct norwegian_word_decomposition_list** L,
                    int number_of_components,struct norwegian_infos* infos,Ustring* ustr,int base) {
   unichar dec_buffer[4096];
   unichar sia_code_buffer[4096];

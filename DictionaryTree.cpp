@@ -145,7 +145,7 @@ return tmp->next;
  * This structure is used to pass several constant parameters to the function
  * 'add_entry_to_dictionary_tree'.
  */
-struct info {
+struct dictionnary_info {
     unichar* INF_code;
     struct string_hash* INF_code_list;
 };
@@ -184,7 +184,7 @@ static int get_value_index_for_string_colon_string(const unichar* str1,const uni
  * 'infos' is used to access to constant parameters.
  */
 static void add_entry_to_dictionary_tree(const unichar* inflected,int pos,struct dictionary_node* node,
-                                  struct info* infos,int /*line*/, Abstract_allocator prv_alloc) {
+                                  struct dictionnary_info* infos,int /*line*/, Abstract_allocator prv_alloc) {
 for (;;) {
 if (inflected[pos]=='\0') {
    /* If we have reached the end of 'inflected', then we are in the
@@ -233,7 +233,7 @@ pos++;
 void add_entry_to_dictionary_tree(unichar* inflected,unichar* INF_code,
                                   struct dictionary_node* root,struct string_hash* INF_code_list,
                                   int line,Abstract_allocator prv_alloc) {
-struct info infos;
+struct dictionnary_info infos;
 infos.INF_code=INF_code;
 infos.INF_code_list=INF_code_list;
 add_entry_to_dictionary_tree(inflected,0,root,&infos,line,prv_alloc);

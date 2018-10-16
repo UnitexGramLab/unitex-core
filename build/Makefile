@@ -2241,10 +2241,20 @@ xmalloc.o : $(TRE_SRC)/lib/xmalloc.c
 
 endif
 
+# javah is
+# see https://www.oracle.com/technetwork/java/javase/10-relnote-issues-4108729.html
+# see https://bugs.java.com/view_bug.do?bug_id=JDK-8182758
+
 fr_umlv_unitex_jni_UnitexJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp\
 	                                   ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
+
+									   
+ifeq ($(JDK_10_OR_HIGHER),yes)
+	javac -h ../UnitexLibAndJni/ ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
+else
 	javac ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
 	javah -classpath ../UnitexLibAndJni -o ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.h fr.umlv.unitex.jni.UnitexJni
+endif									   
 	$(CC) ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp -c $(OPTIONS) -I"../logger"
 
 # Compiling Unitex as a library under Linux-like systems
@@ -2264,14 +2274,14 @@ no_o_files:
 
 .libunitex: no_o_files $(OBJS) Test_lib.o
 	$(RM) Main_*.o
-	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.$(DYLIBEXT)
-	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex $(OPTIONS) -o ../bin/Test_lib
+	$(CC) *.o $(OPTIONS) $(BUILD_LIB_OPTIONS) -shared -o ../bin/libunitex.$(DYLIBEXT)
+	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex $(OPTIONS) $(TEST_LIB_OPTIONS) -o ../bin/Test_lib
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS) Test_lib.o
 	$(RM) Main_*.o
-	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
+	$(CC) *.o $(OPTIONS) $(BUILD_LIB_OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
-	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lUnitexJni $(OPTIONS) -o ../bin/Test_lib
+	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lUnitexJni $(OPTIONS) $(TEST_LIB_OPTIONS) -o ../bin/Test_lib
 
 .libunitexstatic: $(OBJS)
 	$(RM) Main_*.o
@@ -2285,14 +2295,14 @@ no_o_files:
 
 .libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o
 	$(RM) Main_*.o	
-	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
-	$(CC) Test_lib.o $(OPTIONS) ../bin/unitex.dll -o ../bin/Test_lib.exe
+	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(BUILD_LIB_OPTIONS) $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
+	$(CC) Test_lib.o $(OPTIONS) $(TEST_LIB_OPTIONS) ../bin/unitex.dll -o ../bin/Test_lib.exe
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(OBJS) Test_lib.o
 	-$(RM) Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
+	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(BUILD_LIB_OPTIONS) $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
-	$(CC) Test_lib.o $(OPTIONS) ../bin/UnitexJni.dll -o ../bin/Test_lib.exe
+	$(CC) Test_lib.o $(OPTIONS) $(TEST_LIB_OPTIONS) ../bin/UnitexJni.dll -o ../bin/Test_lib.exe
 
 .libunitexstatic: $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(OBJS)
 	$(RM) Main_*.o

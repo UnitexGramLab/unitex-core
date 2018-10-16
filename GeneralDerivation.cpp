@@ -76,15 +76,15 @@ struct utags init_utags (tags T)
 
 /* data and functions for rule matching */
 
-// struct pattern holds one pattern to be matched between rule and dela_entry
+// struct general_derivation_pattern holds one general_derivation_pattern to be matched between rule and dela_entry
 // e.g.: "+Hum" => { YesNo=1, type=g (grammatical, not flexional), string="Hum" }
-struct pattern {
+struct general_derivation_pattern {
   bool YesNo;
   unichar type;
   unichar string[MAX_COMPOSITION_RULE_LENGTH];
 };
 // associated functions:
-void save_pattern (pattern*, bool, unichar, const unichar*);
+void save_pattern (general_derivation_pattern*, bool, unichar, const unichar*);
 
 // struct change_code holds information for manipulating (parts of) words and information
 // when decompositing words
@@ -100,8 +100,8 @@ struct change_code {
 
 // struct composition_rule holds content of one rule
 struct composition_rule {
-  struct pattern before[MAX_NUMBER_OF_COMPOSITION_RULES];
-  struct pattern after[MAX_NUMBER_OF_COMPOSITION_RULES];
+  struct general_derivation_pattern before[MAX_NUMBER_OF_COMPOSITION_RULES];
+  struct general_derivation_pattern after[MAX_NUMBER_OF_COMPOSITION_RULES];
   struct change_code then;
 };
 // associated functions:
@@ -119,13 +119,13 @@ void free_rule_list (struct rule_list*);
 void free_all_rule_lists (vector_ptr*);
 
 // parse_condition parses condition parts of rules
-void parse_condition (const unichar*, pattern*);
+void parse_condition (const unichar*, general_derivation_pattern*);
 // parse_then_code parses replacement part of a rule
 void parse_then_code (const unichar*_code, struct change_code*);
 // parse_rules parses a rule
 struct rule_list* parse_rules (unichar*,struct utags,vector_ptr*);
 // composition_rule_matches_entry decides whether rule and entry match
-int composition_rule_matches_entry (const struct pattern*, const struct dela_entry*,U_FILE*);
+int composition_rule_matches_entry (const struct general_derivation_pattern*, const struct dela_entry*,U_FILE*);
 // substring_operation changes prefix or suffix of word given a substring-rule
 void substring_operation (unichar*, const unichar*);
 
@@ -360,7 +360,7 @@ bool suffix_is_valid (int index,const bool* suffix)
 
 
 
-void save_pattern (pattern* patterns, bool YesNo, unichar type, const unichar* patt)
+void save_pattern (general_derivation_pattern* patterns, bool YesNo, unichar type, const unichar* patt)
 {
   patterns->YesNo   = YesNo;
   patterns->type    = type;
@@ -369,13 +369,13 @@ void save_pattern (pattern* patterns, bool YesNo, unichar type, const unichar* p
 }
 
 
-void parse_condition (const unichar* condition, pattern* patterns)
+void parse_condition (const unichar* condition, general_derivation_pattern* patterns)
 {
   // parses condition for derivation and composition
   int j = 0;
   for (int i = 0; condition[i] != '\0'; i++) {
     if (condition[i]=='<') {
-      // begin of "abstract" pattern
+      // begin of "abstract" general_derivation_pattern
       i++;
       unichar type = 'g';
       bool YesNo = 1;
@@ -417,7 +417,7 @@ void parse_condition (const unichar* condition, pattern* patterns)
     else { // don't know if it is necessary to have concrete words or something else
     }
   }
-  // last pattern in array must be empty
+  // last general_derivation_pattern in array must be empty
   unichar pattern[MAX_COMPOSITION_RULE_LENGTH];
   pattern[0] = '\0';
   save_pattern(&patterns[j],0,'\0',pattern);
@@ -717,7 +717,7 @@ struct rule_list* parse_rules (unichar* entry,struct utags UTAG,vector_ptr* rule
 }
 
 
-int composition_rule_matches_entry (const struct pattern* rule,
+int composition_rule_matches_entry (const struct general_derivation_pattern* rule,
                      const struct dela_entry* d,U_FILE*
 #if DDEBUG > 1
                      debug_file
@@ -743,7 +743,7 @@ int composition_rule_matches_entry (const struct pattern* rule,
       u_strcat(tmp, rule[i].string);
     }
 #endif
-    if (rule[i].YesNo) { // rule '+' => pattern must be in entry, too
+    if (rule[i].YesNo) { // rule '+' => general_derivation_pattern must be in entry, too
       if (rule[i].type == 'g') {
     if (dic_entry_contain_gram_code(d,rule[i].string))
       continue; // rule matched, try next one
@@ -765,7 +765,7 @@ int composition_rule_matches_entry (const struct pattern* rule,
     }
       }
     }
-    else { // rule '-' => pattern must not be in entry
+    else { // rule '-' => general_derivation_pattern must not be in entry
       if (rule[i].type == 'g') {
     if (dic_entry_contain_gram_code(d,rule[i].string))
       ok = 0;
