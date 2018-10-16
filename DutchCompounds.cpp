@@ -31,7 +31,7 @@
 namespace unitex {
 
 
-/* this define the maximum nomber of item in word_decomposition_list before abort an exploration */
+/* this define the maximum nomber of item in dutch_word_decomposition_list before abort an exploration */
 #ifndef MAX_NB_WORD_DECOMPOSITION_LIST_POSSIBLE
 #define MAX_NB_WORD_DECOMPOSITION_LIST_POSSIBLE (10000)
 #endif
@@ -92,16 +92,16 @@ namespace unitex {
     };
 
 
-    struct word_decomposition {
+    struct dutch_word_decomposition {
         int n_parts;
         const unichar* decomposition;
         const unichar* dela_line;
     };
 
 
-    struct word_decomposition_list {
-        struct word_decomposition* element;
-        struct word_decomposition_list* next;
+    struct dutch_word_decomposition_list {
+        struct dutch_word_decomposition* element;
+        struct dutch_word_decomposition_list* next;
     };
 
     // must be at last 4096
@@ -130,7 +130,7 @@ namespace unitex {
     static int analyse_dutch_word(const unichar* word, struct dutch_infos*);
     static void explore_state_dutch(int offset, unichar* current_component, int pos_in_current_component,
         const unichar* word_to_analyze, int pos_in_word_to_analyze, const unichar* analysis,
-        const unichar* output_dela_line, struct word_decomposition_list** L, struct analyse_dutch_permanent * adp,
+        const unichar* output_dela_line, struct dutch_word_decomposition_list** L, struct analyse_dutch_permanent * adp,
         int number_of_components, const struct dutch_infos* infos, Ustring*, int base);
     static void check_valid_right_component_dutch(char*, const struct INF_codes*, struct original_tokenize_DELAF_line_buffer*);
     static char check_valid_right_component_for_an_INF_line_dutch(const struct list_ustring*, struct original_tokenize_DELAF_line_buffer*);
@@ -139,10 +139,10 @@ namespace unitex {
     static char check_valid_left_component_for_an_INF_line_dutch(const struct list_ustring*, struct original_tokenize_DELAF_line_buffer*);
     static char check_valid_left_component_for_one_INF_code_dutch(const unichar*, struct original_tokenize_DELAF_line_buffer*);
 
-    static struct word_decomposition* new_word_decomposition_dutch(int n_parts, const unichar* decomposition, const unichar* dela_line);
-    static void free_word_decomposition_dutch(struct word_decomposition*);
-    static struct word_decomposition_list* new_word_decomposition_list_dutch();
-    static void free_word_decomposition_list_dutch(struct word_decomposition_list*);
+    static struct dutch_word_decomposition* new_word_decomposition_dutch(int n_parts, const unichar* decomposition, const unichar* dela_line);
+    static void free_word_decomposition_dutch(struct dutch_word_decomposition*);
+    static struct dutch_word_decomposition_list* new_word_decomposition_list_dutch();
+    static void free_word_decomposition_list_dutch(struct dutch_word_decomposition_list*);
 
 
     /**
@@ -443,7 +443,7 @@ namespace unitex {
         unichar decomposition[4096];
         unichar dela_line[4096];
         unichar correct_word[4096];*/
-        struct word_decomposition_list* l = NULL;
+        struct dutch_word_decomposition_list* l = NULL;
         /* We look if there are decompositions for this word */
         struct analyse_dutch_permanent * adp = (struct analyse_dutch_permanent *)malloc(sizeof(struct analyse_dutch_permanent));
         if (adp == NULL) {
@@ -463,7 +463,7 @@ namespace unitex {
             return 0;
         }
         /* Otherwise, we will choose the one to keep */
-        struct word_decomposition_list* tmp = l;
+        struct dutch_word_decomposition_list* tmp = l;
         int n = 1000;
         /* First, we count the minimal number of components, because
         * we want to give priority to analysis with smallest number
@@ -498,17 +498,17 @@ namespace unitex {
     /**
     * Allocates, initializes and returns a word decomposition structure.
     */
-    static struct word_decomposition* new_word_decomposition_dutch(int n_parts, const unichar* decomposition, const unichar* dela_line) {
+    static struct dutch_word_decomposition* new_word_decomposition_dutch(int n_parts, const unichar* decomposition, const unichar* dela_line) {
 
         #define AroundSizeBorder(x) (((x + 0xf) / 0x10) * 0x10)
 
         unsigned int len_decomposition_string_in_bytes = (u_strlen(decomposition) + 1) * sizeof(unichar);
         unsigned int len_dela_line_in_bytes = (u_strlen(dela_line) + 1) * sizeof(unichar);
-        size_t pos_decomposition = sizeof(struct word_decomposition);
-        size_t pos_dela_line = sizeof(struct word_decomposition) + AroundSizeBorder(len_decomposition_string_in_bytes);
+        size_t pos_decomposition = sizeof(struct dutch_word_decomposition);
+        size_t pos_dela_line = sizeof(struct dutch_word_decomposition) + AroundSizeBorder(len_decomposition_string_in_bytes);
         size_t size_allocation = pos_dela_line + AroundSizeBorder(len_dela_line_in_bytes);
-        struct word_decomposition* tmp;
-        tmp = (struct word_decomposition*)malloc(size_allocation);
+        struct dutch_word_decomposition* tmp;
+        tmp = (struct dutch_word_decomposition*)malloc(size_allocation);
         if (tmp == NULL) {
             fatal_alloc_error("new_word_decomposition_dutch");
         }
@@ -529,7 +529,7 @@ namespace unitex {
     /**
     * Frees a word decomposition structure.
     */
-    static void free_word_decomposition_dutch(struct word_decomposition* t) {
+    static void free_word_decomposition_dutch(struct dutch_word_decomposition* t) {
         if (t == NULL) return;
         free(t);
     }
@@ -538,9 +538,9 @@ namespace unitex {
     /**
     * Allocates, initializes and returns a word decomposition list structure.
     */
-    static struct word_decomposition_list* new_word_decomposition_list_dutch() {
-        struct word_decomposition_list* tmp;
-        tmp = (struct word_decomposition_list*)malloc(sizeof(struct word_decomposition_list));
+    static struct dutch_word_decomposition_list* new_word_decomposition_list_dutch() {
+        struct dutch_word_decomposition_list* tmp;
+        tmp = (struct dutch_word_decomposition_list*)malloc(sizeof(struct dutch_word_decomposition_list));
         if (tmp == NULL) {
             fatal_alloc_error("new_word_decomposition_list_dutch");
         }
@@ -553,8 +553,8 @@ namespace unitex {
     /**
     * Frees a word decomposition list.
     */
-    static void free_word_decomposition_list_dutch(struct word_decomposition_list* l) {
-        struct word_decomposition_list* tmp;
+    static void free_word_decomposition_list_dutch(struct dutch_word_decomposition_list* l) {
+        struct dutch_word_decomposition_list* tmp;
         while (l != NULL) {
             free_word_decomposition_dutch(l->element);
             tmp = l->next;
@@ -599,7 +599,7 @@ namespace unitex {
     */
     static void explore_state_dutch(int offset, unichar* current_component, int pos_in_current_component,
         const unichar* word_to_analyze, int pos_in_word_to_analyze, const unichar* analysis,
-        const unichar* output_dela_line, struct word_decomposition_list** L, struct analyse_dutch_permanent * adp,
+        const unichar* output_dela_line, struct dutch_word_decomposition_list** L, struct analyse_dutch_permanent * adp,
         int number_of_components, const struct dutch_infos* infos, Ustring* ustr, int base) {
 
         /* abort if excess list size */
@@ -679,16 +679,16 @@ namespace unitex {
                             * We set the number of components, the analysis, the actual
                             * DELA line and information about
                             */
-                            struct word_decomposition* wd = new_word_decomposition_dutch(number_of_components, dec, new_dela_line);
+                            struct dutch_word_decomposition* wd = new_word_decomposition_dutch(number_of_components, dec, new_dela_line);
                             /* Then we add the decomposition word structure to the list that
                             * contains all the analysis for the word to analyze */
-                            struct word_decomposition_list* wdl = new_word_decomposition_list_dutch();
+                            struct dutch_word_decomposition_list* wdl = new_word_decomposition_list_dutch();
                             wdl->element = wd;
                             wdl->next = (*L);
                             (*L) = wdl;
                             (adp->nb_word_decomposition_list_possible)--;
 
-                            struct word_decomposition_list* wdlbrowse = wdl;
+                            struct dutch_word_decomposition_list* wdlbrowse = wdl;
                             while (wdlbrowse != NULL)
                             {
                                 wdlbrowse = wdlbrowse->next;
