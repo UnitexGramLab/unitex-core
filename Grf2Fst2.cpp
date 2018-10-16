@@ -410,7 +410,7 @@ if (tfst_check) {
 
 free_compilation_info(infos);
 if (pack_fst2) {
-  convert_fst2_to_fst2_pack_file(fst2_file_name, fst2_packed_file_name, true);
+  convert_fst2_to_fst2_pack_file(fst2_file_name, fst2_packed_file_name, false);
   af_remove(fst2_file_name);
 }
 u_printf("Compilation has succeeded\n");

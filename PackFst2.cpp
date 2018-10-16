@@ -29,6 +29,8 @@
  */
 
 #include "PackFst2.h"
+#include "AbstractAllocatorPlugCallback.h" 
+#include "Persistence.h"
 #include "UnusedParameter.h"
 
 
@@ -39,9 +41,26 @@
 namespace unitex {
 
 
- 
-#include "AbstractAllocatorPlugCallback.h" 
-   
+int load_persistent_fst2(const char* name) {
+  VersatileEncodingConfig vec = VEC_DEFAULT;
+
+  Fst2* f;
+  f = read_pack_fst2_from_file(name, NULL);
+  if (f == NULL) {
+    f = load_fst2(&vec, name, 1, NULL);
+  }
+  if (f == NULL)
+    return 0;
+  set_persistent_structure(name, f);
+  return 1;
+}
+
+
+void free_persistent_fst2(const char* name) {
+  Fst2* f = (Fst2*)get_persistent_structure(name);
+  set_persistent_structure(name, NULL);
+  free_Fst2(f);
+}
 
 /**********************************************************************************/
 

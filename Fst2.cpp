@@ -1025,22 +1025,6 @@ Fst2* fst2ret;
 }
 
 
-int load_persistent_fst2(const char* name) {
-VersatileEncodingConfig vec=VEC_DEFAULT;
-Fst2* f=load_fst2(&vec,name,1,NO_GRAPH_NUMBER_SPECIFIED,NULL);
-if (f==NULL) return 0;
-set_persistent_structure(name,f);
-return 1;
-}
-
-
-void free_persistent_fst2(const char* name) {
-Fst2* f=(Fst2*)get_persistent_structure(name);
-set_persistent_structure(name,NULL);
-free_Fst2(f);
-}
-
-
 /**
  * Returns the number of the graph (starting at 1) containing the given state.
  *
