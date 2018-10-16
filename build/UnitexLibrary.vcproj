@@ -352,6 +352,14 @@
 				RelativePath="..\AbstractDelaLoad.h"
 				>
 			</File>
+      <File
+				RelativePath="..\PackInf.cpp"
+				>
+      </File>
+      <File
+				RelativePath="..\PackInf.h"
+				>
+      </File>
 			<File
 				RelativePath="..\AbstractDelaPlugCallback.h"
 				>
@@ -366,6 +374,14 @@
 			</File>
 			<File
 				RelativePath="..\AbstractFst2Load.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PackFst2.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PackFst2.h"
 				>
 			</File>
 			<File

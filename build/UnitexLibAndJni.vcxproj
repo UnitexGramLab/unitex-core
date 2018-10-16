@@ -186,7 +186,9 @@
   <ItemGroup>
     <ClCompile Include="..\AbstractAllocator.cpp" />
     <ClCompile Include="..\AbstractDelaLoad.cpp" />
+    <ClCompile Include="..\PackInf.cpp" />
     <ClCompile Include="..\AbstractFst2Load.cpp" />
+    <ClCompile Include="..\PackFst2.cpp" />
     <ClCompile Include="..\ActivityLogger.cpp" />
     <ClCompile Include="..\Af_stdio.cpp" />
     <ClCompile Include="..\Alphabet.cpp" />
@@ -444,9 +446,11 @@
     <ClInclude Include="..\AbstractAllocatorPlugCallback.h" />
     <ClInclude Include="..\AbstractCallbackFuncModifier.h" />
     <ClInclude Include="..\AbstractDelaLoad.h" />
+    <ClInclude Include="..\PackInf.h" />
     <ClInclude Include="..\AbstractDelaPlugCallback.h" />
     <ClInclude Include="..\AbstractFilePlugCallback.h" />
     <ClInclude Include="..\AbstractFst2Load.h" />
+    <ClInclude Include="..\PackFst2.h" />
     <ClInclude Include="..\AbstractFst2PlugCallback.h" />
     <ClInclude Include="..\ActivityLogger.h" />
     <ClInclude Include="..\ActivityLoggerPlugCallback.h" />

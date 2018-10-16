@@ -47,6 +47,20 @@ namespace unitex {
 struct INF_codes* read_pack_inf_from_memory(const void* buf, size_t size_buf,
                                             Abstract_allocator prv_alloc);
 
+struct INF_codes* read_pack_inf_from_permanent_memory(const void* buf, size_t size_buf,
+                                                      Abstract_allocator prv_alloc,
+                                                      bool permanentMemory);
+
+struct INF_codes* read_pack_inf_from_permanent_memory_and_secondary_buffer(const void* buf, size_t size_buf,
+                                                                           Abstract_allocator prv_alloc,
+                                                                           bool permanentMemory,
+                                                                           void* SecondaryBuffer,int sizeSecondaryBuffer);
+
+int get_inp_secondary_buffer_size(const void* rawInp, int sizeBuf,
+                                  bool fIsPermanentBinInpFile);
+
+struct INF_codes* read_pack_inf_from_memory(const void* buf, size_t size_buf,
+                                            Abstract_allocator prv_alloc);
 bool convert_inf_to_inp_pack_file(const char* inf_name,
                                   const char* inf_pack_name);
 
