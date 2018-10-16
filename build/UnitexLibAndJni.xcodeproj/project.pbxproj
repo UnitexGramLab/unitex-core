@@ -459,6 +459,10 @@
 		228BA8D61AD130BD0080BB31 /* UniRunScript.h in Headers */ = {isa = PBXBuildFile; fileRef = 228BA8D21AD130BD0080BB31 /* UniRunScript.h */; };
 		22942C9E18097E7100057308 /* SelectOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22942C9C18097E7100057308 /* SelectOutput.cpp */; };
 		22942C9F18097E7100057308 /* SelectOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 22942C9D18097E7100057308 /* SelectOutput.h */; };
+		22A222A32175A4C2003E57B1 /* PackFst2.h in Headers */ = {isa = PBXBuildFile; fileRef = 22A2229F2175A4C2003E57B1 /* PackFst2.h */; };
+		22A222A42175A4C2003E57B1 /* PackInf.h in Headers */ = {isa = PBXBuildFile; fileRef = 22A222A02175A4C2003E57B1 /* PackInf.h */; };
+		22A222A52175A4C2003E57B1 /* PackFst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22A222A12175A4C2003E57B1 /* PackFst2.cpp */; };
+		22A222A62175A4C2003E57B1 /* PackInf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22A222A22175A4C2003E57B1 /* PackInf.cpp */; };
 		22C27FDA14AF6D63006A1F5D /* CharNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FA914AF6D62006A1F5D /* CharNames.h */; };
 		22C27FDB14AF6D63006A1F5D /* CompressedDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FAA14AF6D62006A1F5D /* CompressedDic.cpp */; };
 		22C27FDC14AF6D63006A1F5D /* CompressedDic.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FAB14AF6D62006A1F5D /* CompressedDic.h */; };
@@ -981,6 +985,10 @@
 		228BA8D21AD130BD0080BB31 /* UniRunScript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UniRunScript.h; path = ../logger/UniRunScript.h; sourceTree = "<group>"; };
 		22942C9C18097E7100057308 /* SelectOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SelectOutput.cpp; path = ../SelectOutput.cpp; sourceTree = SOURCE_ROOT; };
 		22942C9D18097E7100057308 /* SelectOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SelectOutput.h; path = ../SelectOutput.h; sourceTree = SOURCE_ROOT; };
+		22A2229F2175A4C2003E57B1 /* PackFst2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackFst2.h; path = ../PackFst2.h; sourceTree = "<group>"; };
+		22A222A02175A4C2003E57B1 /* PackInf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackInf.h; path = ../PackInf.h; sourceTree = "<group>"; };
+		22A222A12175A4C2003E57B1 /* PackFst2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackFst2.cpp; path = ../PackFst2.cpp; sourceTree = "<group>"; };
+		22A222A22175A4C2003E57B1 /* PackInf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackInf.cpp; path = ../PackInf.cpp; sourceTree = "<group>"; };
 		22C27FA914AF6D62006A1F5D /* CharNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CharNames.h; path = ../CharNames.h; sourceTree = SOURCE_ROOT; };
 		22C27FAA14AF6D62006A1F5D /* CompressedDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CompressedDic.cpp; path = ../CompressedDic.cpp; sourceTree = SOURCE_ROOT; };
 		22C27FAB14AF6D62006A1F5D /* CompressedDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CompressedDic.h; path = ../CompressedDic.h; sourceTree = SOURCE_ROOT; };
@@ -1172,6 +1180,10 @@
 		222AFD6D1411335700F74409 /* Unitex-C++ */ = {
 			isa = PBXGroup;
 			children = (
+				22A222A12175A4C2003E57B1 /* PackFst2.cpp */,
+				22A2229F2175A4C2003E57B1 /* PackFst2.h */,
+				22A222A22175A4C2003E57B1 /* PackInf.cpp */,
+				22A222A02175A4C2003E57B1 /* PackInf.h */,
 				2234C6131B7E030200D3CF5D /* PersistResource.cpp */,
 				2234C6121B7E030200D3CF5D /* PersistResource.h */,
 				22942C9C18097E7100057308 /* SelectOutput.cpp */,
@@ -1701,6 +1713,7 @@
 				222AFF141411336600F74409 /* FilePack.h in Headers */,
 				222AFF161411336600F74409 /* FilePackCrc32.h in Headers */,
 				222AFF181411336600F74409 /* FilePackIo.h in Headers */,
+				22A222A42175A4C2003E57B1 /* PackInf.h in Headers */,
 				222AFF191411336600F74409 /* FilePackType.h in Headers */,
 				222AFF1B1411336600F74409 /* FileUnPack.h in Headers */,
 				222AFF1D1411336600F74409 /* MzRepairUlp.h in Headers */,
@@ -1739,6 +1752,7 @@
 				222AFF581411336600F74409 /* CompoundWordHashTable.h in Headers */,
 				222AFF5A1411336600F74409 /* CompoundWordTree.h in Headers */,
 				222AFF5C1411336600F74409 /* Compress.h in Headers */,
+				22A222A32175A4C2003E57B1 /* PackFst2.h in Headers */,
 				222AFF5E1411336600F74409 /* Concord.h in Headers */,
 				222AFF601411336600F74409 /* Concordance.h in Headers */,
 				222AFF621411336600F74409 /* ConcorDiff.h in Headers */,
@@ -2070,6 +2084,7 @@
 				222AFF851411336600F74409 /* ElagStateSet.cpp in Sources */,
 				222AFF871411336600F74409 /* Error.cpp in Sources */,
 				2234C6151B7E030200D3CF5D /* PersistResource.cpp in Sources */,
+				22A222A52175A4C2003E57B1 /* PackFst2.cpp in Sources */,
 				222AFF891411336600F74409 /* Evamb.cpp in Sources */,
 				222AFF8B1411336600F74409 /* Extract.cpp in Sources */,
 				1F0B068F1AFD533600029933 /* loader.c in Sources */,
@@ -2246,6 +2261,7 @@
 				1F0B068D1AFD533600029933 /* dumper.c in Sources */,
 				22F5F19F1800BAFE002F0040 /* PackFile.cpp in Sources */,
 				22F5F1A11800BAFE002F0040 /* PackFileTool.cpp in Sources */,
+				22A222A62175A4C2003E57B1 /* PackInf.cpp in Sources */,
 				22F5F1A31800BAFE002F0040 /* UnpackFile.cpp in Sources */,
 				22F5F1A51800BAFE002F0040 /* UnpackFileTool.cpp in Sources */,
 				22942C9E18097E7100057308 /* SelectOutput.cpp in Sources */,
@@ -2296,6 +2312,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					x86_64,
+					i386,
+					ppc,
+					"$(ARCHS_STANDARD_32_BIT)",
+					"$(ARCHS_STANDARD_64_BIT)",
+				);
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

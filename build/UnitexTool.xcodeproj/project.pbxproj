@@ -227,6 +227,8 @@
 		2294F4AC122EEB30009495A8 /* LocateTrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2294F4AB122EEB30009495A8 /* LocateTrace.cpp */; };
 		229851AA111A6F2000503A07 /* Fst2Check_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851A8111A6F2000503A07 /* Fst2Check_lib.cpp */; };
 		229D935B11CB4138007BC1B4 /* Arabic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229D935911CB4138007BC1B4 /* Arabic.cpp */; };
+		22A222AB2175A4D3003E57B1 /* PackFst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22A222A92175A4D2003E57B1 /* PackFst2.cpp */; };
+		22A222AC2175A4D3003E57B1 /* PackInf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22A222AA2175A4D3003E57B1 /* PackInf.cpp */; };
 		22B2EB5E118B168100E00A77 /* MappedFileHelperPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22B2EB5D118B168100E00A77 /* MappedFileHelperPosix.cpp */; };
 		22C2884E14AF6D8C006A1F5D /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C284BE14AF6D8B006A1F5D /* Persistence.cpp */; };
 		22C2884F14AF6D8C006A1F5D /* PRLG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C284C014AF6D8B006A1F5D /* PRLG.cpp */; };
@@ -710,6 +712,10 @@
 		229851A9111A6F2000503A07 /* Fst2Check_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Fst2Check_lib.h; path = ../Fst2Check_lib.h; sourceTree = SOURCE_ROOT; };
 		229D935911CB4138007BC1B4 /* Arabic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Arabic.cpp; path = ../Arabic.cpp; sourceTree = SOURCE_ROOT; };
 		229D935A11CB4138007BC1B4 /* Arabic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Arabic.h; path = ../Arabic.h; sourceTree = SOURCE_ROOT; };
+		22A222A72175A4D2003E57B1 /* PackFst2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackFst2.h; path = ../PackFst2.h; sourceTree = "<group>"; };
+		22A222A82175A4D2003E57B1 /* PackInf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackInf.h; path = ../PackInf.h; sourceTree = "<group>"; };
+		22A222A92175A4D2003E57B1 /* PackFst2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackFst2.cpp; path = ../PackFst2.cpp; sourceTree = "<group>"; };
+		22A222AA2175A4D3003E57B1 /* PackInf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackInf.cpp; path = ../PackInf.cpp; sourceTree = "<group>"; };
 		22B2EB5C118B168100E00A77 /* MappedFileHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MappedFileHelper.h; path = ../MappedFileHelper.h; sourceTree = SOURCE_ROOT; };
 		22B2EB5D118B168100E00A77 /* MappedFileHelperPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MappedFileHelperPosix.cpp; path = ../MappedFileHelperPosix.cpp; sourceTree = SOURCE_ROOT; };
 		22C284BE14AF6D8B006A1F5D /* Persistence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Persistence.cpp; path = ../Persistence.cpp; sourceTree = SOURCE_ROOT; };
@@ -762,6 +768,10 @@
 			isa = PBXGroup;
 			children = (
 				1F0B076F1AFD53A800029933 /* yaml-0.1.6 */,
+				22A222A92175A4D2003E57B1 /* PackFst2.cpp */,
+				22A222A72175A4D2003E57B1 /* PackFst2.h */,
+				22A222AA2175A4D3003E57B1 /* PackInf.cpp */,
+				22A222A82175A4D2003E57B1 /* PackInf.h */,
 				2234C6171B7E032200D3CF5D /* PersistResource.cpp */,
 				2234C6161B7E032200D3CF5D /* PersistResource.h */,
 				226063B41AF3A29500BC2033 /* DumpOffsets.cpp */,
@@ -1390,6 +1400,7 @@
 				222F79141107A48400C91CC7 /* CompoundWordHashTable.cpp in Sources */,
 				222F79151107A48400C91CC7 /* CompoundWordTree.cpp in Sources */,
 				222F79161107A48400C91CC7 /* Compress.cpp in Sources */,
+				22A222AC2175A4D3003E57B1 /* PackInf.cpp in Sources */,
 				222F79171107A48400C91CC7 /* Concord.cpp in Sources */,
 				222F79181107A48400C91CC7 /* Concordance.cpp in Sources */,
 				222F79191107A48400C91CC7 /* ConcorDiff.cpp in Sources */,
@@ -1525,6 +1536,7 @@
 				222F79C71107A48400C91CC7 /* XMLizer.cpp in Sources */,
 				229851AA111A6F2000503A07 /* Fst2Check_lib.cpp in Sources */,
 				22EA01E11121ED9D00A89AD4 /* AbstractAllocator.cpp in Sources */,
+				22A222AB2175A4D3003E57B1 /* PackFst2.cpp in Sources */,
 				225FE86411256AB900F33C2A /* Tagger.cpp in Sources */,
 				225FE86511256AB900F33C2A /* TaggingProcess.cpp in Sources */,
 				225FE86611256AB900F33C2A /* TrainingTagger.cpp in Sources */,
@@ -1595,6 +1607,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					"$(ARCHS_STANDARD_32_BIT)",
+					"$(ARCHS_STANDARD_64_BIT)",
+				);
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
@@ -1640,6 +1656,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					"$(ARCHS_STANDARD_32_BIT)",
+					"$(ARCHS_STANDARD_64_BIT)",
+				);
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
