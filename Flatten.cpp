@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "Copyright.h"
 #include "Fst2.h"
+#include "PackFst2.h"
 #include "AbstractFst2Load.h"
 #include "FlattenFst2.h"
 #include "Error.h"
@@ -82,7 +83,7 @@ if (argc==1) {
    usage();
    return SUCCESS_RETURN_CODE;
 }
-
+bool is_packed=false;
 int RTN=1;
 int depth=10;
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -137,7 +138,7 @@ if (only_verify_arguments) {
 
 u_printf("Loading %s...\n",argv[options.vars()->optind]);
 struct FST2_free_info fst2_free;
-Fst2* origin=load_abstract_fst2(&vec,argv[options.vars()->optind],1,&fst2_free);
+Fst2* origin=load_abstract_fst2_infos(&vec,argv[options.vars()->optind],1,&fst2_free,NULL,&is_packed);
 if (origin==NULL) {
    error("Cannot load %s\n",argv[options.vars()->optind]);
    return DEFAULT_ERROR_CODE;
@@ -164,6 +165,18 @@ switch (flatten_fst2(origin,depth,temp,&vec,RTN)) {
 }
 
 free_abstract_Fst2(origin,&fst2_free);
+
+if (is_packed) {
+  char tempPack[FILENAME_MAX+0x10];
+  strcpy(tempPack, argv[options.vars()->optind]);
+  strcat(tempPack, ".tmppack.fst2");
+  if (convert_fst2_to_fst2_pack_file(temp, tempPack, false)) {
+    af_remove(temp);
+    strcpy(temp, tempPack);
+  } else {
+    af_remove(tempPack);
+  }
+}
 af_remove(argv[options.vars()->optind]);
 af_rename(temp,argv[options.vars()->optind]);
 
