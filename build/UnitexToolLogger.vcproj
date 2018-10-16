@@ -515,6 +515,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PackInf.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PackInf.h"
+				>
+			</File>
+			<File
 				RelativePath="..\AbstractDelaLoad.h"
 				>
 			</File>
@@ -528,6 +536,14 @@
 			</File>
 			<File
 				RelativePath="..\AbstractFst2Load.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PackFst2.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PackFst2.h"
 				>
 			</File>
 			<File

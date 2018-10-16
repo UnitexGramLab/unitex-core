@@ -99,7 +99,9 @@ Unitex-C++/logger/UniRunScript.cpp \
 Unitex-C++/XMLizer.cpp \
 Unitex-C++/AbstractAllocator.cpp \
 Unitex-C++/AbstractDelaLoad.cpp \
+Unitex-C++/PackInf.cpp \
 Unitex-C++/AbstractFst2Load.cpp \
+Unitex-C++/PackFst2.cpp \
 Unitex-C++/ActivityLogger.cpp \
 Unitex-C++/Af_stdio.cpp \
 Unitex-C++/Alphabet.cpp \

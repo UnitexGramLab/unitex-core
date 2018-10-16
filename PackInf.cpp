@@ -385,8 +385,7 @@ static int check_inp_header(const void*rawInp,int sizeBuf)
 }
 
 
-
-static int get_inp_secondary_buffer_size(const void*rawInp, int sizeBuf,bool fIsPermanentBinInpFile)
+int get_inp_secondary_buffer_size(const void*rawInp, int sizeBuf,bool fIsPermanentBinInpFile)
 {
     int iCheckHeader=check_inp_header(rawInp,sizeBuf);
     if (iCheckHeader==0)
@@ -573,10 +572,29 @@ return res;
 }
 
 struct INF_codes* read_pack_inf_from_memory(const void* buf, size_t size_buf,
-  Abstract_allocator prv_alloc)
+                                            Abstract_allocator prv_alloc)
 {
   DISCARD_UNUSED_PARAMETER(prv_alloc)
   return build_inf_structure_from_inp_file(buf, (int)size_buf);
+}
+
+
+struct INF_codes* read_pack_inf_from_permanent_memory(const void* buf, size_t size_buf,
+                                                      Abstract_allocator prv_alloc,
+                                                      bool permanentMemory)
+{
+  DISCARD_UNUSED_PARAMETER(prv_alloc)
+  return build_inf_structure_from_inp_file(buf, (int)size_buf, NULL,0,permanentMemory);
+}
+
+
+struct INF_codes* read_pack_inf_from_permanent_memory_and_secondary_buffer(const void* buf, size_t size_buf,
+                                                                           Abstract_allocator prv_alloc,
+                                                                           bool permanentMemory,
+                                                                           void* SecondaryBuffer,int sizeSecondaryBuffer)
+{
+  DISCARD_UNUSED_PARAMETER(prv_alloc)
+  return build_inf_structure_from_inp_file(buf, (int)size_buf,SecondaryBuffer,sizeSecondaryBuffer,permanentMemory);
 }
 
 struct INF_codes* read_pack_inf_from_file(const char* filename,

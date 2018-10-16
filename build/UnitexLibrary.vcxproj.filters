@@ -26,6 +26,9 @@
     <ClInclude Include="..\AbstractDelaLoad.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\PackInf.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\AbstractDelaPlugCallback.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\AbstractFst2Load.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PackFst2.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\AbstractFst2PlugCallback.h">
@@ -206,7 +212,13 @@
     <ClCompile Include="..\AbstractDelaLoad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\PackInf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\AbstractFst2Load.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PackFst2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ActivityLogger.cpp">
