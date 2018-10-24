@@ -789,6 +789,12 @@
     <ClCompile Include="..\yaml-0.1.6\src\writer.c">
       <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\PackFst2.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PackInf.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\logger\MzRepairUlp.h">
@@ -1220,9 +1226,6 @@
     <ClInclude Include="..\MF_Global.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Unitex-C++</Filter>
-    </ClInclude>
     <ClInclude Include="..\MF_GlobalBase.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
@@ -1484,32 +1487,20 @@
     <ClInclude Include="..\XMLizer.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\KeyWords.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
     <ClInclude Include="..\KeyWords_lib.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\SyncTool.h">
       <Filter>Unitex-C++</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\UnitexLibDir.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
     <ClInclude Include="..\UnitexLibIO.h">
       <Filter>Unitex-C++</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Cassys_external_program.h">
       <Filter>Unitex-C++</Filter>
@@ -1529,12 +1520,6 @@
     <ClInclude Include="..\Cassys_concord.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\logger\UnpackFileTool.h">
       <Filter>Unitex-C++\logger</Filter>
     </ClInclude>
@@ -1547,14 +1532,8 @@
     <ClInclude Include="..\logger\PackFile.h">
       <Filter>Unitex-C++\logger</Filter>
     </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\SelectOutput.h">
       <Filter>Unitex-C++</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\logger\InstallLingResourcePackage.h">
       <Filter>Unitex-C++\logger</Filter>
@@ -1568,17 +1547,14 @@
     <ClInclude Include="..\logger\RunTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\yaml-0.1.6\src\yaml_private.h">
       <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
     </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\PackFst2.h">
+      <Filter>Unitex-C++</Filter>
     </ClInclude>
-    <ClInclude Include="..\MF_Global.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\PackInf.h">
+      <Filter>Unitex-C++</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

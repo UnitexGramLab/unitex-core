@@ -32,10 +32,12 @@
 
 #include "Unicode.h"
 #include "Fst2.h"
+#include "PackFst2.h"
 
 #include "AbstractFst2Load.h"
 #include "AbstractFst2PlugCallback.h"
 #include "Persistence.h"
+#include "UnusedParameter.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -135,8 +137,8 @@ const AbstractFst2Space * GetFst2SpaceForFileName(const char*name)
     while (tmp != NULL)
     {
         const AbstractFst2Space * test_afs = &(tmp->afs);
-        if (tmp->afs.func_array.fnc_is_filename_object(name,tmp->afs.privateSpacePtr) != 0)
-            return test_afs;
+        if (tmp->afs.func_array.fnc_is_filename_object(name, tmp->afs.privateSpacePtr) != 0)
+          return test_afs;
 
         tmp = tmp->next;
     }
@@ -144,14 +146,38 @@ const AbstractFst2Space * GetFst2SpaceForFileName(const char*name)
 }
 
 /*******************************/
+static void ABSTRACT_CALLBACK_UNITEX free_pack_abstract_fst2(
+Fst2* fst2, struct FST2_free_info* p_inf_free_info, void* privateSpacePtr)
+{
+  DISCARD_UNUSED_PARAMETER(p_inf_free_info);
+  DISCARD_UNUSED_PARAMETER(privateSpacePtr);
+  free_pack_fst2(fst2,NULL);
+}
 
-
-Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename,int read_names,struct FST2_free_info* p_fst2_free_info)
+Fst2* load_abstract_fst2_infos(const VersatileEncodingConfig* vec,const char* filename,int read_names,
+                               struct FST2_free_info* p_fst2_free_info,bool* is_persistent, bool* is_packed)
 {
     Fst2* res = NULL;
     const AbstractFst2Space * pads = GetFst2SpaceForFileName(filename) ;
     if (pads == NULL)
     {
+        res = read_pack_fst2_from_file(filename, NULL);
+        if (res != NULL)
+        {
+          if (p_fst2_free_info != NULL) {
+            p_fst2_free_info->must_be_free   = 1;
+            p_fst2_free_info->func_free_fst2 = (void*)&free_pack_abstract_fst2;
+            p_fst2_free_info->private_ptr    = res;
+          }
+          if (is_persistent != NULL) {
+            *is_persistent = false;
+          }
+          if (is_packed != NULL) {
+            *is_packed = true;
+          }
+          return res;
+        }
+
         res = load_fst2(vec, filename, read_names);
 
         if ((res != NULL) && (p_fst2_free_info != NULL))
@@ -159,6 +185,12 @@ Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename
             p_fst2_free_info->must_be_free = 1;
             p_fst2_free_info->func_free_fst2 = NULL;
             p_fst2_free_info->private_ptr = NULL;
+        }
+        if (is_persistent != NULL) {
+          *is_persistent = false;
+        }
+        if (is_packed != NULL) {
+          *is_packed = false;
         }
         return res;
     }
@@ -172,9 +204,22 @@ Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename
             p_fst2_free_info->func_free_fst2 = (void*)(pads->func_array.fnc_free_abstract_fst2);
         }
         res = (*(pads->func_array.fnc_load_abstract_fst2))(vec, filename,read_names,p_fst2_free_info,pads->privateSpacePtr);
+          if (is_persistent != NULL) {
+            *is_persistent = true;
+          }
+          if (is_packed != NULL) {
+            *is_packed = false;
+          }
         return res;
     }
 }
+
+
+Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename,int read_names,struct FST2_free_info* p_fst2_free_info)
+{
+  return load_abstract_fst2_infos(vec, filename, read_names, p_fst2_free_info, NULL, NULL);
+}
+
 
 int is_abstract_fst2_filename(const char* filename)
 {

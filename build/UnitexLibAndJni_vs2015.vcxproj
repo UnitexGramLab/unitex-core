@@ -349,6 +349,8 @@
     <ClCompile Include="..\OptimizedTfstTagMatching.cpp" />
     <ClCompile Include="..\OutputTransductionVariables.cpp" />
     <ClCompile Include="..\Overlap.cpp" />
+    <ClCompile Include="..\PackFst2.cpp" />
+    <ClCompile Include="..\PackInf.cpp" />
     <ClCompile Include="..\ParsingInfo.cpp" />
     <ClCompile Include="..\Pattern.cpp" />
     <ClCompile Include="..\PatternTree.cpp" />
@@ -594,7 +596,6 @@
     <ClInclude Include="..\MF_DLC_inflect.h" />
     <ClInclude Include="..\MF_FormMorpho.h" />
     <ClInclude Include="..\MF_Global.h" />
-    <ClInclude Include="..\MF_Global.h" />
     <ClInclude Include="..\MF_GlobalBase.h" />
     <ClInclude Include="..\MF_LangMorpho.h" />
     <ClInclude Include="..\MF_LangMorphoBase.h" />
@@ -620,6 +621,8 @@
     <ClInclude Include="..\OptimizedTfstTagMatching.h" />
     <ClInclude Include="..\OutputTransductionVariables.h" />
     <ClInclude Include="..\Overlap.h" />
+    <ClInclude Include="..\PackFst2.h" />
+    <ClInclude Include="..\PackInf.h" />
     <ClInclude Include="..\ParsingInfo.h" />
     <ClInclude Include="..\Pattern.h" />
     <ClInclude Include="..\PatternTree.h" />

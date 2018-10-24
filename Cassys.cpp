@@ -289,7 +289,7 @@ unsigned int add_line_to_file(graphFile* file, const unichar* line) {
     file->lines[file->lines_number] = u_strdup(line);
 
     file->lines_number++;
-    return file->lines_number - 1;
+    return (unsigned int)(file->lines_number - 1);
 }
 
 /**
@@ -614,7 +614,7 @@ stringTokenList* new_token_list_from_string(const unichar* string) {
 
             // Creation of the token to add to the token list
             const size_t token_length = cursor - token_beginning + 1; // +1 to match the correct token length
-            unichar* sub_string = u_strndup(string + token_beginning, token_length);
+            unichar* sub_string = u_strndup(string + token_beginning, (int)token_length);
 
             add_token_to_token_list(sub_string, string_token_list);
             free(sub_string);
@@ -643,7 +643,7 @@ stringTokenList* new_token_list_from_string(const unichar* string) {
 
             // Creation of the token to add to the token list
             const size_t token_length = cursor - token_beginning;
-            unichar* sub_string = u_strdup(string + token_beginning, token_length);
+            unichar* sub_string = u_strdup(string + token_beginning, (unsigned int)token_length);
 
             add_token_to_token_list(sub_string, string_token_list);
             free(sub_string);
@@ -975,11 +975,11 @@ void extract_following_box_info(graphFile* file, graphInfo* graph_info) {
 
     // The sub string begins one character after the beginning of the box content, bacause of the first "
     const size_t left_part_length = index_of_slash - 1;
-    unichar* left_part = u_strdup(box_content + 1, left_part_length);
+    unichar* left_part = u_strdup(box_content + 1, (unsigned int)left_part_length);
 
     // For the right part we need to ignore both the final " and the '/'
     const size_t right_part_length = u_strlen(box_content) - index_of_slash - 1 - 1;
-    unichar* right_part = u_strdup(pointer_to_slash + 1, right_part_length);
+    unichar* right_part = u_strdup(pointer_to_slash + 1, (unsigned int)right_part_length);
 
     // Searching the '.' in the left part
     unichar* pointer_to_dot = u_strchr(left_part, '.');
@@ -996,8 +996,8 @@ void extract_following_box_info(graphFile* file, graphInfo* graph_info) {
         const size_t filter_category_length = index_of_dot;
         const size_t final_category_length = left_part_length - index_of_dot - 1; // -1 to ignore the '.'
 
-        graph_info->filter_category = u_strdup(left_part, filter_category_length);
-        graph_info->final_category = u_strdup(pointer_to_dot + 1, final_category_length); // +1 to ignore the '.'
+        graph_info->filter_category = u_strdup(left_part, (unsigned int)filter_category_length);
+        graph_info->final_category = u_strdup(pointer_to_dot + 1, (unsigned int)final_category_length); // +1 to ignore the '.'
     }
     else {
 
@@ -1010,7 +1010,7 @@ void extract_following_box_info(graphFile* file, graphInfo* graph_info) {
     const size_t index_of_category_beginning = (size_t) (pointer_to_category_beginning - right_part);
     const size_t searched_category_length = right_part_length - index_of_category_beginning - 1; // -1 to ignore the '.'
 
-    graph_info->category = u_strdup(pointer_to_category_beginning + 1, searched_category_length);
+    graph_info->category = u_strdup(pointer_to_category_beginning + 1, (unsigned int)searched_category_length);
 
     free(box_content);
     free(left_part);
@@ -1279,7 +1279,7 @@ unichar* extract_token_category(const unichar* line, unichar* start_position, bo
     unichar* category_end = first_occurence_in_set_of(line, dot_occurence + 1, is_sub_token ? "\\" : "+:/}");
 
     const size_t category_length = category_end - dot_occurence - (is_sub_token ? 2 : 1);
-    unichar* category = u_strndup(dot_occurence + (is_sub_token ? 2 : 1), category_length);
+    unichar* category = u_strndup(dot_occurence + (is_sub_token ? 2 : 1), (int)category_length);
 
     return category;
 }
@@ -1305,7 +1305,7 @@ unichar* extract_token_content(unichar* line, unichar* line_end) {
         // If we encounter either a '\', a '{' or a '}', we have to skip the part
         if (u_strchr("\\{}", *cursor) != NULL) {
 
-            unichar* part = u_strndup(cursor + 1, part_ending - cursor);
+            unichar* part = u_strndup(cursor + 1, (int)(part_ending - cursor));
             //u_strcat(content, part);
             add_token_to_token_list(part, token_list);
             free(part);
@@ -1333,13 +1333,13 @@ unichar* extract_token_content(unichar* line, unichar* line_end) {
         }
     }
 
-    unichar* part = u_strndup(cursor + 1, part_ending - cursor);
+    unichar* part = u_strndup(cursor + 1, (int)(part_ending - cursor));
     add_token_to_token_list(part, token_list);
     free(part);
     Ustring* content = new_Ustring();
 
     // Reversing the found parts
-    for (int i = token_list->list_size - 1; i >= 0; i--) {
+    for (int i = (int)(token_list->list_size - 1); i >= 0; i--) {
 
         u_strcat(content, token_list->token_list[i]);
     }
@@ -1579,7 +1579,7 @@ unsigned int create_updated_graph(const char* new_graph_file_name, VersatileEnco
     enum Status { FAIL = 0, SUCCESS = 1 };
 
     // Used to put the correct number at the end of lines that indicated the line of the next box
-    unsigned int last_file_line_number = read_file->lines_number;
+    unsigned int last_file_line_number = (unsigned int)read_file->lines_number;
 
     // For each graphInfoMatch
     for (unsigned int i = 0; i < info_match_list->match_list_size; i++) {
