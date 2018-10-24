@@ -2548,7 +2548,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
             return DEFAULT_ERROR_CODE;
         }
 
-        for (iteration = 0; current_transducer->repeat_mode == INFINITY || iteration < current_transducer->repeat_mode; iteration++) {
+        for (iteration = 0; current_transducer->repeat_mode == REPEAT_INFINITY || iteration < current_transducer->repeat_mode; iteration++) {
             if (in_place == 0) {
 
                 if (labeled_text_name != NULL) {

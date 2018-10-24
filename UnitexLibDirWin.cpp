@@ -23,9 +23,9 @@
  * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
- * additional information: http://www.ergonotics.com/unitex-contribution/
+ * additional information: http://www.smartversion.com/unitex-contribution/
  * https://github.com/ergonotics/JNI-for-Unitex-2.1
- * contact : unitex-contribution@ergonotics.com
+ * contact : info@winimage.com
  *
  */
 

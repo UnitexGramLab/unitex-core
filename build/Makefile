@@ -957,7 +957,7 @@ FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Copyright.o Af_stdio.o Act
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o \
                 Transitions.o DELA.o Symbol.o Symbol_op.o LanguageDefinition.o \
                 Ustring.o Tagset.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
-                VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
+                VirtualFiles.o Persistence.o UnitexRevisionInfo.o UnitexGetOpt.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 FST2TXT      = Fst2Txt

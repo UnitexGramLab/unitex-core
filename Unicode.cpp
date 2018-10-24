@@ -2386,6 +2386,7 @@ static void fwriteString(U_FILE* f, const unichar* us, int convLFtoCRLF)
  *   See 'htmlize' for details.
  *
  * - %U works in the same way than %H, but it invokes 'URLize'
+ * - %X works in the same way than %X, but it invokes 'XMLize'
  *
  * Author: Sébastien Paumier
  * Original version with format option restrictions: Olivier Blanc
@@ -2424,12 +2425,13 @@ while (*format) {
          }
 
          case 'H':
-         case 'U': {
+         case 'U':
+         case 'X': {
             int (*XXXize)(const unichar*,unichar*);
-            if (*format=='H') {
-                XXXize=htmlize;
-            } else {
-                XXXize=URLize;
+            switch (*format) {
+              case 'H': XXXize=htmlize; break;
+              case 'U': XXXize=URLize;  break;
+              case 'X': XXXize=XMLize;  break;
             }
             /* If we have a '%H' (or '%U'), it means that we have to print HTML things (or URLs) */
             format++;
@@ -2652,12 +2654,13 @@ while (*format) {
          }
 
          case 'H':
-         case 'U': {
+         case 'U':
+         case 'X': {
             int (*XXXize)(const unichar*,unichar*);
-            if (*format=='H') {
-                XXXize=htmlize;
-            } else {
-                XXXize=URLize;
+            switch (*format) {
+              case 'H': XXXize=htmlize; break;
+              case 'U': XXXize=URLize;  break;
+              case 'X': XXXize=XMLize;  break;
             }
             /* If we have a '%H', it means that we have to print HTML things */
             format++;
@@ -4623,6 +4626,54 @@ int JSONize(const unichar* source,unichar* destination) {
       case '&':  U_STRCPY_LITERAL(destination,pos,"\\u0026"); break;
       case '<':  U_STRCPY_LITERAL(destination,pos,"\\u003C"); break;
       case '>':  U_STRCPY_LITERAL(destination,pos,"\\u003E"); break;
+      default :  destination[pos++] = *it;
+    }
+    // advance the character pointer
+    ++it;
+  }
+// undefines U_STRCPY_LITERAL macro right before we use them
+#undef U_STRCPY_LITERAL
+  // indicate the end of the string
+  destination[pos] = '\0';
+
+  // return the length of the destination string
+  return pos;
+}
+
+/**
+ * @brief XML-escapes a unichar string
+ *
+ * XML-escapes a source string before copy it into destination
+ * this function conforms with "Extensible Markup Language (XML)
+ * 1.0 (Fifth Edition)"
+ *
+ * @param[in]  source unichar string to be escaped
+ * @param[out] destination unichar array where the escaped string is to be copied
+ * @return the length of the destination string
+ */
+int XMLize(const unichar* source,unichar* destination) {
+  if (!source) {
+     fatal_error("NULL error in XMLize\n");
+  }
+
+  const unichar* it = source;
+  int pos = 0;
+
+// U_STRCPY_LITERAL macro copies a literal string, starting at pos position,
+// into a destination unichar buffer, then it increments the pos variable by
+// the length of the literal. In this case the length is computed at compile
+// time
+#define U_STRCPY_LITERAL(destination, pos, literal) \
+        u_strcpy(&*(destination+pos),literal);      \
+        pos+=sizeof(literal)-1
+  // loop till the end of string
+  while (*it != '\0') {
+    switch(*it) {
+      case '\'': U_STRCPY_LITERAL(destination,pos,"&apos;"); break;
+      case '"':  U_STRCPY_LITERAL(destination,pos,"&quot;"); break;
+      case '&':  U_STRCPY_LITERAL(destination,pos,"&amp;");  break;
+      case '<':  U_STRCPY_LITERAL(destination,pos,"&lt;");   break;
+      case '>':  U_STRCPY_LITERAL(destination,pos,"&gt;");   break;
       default :  destination[pos++] = *it;
     }
     // advance the character pointer
