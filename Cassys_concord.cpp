@@ -497,7 +497,7 @@ int findEntityList(standOffInfo *infos, int num,
 }
 
 void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* vec, const char* original_file, 
-        const char* lang, const char* stdoff_file) {
+        const char* /*lang*/, const char* stdoff_file) {
     char text_name_without_extension[FILENAME_MAX];
     char result_file[FILENAME_MAX];
     text_name_without_extension[0] = '\0';

@@ -1455,7 +1455,7 @@ graphInfoMatchList* get_matching_list(graphFile* token_file, graphInfoList* grap
     // Algorithm **********************************************************************************************
 
     // For each line of the file, starting from the end of the file to the beginning because all the tokens are at the end
-    for (unsigned int current_line_number = token_file->lines_number - 1; current_line_number >= 0; current_line_number--) {
+    for (int current_line_number = token_file->lines_number - 1; current_line_number >= 0; current_line_number--) {
 
         unichar* current_line = token_file->lines[current_line_number];
         const size_t current_line_length = u_strlen(current_line);
