@@ -317,7 +317,7 @@ graphFile* load_graph_file(const char* file, VersatileEncodingConfig* encoding_c
 
     // If the file can't be loaded we stop there and return NULL to indicate that the loading went wrong
     if (loaded_file == NULL) {
-
+        error("load_graph_file");
         return NULL;
     }
 
@@ -598,17 +598,13 @@ stringTokenList* new_token_list_from_string(const unichar* string) {
         case in_string: {
 
             // Search the end of the string
-            bool is_escaped = false;
             cursor++;
 
-            // Until we reach a quote that is not escaped
-            while (string[cursor] != '"' || is_escaped) {
+            while ((string[cursor] != '"') && (string[cursor] != '\0')) {
 
                 if (string[cursor] == '\\') {
-
-                    is_escaped = !is_escaped;
+                    cursor++;
                 }
-
                 cursor++;
             }
 
@@ -2591,7 +2587,10 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 if (graph_info_list->graph_count > 0) {
 
                     //char* token_list = get_file_in_current_snt(text, transducer_number, iteration, "tok_by_alph", ".txt");
-                    char* token_list = get_file_in_current_snt(text, transducer_number, iteration, "tokens", ".txt");
+                    char* token_list = get_file_in_current_snt(text,
+                                                               (in_place != 0) ? 0 : transducer_number,
+                                                               (in_place != 0) ? 0 : iteration,
+                                                               "tokens", ".txt");
 
                     graphFile* token_file = load_graph_file(token_list, vec);
                     //unichar**entity_string = extract_entities(token_list,snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
