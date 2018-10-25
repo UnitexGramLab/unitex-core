@@ -598,17 +598,13 @@ stringTokenList* new_token_list_from_string(const unichar* string) {
         case in_string: {
 
             // Search the end of the string
-            bool is_escaped = false;
             cursor++;
 
-            // Until we reach a quote that is not escaped
-            while (string[cursor] != '"' || is_escaped) {
+            while ((string[cursor] != '"') && (string[cursor] != '\0')) {
 
                 if (string[cursor] == '\\') {
-
-                    is_escaped = !is_escaped;
+                    cursor++;
                 }
-
                 cursor++;
             }
 
