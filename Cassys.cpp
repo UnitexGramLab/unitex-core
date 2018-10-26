@@ -1451,7 +1451,7 @@ graphInfoMatchList* get_matching_list(graphFile* token_file, graphInfoList* grap
     // Algorithm **********************************************************************************************
 
     // For each line of the file, starting from the end of the file to the beginning because all the tokens are at the end
-    for (unsigned int current_line_number = (unsigned int)(token_file->lines_number - 1); current_line_number >= 0; current_line_number--) {
+    for (int current_line_number = token_file->lines_number - 1; current_line_number >= 0; current_line_number--) {
 
         unichar* current_line = token_file->lines[current_line_number];
         const size_t current_line_length = u_strlen(current_line);
@@ -1640,11 +1640,11 @@ unsigned int create_updated_graph(const char* new_graph_file_name, VersatileEnco
         }
         else {
 
-            u_strcatf(box_content, "%S", graph_info_match->first->token);
+            u_strcatf(box_content, "<%S>", graph_info_match->first->token);
 
             for (tokenMatch* token_match = graph_info_match->first->next; token_match != NULL; token_match = token_match->next) {
 
-                u_strcatf(box_content, "+%S", token_match->token);
+                u_strcatf(box_content, "+<%S>", token_match->token);
             }
 
             // Two '{' if the filter category exist, only one otherwise
