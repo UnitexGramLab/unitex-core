@@ -422,9 +422,9 @@ void print_standoff(U_FILE* out,standOffInfo* infos, int num_info, unichar* list
 
             list_index = list_index->next;
         }
-
-        free_list_int(ordered_list);
     }
+
+    free_list_int(ordered_list);
     for (int rest_i = 0; rest_i < rest_size; rest_i++) {
         u_fprintf(out,"%S\n", rest[rest_i]);
     }
