@@ -383,6 +383,7 @@ list_int* create_ordered_standoff_list(standOffInfo* infos, int info_count) {
 
 void print_standoff(U_FILE* out,standOffInfo* infos, int num_info, unichar* list_line, unichar* end_line, 
         unichar** block, int block_size, unichar** rest, int rest_size) {
+
     list_int* ordered_list = create_ordered_standoff_list(infos, num_info);
     list_int* list_index = ordered_list;
 
@@ -418,10 +419,12 @@ void print_standoff(U_FILE* out,standOffInfo* infos, int num_info, unichar* list
                 }
             }
             u_fprintf(out,"%S\n", end_line);
+
             list_index = list_index->next;
         }
-        free_list_int(ordered_list);
     }
+
+    free_list_int(ordered_list);
     for (int rest_i = 0; rest_i < rest_size; rest_i++) {
         u_fprintf(out,"%S\n", rest[rest_i]);
     }
