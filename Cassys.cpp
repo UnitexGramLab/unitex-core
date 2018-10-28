@@ -768,7 +768,7 @@ void add_match_to_graph_info_match(const unichar* match, graphInfoMatch* graph_i
 
         return;
     }
-    
+
     tokenMatch* current_match = graph_info_match->first;
 
     int comparison = -1;
@@ -1451,7 +1451,7 @@ graphInfoMatchList* get_matching_list(graphFile* token_file, graphInfoList* grap
     // Algorithm **********************************************************************************************
 
     // For each line of the file, starting from the end of the file to the beginning because all the tokens are at the end
-    for (int current_line_number = token_file->lines_number - 1; current_line_number >= 0; current_line_number--) {
+    for (int current_line_number = ((int)token_file->lines_number) - 1; current_line_number >= 0; current_line_number--) {
 
         unichar* current_line = token_file->lines[current_line_number];
         const size_t current_line_length = u_strlen(current_line);
@@ -2179,7 +2179,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 strcpy(textbuf->language, options.vars()->optarg);
             }
             break;
-        } 
+        }
         default :{
             error("Invalid option : %c\n",val);
             free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
@@ -2579,7 +2579,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 u_printf("Loaded file : %s\n", textbuf->orig_grf);
                 //unichar **grf_lines = load_file_in_memory(textbuf->orig_grf, vec, &total_lines);
                 graphFile* graph_file = load_graph_file(textbuf->orig_grf, vec);
-                  
+
                 //grf_infos = extract_info(grf_lines, &num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
                 graphInfoList* graph_info_list = get_graph_info_list_from_graph_file(graph_file);
 
