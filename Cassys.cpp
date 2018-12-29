@@ -687,6 +687,38 @@ typedef struct tokenMatch {
 } tokenMatch;
 
 /**
+ * Returns a normalized version of the given content for a tokenMatch, by escaping needed characters (" + : / < > # \)
+ *
+ * content  : The content to normalize
+ *
+ * Returns the normalized content
+ */
+unichar* normalize_token_match_content(const unichar* content) {
+
+    // We allow two times the size of the original content in case that all the characters need to be escaped
+    const size_t content_size = u_strlen(content);
+    unichar* buffer = (unichar*) malloc(sizeof(unichar) * content_size * 2);
+    unsigned int cursor = 0;
+
+    for (unsigned int i = 0; i < content_size; i++) {
+
+        // If the current character needs to be escaped
+        if (u_strchr("\"+:/<>#\\", content[i]) != NULL) {
+
+            buffer[cursor] = '\\';
+            cursor++;
+        }
+
+        buffer[cursor] = content[i];
+        cursor++;
+    }
+
+    unichar* final_content = u_strndup(buffer, cursor);
+    free(buffer);
+    return final_content;
+}
+
+/**
  * Creates a new tokenMatch with the given content
  *
  * content  : The content of the tokenMatch
@@ -702,7 +734,7 @@ tokenMatch* new_token_match(const unichar* content) {
         return NULL;
     }
 
-    token_match->token = u_strdup(content);
+    token_match->token = normalize_token_match_content(content);
     token_match->next = NULL;
 
     return token_match;
@@ -1175,7 +1207,7 @@ inline unichar* last_occurence_of(const unichar* line, unichar* start_position, 
  *
  * line           : The line in which the character will be searched
  * start_position : The position at which the research will start
- * set            : The est of characters that must be searched in the line
+ * set            : The set of characters that must be searched in the line
  *
  * Returns the first occurence of any character of the set in the given line, or NULL if nothing was found
  */
