@@ -1509,7 +1509,7 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatchField(void* privateDataPtr,
       u_fprintf(fo, "%S", line->str);
       line->str[pos1 + 0] = save_first_car;
 
-      u_fprintf(fo, "__", line->str);
+      //u_fprintf(fo, "__", line->str);
       unsigned int pos2 = pos1;
 
       while ((pos2 < line->len) && (nb_sep_found < num_selected_field + 1)) {
@@ -1577,7 +1577,7 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatchField(void* privateDataPtr,
 
 
       if ((fi_tmp != NULL) && (EOF != readline(line_tmp, fi_tmp))) {
-        u_fprintf(fo, "(%S,ret=%d)", line_tmp->str, retvalue);
+        u_fprintf(fo, "%S", line_tmp->str);
       }
 
 
@@ -1592,7 +1592,7 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatchField(void* privateDataPtr,
 	  
 
       line->str[pos2] = save_end_car;
-      u_fprintf(fo, "__");
+      //u_fprintf(fo, "__");
 
       u_fprintf(fo, "%S\n", line->str + pos2);
     }
