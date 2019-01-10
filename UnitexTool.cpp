@@ -324,7 +324,8 @@ const struct utility_item utility_array[]=
 {
 #if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEX_TOOL_LINKPKG_SCRIPT)
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
-{ "BatchRunScript", 14, &main_UniBatchRunScript, usage_UniBatchRunScript, optstring_UniBatchRunScript, lopts_UniBatchRunScript },
+    { "BatchFieldRunScript", 19, &main_UniBatchFieldRunScript, usage_UniBatchFieldRunScript, optstring_UniBatchFieldRunScript, lopts_UniBatchFieldRunScript },
+    { "BatchRunScript", 14, &main_UniBatchRunScript, usage_UniBatchRunScript, optstring_UniBatchRunScript, lopts_UniBatchRunScript },
 #endif
 #endif
 
