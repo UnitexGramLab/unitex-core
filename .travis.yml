@@ -117,6 +117,7 @@ before_install:
 
 install:
   - git clone -b master --depth 1 https://github.com/UnitexGramLab/unitex-core-tests
+  - brew install bash
   
 # overwrite the default build step
 script:
