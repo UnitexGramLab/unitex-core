@@ -2438,6 +2438,7 @@ while (*format) {
          case 'U':
          case 'X': {
             int (*XXXize)(const unichar*,unichar*);
+            XXXize=NULL;
             switch (*format) {
               case 'H': XXXize=htmlize; break;
               case 'U': XXXize=URLize;  break;
@@ -2667,6 +2668,7 @@ while (*format) {
          case 'U':
          case 'X': {
             int (*XXXize)(const unichar*,unichar*);
+            XXXize=NULL;
             switch (*format) {
               case 'H': XXXize=htmlize; break;
               case 'U': XXXize=URLize;  break;
