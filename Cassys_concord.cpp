@@ -595,6 +595,11 @@ void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* ve
             unichar* line_2 = NULL;
             size_t size_buffer_line_2 = 0;
             U_FILE* header_file = u_fopen(vec,stdoff_file,U_READ);
+            
+            if (header_file == NULL) {
+                fatal_error("construct_istex_standoff: cannot open standoff file %s:\n",stdoff_file);
+                exit(1);
+            }
             if(header_file != NULL) {
                 const unichar LINE_COMMAND[] = { '#', 'L', 'I', 'N', 'E',  0 };
                 const unichar BLOCK_COMMAND[] = { '#', 'B', 'L', 'O', 'C', 'K',  0 };
@@ -648,10 +653,12 @@ void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* ve
                 }
                 u_fclose(header_file);
                 free(line_2);
+                print_standoff(out_file, infos, num_info, list_line, end, block,
+                               block_size, rest, rest_size);
             }
-        }
-        print_standoff(out_file, infos, num_info, list_line, end, block, block_size, rest, rest_size);
+        }        
         free(list_line);
+
         for (int block_i = 0; block_i < block_size; block_i++) {
             if (block[block_i] != NULL) {
                 free(block[block_i]);
