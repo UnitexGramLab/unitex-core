@@ -317,7 +317,7 @@ graphFile* load_graph_file(const char* file, VersatileEncodingConfig* encoding_c
 
     // If the file can't be loaded we stop there and return NULL to indicate that the loading went wrong
     if (loaded_file == NULL) {
-        error("load_graph_file");
+        error("load_graph_file %s", file);
         return NULL;
     }
 
