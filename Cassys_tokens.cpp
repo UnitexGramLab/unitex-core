@@ -41,7 +41,7 @@ void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName, int reali
 
     U_FILE *dot_desc_file = u_fopen(ASCII, fileName, U_WRITE);
     if (dot_desc_file == NULL) {
-        fatal_error("Cannot open file \n");
+        fatal_error("Cannot open file %s\n",fileName);
         exit(1);
     }
 
