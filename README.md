@@ -35,7 +35,7 @@ asking technical support questions can be found
 ## Reporting Bugs
 
 See the [Bug Reporting
-Guide](http://unitexgramlab.org/index.php?page=6) for information on
+Guide](https://unitexgramlab.org/how-to-report-a-bug) for information on
 how to report bugs.
 
 ## Governance Model
@@ -68,8 +68,8 @@ tools) always use "Unitex/GramLab".
 This program is licensed under the [GNU Lesser General Public License version 2.1](/LICENSE).
 Contact unitex-devel@univ-mlv.fr for further inquiries.
 
---
+---
 
 Copyright (C) 2021 Université Paris-Est Marne-la-Vallée
 
-[unitexgramlab]:  http://unitexgramlab.org
+[unitexgramlab]:  https://unitexgramlab.org
