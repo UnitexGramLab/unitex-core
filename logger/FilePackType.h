@@ -31,6 +31,9 @@
 
 
 
+#if defined(UNITEX_USE_REAL_ZLIB)
+#include "zlib.h"
+#else
 #ifndef _ZLIB_H_REPLACE_TYPE
 #define _ZLIB_H_REPLACE_TYPE 1
 
@@ -91,5 +94,7 @@ typedef struct z_stream_s {
 #define Z_BINARY   0
 #define Z_TEXT     1
 #define Z_ASCII    Z_TEXT   /* for compatibility with 1.2.2 and earlier */
+
+#endif
 
 #endif
