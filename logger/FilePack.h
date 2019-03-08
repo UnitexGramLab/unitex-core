@@ -86,7 +86,9 @@
 extern "C" {
 #endif
 
+#if !defined(UNITEX_USE_REAL_ZLIB) && !defined(NO_ZLIB)
 #define NO_ZLIB 1
+#endif
 
 #ifndef NO_ZLIB
 #ifndef _ZLIB_H
