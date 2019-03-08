@@ -1,8 +1,4 @@
 version: 3
-approve_by_comment: true
-approve_regex: '^(Approved|:\+1:|:lgtm:|lgtm|LGTM)'
-reject_regex:  '^(Rejected|:\-1:)'
-reset_on_push: false
 groups:
   ide-committers:
     required: 1
