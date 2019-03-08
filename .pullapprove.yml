@@ -1,4 +1,4 @@
-version: 2
+version: 3
 approve_by_comment: true
 approve_regex: '^(Approved|:\+1:|:lgtm:|lgtm|LGTM)'
 reject_regex:  '^(Rejected|:\-1:)'
