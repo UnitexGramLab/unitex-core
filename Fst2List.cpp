@@ -75,7 +75,7 @@ const char* usage_Fst2List =
         "-v, --verbose: prints information during the process\r\n"
         "-r (s|l|x) <L[,R]>: enclose loops in L and R strings as in (c0|...|cn) by Lc0|..|cnR : default null\r\n"
         "-V, --only_verify_arguments: only verify arguments syntax and exit\r\n"
-        "-h, --help: display this help and exit\r\n"
+        "-h, --help: display this help and exit";
 
 static void usage() {
   display_copyright_notice();
