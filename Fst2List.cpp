@@ -32,7 +32,6 @@
 #include "Error.h"
 #include "Transitions.h"
 #include "UnitexGetOpt.h"
-#include "LocatePattern.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -77,7 +76,6 @@ const char* usage_Fst2List =
         "-r (s|l|x) <L[,R]>: enclose loops in L and R strings as in (c0|...|cn) by Lc0|..|cnR : default null\r\n"
         "-V, --only_verify_arguments: only verify arguments syntax and exit\r\n"
         "-h, --help: display this help and exit\r\n"
-        "-b <file>, generate dictionary file according the given configuration file,";
 
 static void usage() {
   display_copyright_notice();
@@ -272,7 +270,7 @@ public:
   char ofnameOnly[512];        // output file name
   char defaultIgnoreName[512]; // input file name
 
-  U_FILE* configFile;
+  
   bool generateDictionary;
   bool mode_morph; //true if the current state is in morphological mode
   bool isWord; //false if the state's content is not a word (like $< or $>)
@@ -827,16 +825,7 @@ public:
               OUTPUTBUFFER[outBufferCnt++] = outputBuffer[i];
             }
           }
-          wordPtr = sepR;
-          while (*wordPtr) {
-            if (inputPtrCnt) {            
-              INPUTBUFFER[inBufferCnt++] = *wordPtr;
-            }
-            if (automateMode == TRANMODE) {
-              OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
-            }
-            wordPtr++;
-          }
+          outOneSpace();
         } else {
           wordPtr = sepL;
           while (*wordPtr) {        	 
@@ -854,10 +843,7 @@ public:
               INPUTBUFFER[inBufferCnt++] = outputBuffer[i];
             }
           }
-          wordPtr = sepR;
-          while (*wordPtr) {          	
-            INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-          }
+          outOneSpace();
         }
       }
       if ((recursiveMode == LABEL) && setOut) {
@@ -917,19 +903,8 @@ public:
           }
           //        if(recursiveMode == LABEL){
           //          wordPtr = openingQuote;while(*wordPtr)  INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-          //          }
-          
+          //          }         
           outOneSpace();
-          /*wordPtr = sepR;
-          if(!mode_morph) {
-	          while (*wordPtr) {         	
-	            INPUTBUFFER[inBufferCnt++] = *wordPtr;
-	            if (automateMode == TRANMODE) {
-	              OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
-	            }
-	            wordPtr++;
-	        }
-          }*/
         } else {
           wordPtr = sepL;
           while (*wordPtr) {         	 
@@ -953,10 +928,6 @@ public:
               INPUTBUFFER[inBufferCnt++] = *wordPtr++;
             }
           }
-          /*wordPtr = sepR;
-          while (*wordPtr) {
-            INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-          }*/
           outOneSpace();
         }
         count_in_line++;
@@ -1996,11 +1967,7 @@ int CFstApp::outWordsOfGraph(int depth) {
     } else {
       Tag = a->tags[pathStack[s].tag & SUB_ID_MASK];
       isWord = false;
-    
 
-      /*u_fprintf(foutput, "tag input : ", Tag->type);
-      u_fputs(Tag->input, foutput);
-      u_fprintf(foutput, "tag type : %d\n", Tag->type);*/
       //Checks if the current node is a morphological begin or end and updates the boolean to begin/stop the morph mode
       switch (Tag->type) {
       	case BEGIN_MORPHO_TAG :    		 
@@ -2231,8 +2198,7 @@ int CFstApp::outWordsOfGraph(int depth) {
         continue;
       }
     }// end if LOOP_PATH_MARK
-    if (pathStack[s].stateNo & STOP_PATH_MARK) {
-      //u_printf("stop %d\n",s);    	
+    if (pathStack[s].stateNo & STOP_PATH_MARK) {   	
       if (markPreCtlChar && markCtlChar) {
         if (outOneWord(0) != 0) {
           return 1;
@@ -2254,9 +2220,6 @@ int CFstApp::outWordsOfGraph(int depth) {
           return 1;
         }
       } else {
-      	/*u_fprintf(foutput, "ok15\nEbuff : ");
-      	u_fputs(EBuff, foutput); 
-      	u_fprintf(foutput, "\n");*/
         if (outOneWord(u_null_string) != 0) {
           return 1;
         }
@@ -2296,7 +2259,6 @@ int CFstApp::outWordsOfGraph(int depth) {
       }
     }
     while (*ep) {
-      //u_fprintf(foutput, "ebuff 11 + %c \n", (char)*ep);
       inputBuffer[inputPtrCnt++] = *ep++;
     }   
     if (automateMode == TRANMODE) {
@@ -2306,9 +2268,6 @@ int CFstApp::outWordsOfGraph(int depth) {
     }
     if (wordMode) {
       if (inputPtrCnt || outputPtrCnt) {
-      	/*u_fprintf(foutput, "ok19\nEbuff : ");
-      	u_fputs(EBuff, foutput); 
-      	u_fprintf(foutput, "\n");*/
         if (outOneWord(0) != 0) {
           return 1;
         }
@@ -2642,11 +2601,7 @@ int main_Fst2List(int argc, char* const argv[]) {
   strcpy(fst2_filename,argv[options.vars()->optind]);
   aa.fileNameSet(argv[options.vars()->optind], ofilename);
   aa.vec = vec;
-  u_printf("debut du parcours de l'automate \n");
-  u_printf("aa.generateDictionary : %d\n", aa.generateDictionary);
   aa.getWordsFromGraph(changeStrToIdx, changeStrTo, fst2_filename);
-  u_printf("fin \n");
-  u_fclose(aa.configFile);
   delete ofilename;
   return SUCCESS_RETURN_CODE;
 }
