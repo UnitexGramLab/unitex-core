@@ -90,12 +90,12 @@ void do_convert_command_line_synth_to_splitted(
     while (is_space_or_equivalent(*lpSrc) != 0)
         lpSrc++;
 
-    if (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
+    if ((lpSrc < lpSrcLimit) && ((*lpSrc) != '\0'))
         iNbArg++;
 
-    while (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
+    while ((lpSrc < lpSrcLimit) && ((*lpSrc) != '\0'))
     {
-        while (((*lpSrc) == '"') && (lpSrc<lpSrcLimit))
+        while ((lpSrc < lpSrcLimit) && ((*lpSrc) == '"'))
         {
             isInQuote = !isInQuote;
             lpSrc++;
