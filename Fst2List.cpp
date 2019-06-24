@@ -269,7 +269,7 @@ public:
   char ofExt[16];
   char ofnameOnly[512];        // output file name
   char defaultIgnoreName[512]; // input file name
-  bool modeMorph; //true if the current state is in morphological mode
+  bool modeMorph = false; //true if the current state is in morphological mode
 
   void fileNameSet(char *ifn, char *ofn) {
     char tmp[512];
