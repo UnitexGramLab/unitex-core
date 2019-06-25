@@ -87,7 +87,7 @@ void do_convert_command_line_synth_to_splitted(
     int iNbArg = 0;
 
 
-    while (is_space_or_equivalent(*lpSrc) != 0)
+    while ((lpSrc < lpSrcLimit) && (is_space_or_equivalent(*lpSrc) != 0))
         lpSrc++;
 
     if ((lpSrc < lpSrcLimit) && ((*lpSrc) != '\0'))
@@ -111,7 +111,7 @@ void do_convert_command_line_synth_to_splitted(
             iNbArg++;
         }
 
-        while (((*lpSrc) == '"') && (lpSrc<lpSrcLimit))
+        while ((lpSrc<lpSrcLimit) && ((*lpSrc) == '"'))
         {
             isInQuote = !isInQuote;
             lpSrc++;
