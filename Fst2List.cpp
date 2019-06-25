@@ -1934,8 +1934,8 @@ int CFstApp::outWordsOfGraph(int depth) {
   Fst2Tag Tag;
   unichar *suffixPtr;
   unichar *wordPtr;
-  unichar *inputBufferPtr; //input buffer ptr
-  unichar *outputBufferPtr; //transducer buffer ptr
+  unichar *inputBufferPtr;  // input buffer ptr
+  unichar *outputBufferPtr;  // transducer buffer ptr
   unichar *chp;
   int indicateFirstUsed;
   int i;
