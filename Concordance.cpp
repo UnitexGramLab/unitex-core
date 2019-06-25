@@ -741,8 +741,9 @@ mirror(left);
  * 'middle' must have been carefully allocated. 'buffer' contains the token numbers
  * to work on.
  */
-void extract_match(int start_pos,int start_pos_char,int end_pos,int end_pos_char,unichar* output,unichar* middle,
-                    struct text_tokens* tokens,struct buffer_mapped* buffer) {
+void extract_match(int start_pos,int start_pos_char,int end_pos,int end_pos_char,const unichar* output,
+                   unichar* middle,size_t size_middle,
+                   struct text_tokens* tokens,struct buffer_mapped* buffer) {
 if (output!=NULL) {
    /* If there is an output, then the match is the output */
    u_strcpy(middle,output);
@@ -755,25 +756,25 @@ if (start_pos_char!=0) {
    /* If the match doesn't start on the first char of the first token */
    s=tokens->token[buffer->int_buffer_[buffer->skip+start_pos]];
    int end=(end_pos==start_pos) ? (end_pos_char+1) : ((int)u_strlen(s));
-   for (k=start_pos_char;k<end;k++) {
+   for (k=start_pos_char;(k<end) && (j<size_middle);k++) {
       middle[j++]=s[k];
    }
-   if (start_pos==end_pos) {
+   if ((start_pos==end_pos) || (j>=size_middle)) {
       middle[j]='\0';
       return;
    }
    start_pos++;
 }
-for (int i=start_pos;i<end_pos;i++) {
+for (int i=start_pos;(i<end_pos) && (j<size_middle);i++) {
    k=0;
     s=tokens->token[buffer->int_buffer_[buffer->skip+i]];
-    while (s[k]!='\0') {
+    while ((s[k]!='\0') && (j<size_middle)) {
         middle[j++]=s[k++];
     }
 }
 /* We write the last token */
 s=tokens->token[buffer->int_buffer_[buffer->skip+end_pos]];
-for (k=0;k<=end_pos_char;k++) {
+for (k=0;(k<=end_pos_char) && (j<size_middle);k++) {
    middle[j++]=s[k];
 }
 middle[j]='\0';
@@ -1079,6 +1080,7 @@ unichar* left = unichar_buffer + ((MAX_CONTEXT_IN_UNITS+1) * 0);
 unichar* middle = unichar_buffer + ((MAX_CONTEXT_IN_UNITS+1) * 1);
 unichar* right = unichar_buffer + ((MAX_CONTEXT_IN_UNITS+1) * 2);
 unichar* href = unichar_buffer + ((MAX_CONTEXT_IN_UNITS+1) * 3);
+size_t size_middle=MAX_CONTEXT_IN_UNITS;
 int number_of_matches=0;
 int is_a_good_match=1;
 int start_pos,end_pos;
@@ -1236,7 +1238,7 @@ while (matches!=NULL) {
 
     /* Now we extract the 3 parts of the concordance */
     extract_left_context(start_pos,matches->m.start_pos_in_char,left,tokens,options,token_length,buffer);
-    extract_match(start_pos,matches->m.start_pos_in_char,end_pos,matches->m.end_pos_in_char,matches->output,middle,tokens,buffer);
+    extract_match(start_pos,matches->m.start_pos_in_char,end_pos,matches->m.end_pos_in_char,matches->output,middle,size_middle,tokens,buffer);
     /* To compute the 3rd part (right context), we need to know the length of
      * the matched sequence in displayable characters. */
     int match_length_in_displayable_chars;
