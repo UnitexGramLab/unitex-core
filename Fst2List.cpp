@@ -1934,8 +1934,8 @@ int CFstApp::outWordsOfGraph(int depth) {
   Fst2Tag Tag;
   unichar *suffixPtr;
   unichar *wordPtr;
-  unichar *ep; //input buffer ptr
-  unichar *tp; //transducer buffer ptr
+  unichar *inputBufferPtr; //input buffer ptr
+  unichar *outputBufferPtr; //transducer buffer ptr
   unichar *chp;
   int indicateFirstUsed;
   int i;
@@ -1959,27 +1959,27 @@ int CFstApp::outWordsOfGraph(int depth) {
 
     inputBuffer[inputPtrCnt] = outputBuffer[outputPtrCnt] = 0;
     if (!pathStack[s].tag) {
-      ep = tp = u_null_string;
+      inputBufferPtr = outputBufferPtr = u_null_string;
     } else if (pathStack[s].tag & SUBGRAPH_PATH_MARK) {
-      ep = (display_control == GRAPH) ? 
+      inputBufferPtr = (display_control == GRAPH) ? 
         (unichar *) a->graph_names[pathStack[s].tag & SUB_ID_MASK] : u_null_string;
-      tp = u_null_string;
+      outputBufferPtr = u_null_string;
     } else {
       Tag = a->tags[pathStack[s].tag & SUB_ID_MASK];
-      ep = (u_strcmp(Tag->input, u_epsilon_string)) ? 
+      inputBufferPtr = (u_strcmp(Tag->input, u_epsilon_string)) ? 
               Tag->input : u_null_string;
       if (Tag->output != NULL) {
-        tp = (u_strcmp(Tag->output, u_epsilon_string)) ? 
+        outputBufferPtr = (u_strcmp(Tag->output, u_epsilon_string)) ? 
                 Tag->output : u_null_string;
       } else {
-        tp = u_null_string;
+        outputBufferPtr = u_null_string;
       }
     }
-    //wprintf(L"{%d,%x,%x,%s,%s}",s,pathStack[s].stateNo,pathStack[s].tag,ep,tp);
+    //wprintf(L"{%d,%x,%x,%s,%s}",s,pathStack[s].stateNo,pathStack[s].tag,inputBufferPtr,outputBufferPtr);
     markCtlChar = 0;
     // mark control character
-    if (!(pathStack[s].stateNo & STOP_PATH_MARK) && !wordMode && (*ep == '<')) {
-      chp = ep + 1;
+    if (!(pathStack[s].stateNo & STOP_PATH_MARK) && !wordMode && (*inputBufferPtr == '<')) {
+      chp = inputBufferPtr + 1;
       while (*chp) {
         chp++;
       }
@@ -1989,8 +1989,8 @@ int CFstApp::outWordsOfGraph(int depth) {
         //               if(inputPtrCnt || outputPtrCnt) outOneWord(0);
         //               else if(control_char) outOneWord(0);
         //                   control_char = 1;
-        //             while(*ep) inputBuffer[inputPtrCnt++] = *ep++;
-        //           while(*tp) outputBuffer[outputPtrCnt++] = *tp++;
+        //             while(*inputBufferPtr) inputBuffer[inputPtrCnt++] = *inputBufferPtr++;
+        //           while(*outputBufferPtr) outputBuffer[outputPtrCnt++] = *outputBufferPtr++;
         //           continue;
       }
 
@@ -1999,22 +1999,22 @@ int CFstApp::outWordsOfGraph(int depth) {
 
     if (pathStack[s].stateNo & LOOP_PATH_MARK) {
       if (recursiveMode == LABEL) {
-        if (*ep || *tp) { // current
+        if (*inputBufferPtr || *outputBufferPtr) { // current
           if (outputPtrCnt) {
             if (outOneWord(0) != 0) {
               return 1;
             }
           }
-          if (markPreCtlChar && *ep) {
+          if (markPreCtlChar && *inputBufferPtr) {
             if (outOneWord(0) != 0) {
               return 1;
             }
           }
-          while (*ep)
-            inputBuffer[inputPtrCnt++] = *ep++;
+          while (*inputBufferPtr)
+            inputBuffer[inputPtrCnt++] = *inputBufferPtr++;
           if (automateMode == TRANMODE) {
-            while (*tp) {
-              outputBuffer[outputPtrCnt++] = *tp++;
+            while (*outputBufferPtr) {
+              outputBuffer[outputPtrCnt++] = *outputBufferPtr++;
             }
           }
 
@@ -2066,12 +2066,12 @@ int CFstApp::outWordsOfGraph(int depth) {
           inputBuffer[inputPtrCnt++] = *wordPtr;
           wordPtr++;
         }
-        while (*ep)
-          inputBuffer[inputPtrCnt++] = *ep++;
+        while (*inputBufferPtr)
+          inputBuffer[inputPtrCnt++] = *inputBufferPtr++;
         inputBuffer[inputPtrCnt++] = (unichar) '|';
         if (automateMode == TRANMODE) {
-          while (*tp)
-            outputBuffer[outputPtrCnt++] = *tp++;
+          while (*outputBufferPtr)
+            outputBuffer[outputPtrCnt++] = *outputBufferPtr++;
           outputBuffer[outputPtrCnt++] = (unichar) '|';
         }
         struct cyclePathMark *h = headCyc;
@@ -2130,12 +2130,12 @@ int CFstApp::outWordsOfGraph(int depth) {
             wordPtr++;
           }
         }
-        while (*ep) {
-          inputBuffer[inputPtrCnt++] = *ep++;
+        while (*inputBufferPtr) {
+          inputBuffer[inputPtrCnt++] = *inputBufferPtr++;
         }
         if (automateMode == TRANMODE) {
-          while (*tp) {
-            outputBuffer[outputPtrCnt++] = *tp++;
+          while (*outputBufferPtr) {
+            outputBuffer[outputPtrCnt++] = *outputBufferPtr++;
           }
         }
         if (pathStack[s].stateNo & STOP_PATH_MARK) {
@@ -2182,14 +2182,14 @@ int CFstApp::outWordsOfGraph(int depth) {
           return 1;
         }
       }
-      if ((automateMode == TRANMODE) && *tp) { // current
+      if ((automateMode == TRANMODE) && *outputBufferPtr) { // current
         if (outputPtrCnt) {
           if (outOneWord(0) != 0) {
             return 1;
           }
         }
-        while (*tp) {
-          outputBuffer[outputPtrCnt++] = *tp++;
+        while (*outputBufferPtr) {
+          outputBuffer[outputPtrCnt++] = *outputBufferPtr++;
         }
       }
       if (pathStack[s].tag & SUBGRAPH_PATH_MARK) {
@@ -2206,7 +2206,7 @@ int CFstApp::outWordsOfGraph(int depth) {
     } // end if STOP_PATH_MARK
 
     if (pathStack[s].tag & SUBGRAPH_PATH_MARK) {
-      if (outputPtrCnt || (markPreCtlChar && *ep)) {
+      if (outputPtrCnt || (markPreCtlChar && *inputBufferPtr)) {
         if (outOneWord(0) != 0) {
           return 1;
         }
@@ -2215,8 +2215,8 @@ int CFstApp::outWordsOfGraph(int depth) {
       switch (display_control) {
       case GRAPH:
         inputBuffer[inputPtrCnt++] = (unichar) '{';
-        while (*ep)
-          inputBuffer[inputPtrCnt++] = *ep++;
+        while (*inputBufferPtr)
+          inputBuffer[inputPtrCnt++] = *inputBufferPtr++;
         inputBuffer[inputPtrCnt++] = (unichar) '}';
         if (outOneWord(0) != 0) {
           return 1;
@@ -2231,20 +2231,20 @@ int CFstApp::outWordsOfGraph(int depth) {
     } // end if SUBGRAPH_PATH_MARK
 
     // make a pair of (input, output)
-    if ((*ep == 0) && (*tp == 0)) {
+    if ((*inputBufferPtr == 0) && (*outputBufferPtr == 0)) {
       continue;
     }
 
-    if (outputPtrCnt || (markPreCtlChar && *ep)) {
+    if (outputPtrCnt || (markPreCtlChar && *inputBufferPtr)) {
       if (outOneWord(0) != 0) {
         return 1;
       }
     }
-    while (*ep)
-      inputBuffer[inputPtrCnt++] = *ep++;
+    while (*inputBufferPtr)
+      inputBuffer[inputPtrCnt++] = *inputBufferPtr++;
     if (automateMode == TRANMODE) {
-      while (*tp) {
-        outputBuffer[outputPtrCnt++] = *tp++;
+      while (*outputBufferPtr) {
+        outputBuffer[outputPtrCnt++] = *outputBufferPtr++;
       }
     }
     if (wordMode) {
