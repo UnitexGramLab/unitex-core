@@ -1970,15 +1970,13 @@ int CFstApp::outWordsOfGraph(int depth) {
     } else {
       Tag = a->tags[pathStack[s].tag & SUB_ID_MASK];
       isWord = false;
-
-      // checks if the current node is a morphological begin or end, and updates the boolean to begin/stop the morphological mode
-      switch (Tag->type) {
+      switch (Tag->type) { // check if the current node is a morphological begin or end, and update the boolean to begin/stop the morphological mode
         case BEGIN_MORPHO_TAG :  
           modeMorph = true;
           break;
         case END_MORPHO_TAG :
           modeMorph = false;
-          outOneSpace(); // inserts a single space between the last word of the morphological mode and the next word
+          outOneSpace(); // insert one space between the last word of the morphological mode and the next word
           continue;
         case UNDEFINED_TAG:
           isWord = true;
@@ -1987,7 +1985,7 @@ int CFstApp::outWordsOfGraph(int depth) {
           break;
       }
 
-      // if the tag's input is not a word (like morph tags), ignores it
+      // ignore the tag if his input is not a word (like morphological end and begin tags)
       if(isWord) {
         inputBufferPtr = (u_strcmp(Tag->input, u_epsilon_string)) ? 
                 Tag->input : u_null_string;
