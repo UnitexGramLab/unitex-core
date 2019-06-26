@@ -269,6 +269,7 @@ public:
   char ofExt[16];
   char ofnameOnly[512];        // output file name
   char defaultIgnoreName[512]; // input file name
+  bool modeMorph = false;  // true if the current state is in morphological mode
 
   void fileNameSet(char *ifn, char *ofn) {
     char tmp[512];
@@ -773,6 +774,23 @@ public:
   }
 
   /**
+    * print one space when the morphological mode is off
+  **/
+  void outOneSpace() {
+    unichar *wordPtr;
+    wordPtr = sepR;
+    if(!modeMorph) {
+      while (*wordPtr) {
+        INPUTBUFFER[inBufferCnt++] = *wordPtr;
+        if (automateMode == TRANMODE) {
+          OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
+        }
+        wordPtr++;
+      }
+    }
+  }
+
+  /**
    * fill INPUTBUFFER and OUTPUTBUFFER and 
    * print their content in 'fouput'
    * return 0 when output limit has been reached, else 1
@@ -806,16 +824,7 @@ public:
               OUTPUTBUFFER[outBufferCnt++] = outputBuffer[i];
             }
           }
-          wordPtr = sepR;
-          while (*wordPtr) {
-            if (inputPtrCnt) {
-              INPUTBUFFER[inBufferCnt++] = *wordPtr;
-            }
-            if (automateMode == TRANMODE) {
-              OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
-            }
-            wordPtr++;
-          }
+          outOneSpace();
         } else {
           wordPtr = sepL;
           while (*wordPtr) {
@@ -895,14 +904,7 @@ public:
           //        if(recursiveMode == LABEL){
           //          wordPtr = openingQuote;while(*wordPtr)  INPUTBUFFER[inBufferCnt++] = *wordPtr++;
           //          }
-          wordPtr = sepR;
-          while (*wordPtr) {
-            INPUTBUFFER[inBufferCnt++] = *wordPtr;
-            if (automateMode == TRANMODE) {
-              OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
-            }
-            wordPtr++;
-          }
+          outOneSpace();
         } else {
           wordPtr = sepL;
           while (*wordPtr) {
@@ -1944,6 +1946,7 @@ int CFstApp::outWordsOfGraph(int depth) {
   inBufferCnt = outBufferCnt = 0;
   inputPtrCnt = outputPtrCnt = 0;
   unichar aaBuffer_for_getLabelNumber[64];
+  bool isWord;  // false if the tag content is not a word (like $< or $>)
 
   //  fini = (tagQ[tagQidx - 1] & (SUBGRAPH_PATH_MARK | LOOP_PATH_MARK)) ?
   //    tagQ[tagQidx -1 ]:0;
@@ -1966,13 +1969,34 @@ int CFstApp::outWordsOfGraph(int depth) {
       outputBufferPtr = u_null_string;
     } else {
       Tag = a->tags[pathStack[s].tag & SUB_ID_MASK];
-      inputBufferPtr = (u_strcmp(Tag->input, u_epsilon_string)) ? 
-              Tag->input : u_null_string;
-      if (Tag->output != NULL) {
-        outputBufferPtr = (u_strcmp(Tag->output, u_epsilon_string)) ? 
-                Tag->output : u_null_string;
-      } else {
-        outputBufferPtr = u_null_string;
+      isWord = false;
+
+      //Checks if the current node is a morphological begin or end, and updates the boolean to begin/stop the morphological mode
+      switch (Tag->type) {
+        case BEGIN_MORPHO_TAG :  
+          modeMorph = true;
+          break;
+        case END_MORPHO_TAG :
+          modeMorph = false;
+          outOneSpace(); //Inserts a single space between the last word of the morphological mode and the next word
+          continue;
+        case UNDEFINED_TAG:
+          isWord = true;
+          break;
+        default :
+          break;
+      }
+
+      //If the tag's input is not a word (like morph tags), ignores it
+      if(isWord) {
+        inputBufferPtr = (u_strcmp(Tag->input, u_epsilon_string)) ? 
+                Tag->input : u_null_string;
+        if (Tag->output != NULL) {
+          outputBufferPtr = (u_strcmp(Tag->output, u_epsilon_string)) ? 
+                  Tag->output : u_null_string;
+        } else {
+          outputBufferPtr = u_null_string;
+        }
       }
     }
     //wprintf(L"{%d,%x,%x,%s,%s}",s,pathStack[s].stateNo,pathStack[s].tag,inputBufferPtr,outputBufferPtr);
