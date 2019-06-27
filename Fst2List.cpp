@@ -269,7 +269,7 @@ public:
   char ofExt[16];
   char ofnameOnly[512];        // output file name
   char defaultIgnoreName[512]; // input file name
-  bool modeMorph = false;  // true if the current state is in morphological mode
+  bool inMorphoMode = false;  // true if the current state is in morphological mode
 
   void fileNameSet(char *ifn, char *ofn) {
     char tmp[512];
@@ -779,7 +779,7 @@ public:
   void outOneSpace() {
     unichar *wordPtr;
     wordPtr = sepR;
-    if(!modeMorph) {
+    if(!inMorphoMode) {
       while (*wordPtr) {
         INPUTBUFFER[inBufferCnt++] = *wordPtr;
         if (automateMode == TRANMODE) {
@@ -1972,10 +1972,10 @@ int CFstApp::outWordsOfGraph(int depth) {
       isWord = false;
       switch (Tag->type) { // check if the current node is a morphological begin or end, and update the boolean to begin/stop the morphological mode
         case BEGIN_MORPHO_TAG :  
-          modeMorph = true;
+          inMorphoMode = true;
           break;
         case END_MORPHO_TAG :
-          modeMorph = false;
+          inMorphoMode = false;
           outOneSpace(); // insert one space between the last word of the morphological mode and the next word
           continue;
         case UNDEFINED_TAG:
