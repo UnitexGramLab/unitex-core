@@ -774,9 +774,9 @@ public:
   }
 
   /**
-    * print one space when the morphological mode is off
+    * append a single space to the buffers when the morphological mode is off
   **/
-  void outOneSpace() {
+  void appendSingleSpace() {
     unichar *wordPtr;
     wordPtr = sepR;
     if(!inMorphoMode) {
@@ -824,7 +824,7 @@ public:
               OUTPUTBUFFER[outBufferCnt++] = outputBuffer[i];
             }
           }
-          outOneSpace();
+          appendSingleSpace();
         } else {
           wordPtr = sepL;
           while (*wordPtr) {
@@ -904,7 +904,7 @@ public:
           //        if(recursiveMode == LABEL){
           //          wordPtr = openingQuote;while(*wordPtr)  INPUTBUFFER[inBufferCnt++] = *wordPtr++;
           //          }
-          outOneSpace();
+          appendSingleSpace();
         } else {
           wordPtr = sepL;
           while (*wordPtr) {
@@ -1976,7 +1976,7 @@ int CFstApp::outWordsOfGraph(int depth) {
           break;
         case END_MORPHO_TAG :
           inMorphoMode = false;
-          outOneSpace(); // insert one space between the last word of the morphological mode and the next word
+          appendSingleSpace(); // insert one space between the last word of the morphological mode and the next word
           continue;
         case UNDEFINED_TAG:
           isWord = true;
