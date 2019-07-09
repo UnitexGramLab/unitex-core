@@ -871,7 +871,7 @@ case SJ_FC_TIKEUT:
 case SJ_IC_TIKEUT: {
     *final_consonant=7;
     *hcj=HCJ_TIKEUT;
-    if (all_sequences && input[(*pos_input)+1]==HCJ_TIKEUT || (input[(*pos_input)+1]==SJ_FC_TIKEUT ||
+    if ((all_sequences && input[(*pos_input)+1]==HCJ_TIKEUT) || (input[(*pos_input)+1]==SJ_FC_TIKEUT ||
         input[(*pos_input)+1]==SJ_IC_TIKEUT)) {
         (*pos_input)++;
         *hcj=HCJ_SSANGTIKEUT;
@@ -987,7 +987,7 @@ case SJ_IC_PIEUP: {
         *final_consonant=18;
         *hcj=HCJ_PIEUP_SIOS;
         (*pos_input)++;
-    } else if (all_sequences && input[(*pos_input)+1]==HCJ_PIEUP || (input[(*pos_input)+1]==SJ_FC_PIEUP ||
+    } else if ((all_sequences && input[(*pos_input)+1]==HCJ_PIEUP) || (input[(*pos_input)+1]==SJ_FC_PIEUP ||
         input[(*pos_input)+1]==SJ_IC_PIEUP)) {
         *hcj=HCJ_SSANGPIEUP;
         (*pos_input)++;
@@ -1032,7 +1032,7 @@ case SJ_FC_CIEUC:
 case SJ_IC_CIEUC: {
     *final_consonant=22;
     *hcj=HCJ_CIEUC;
-    if (all_sequences && input[(*pos_input)+1]==HCJ_CIEUC || (input[(*pos_input)+1]==SJ_FC_CIEUC ||
+    if ((all_sequences && input[(*pos_input)+1]==HCJ_CIEUC) || (input[(*pos_input)+1]==SJ_FC_CIEUC ||
         input[(*pos_input)+1]==SJ_IC_CIEUC)) {
         *hcj=HCJ_SSANGCIEUC;
         (*pos_input)++;

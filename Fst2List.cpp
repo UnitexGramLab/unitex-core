@@ -768,7 +768,7 @@ public:
   int outputPtrCnt;           // output pointer counter
   unichar INPUTBUFFER[4096];  // buffer used to print the box inputs 
   unichar OUTPUTBUFFER[4096]; // buffer used to print the box outputs
-  unichar jamos[4096];        // buffer used for korean
+  unichar jamos[4096 * 3];    // buffer used for korean
   int inBufferCnt;            // buffer counter for box inputs
   int outBufferCnt;           // buffer counter for box outputs
   Alphabet *alphabet;
