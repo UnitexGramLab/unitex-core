@@ -936,6 +936,8 @@ Fst2Tag new_Fst2Tag_clone(Fst2Tag Fst2TagSrc,Abstract_allocator prv_alloc)
     Fst2TagDest->meta = Fst2TagSrc->meta;
     Fst2TagDest->pattern = clone(Fst2TagSrc->pattern,prv_alloc);
     Fst2TagDest->pattern_number = Fst2TagSrc->pattern_number;
+    Fst2TagDest->dela_entry = clone_dela_entry(Fst2TagSrc->dela_entry,prv_alloc);
+    Fst2TagDest->stop = Fst2TagSrc->stop;
 
     Fst2TagDest->compound_pattern = Fst2TagSrc->compound_pattern;
 
