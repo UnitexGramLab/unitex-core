@@ -36,6 +36,7 @@
 #include "LocatePattern.h"
 #include "MorphologicalLocate.h"
 #include "Korean.h"
+#include "Dico.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -80,6 +81,7 @@ const char* usage_Fst2List =
         "-r (s|l|x) <L[,R]>: enclose loops in L and R strings as in (c0|...|cn) by Lc0|..|cnR : default null\r\n"
         "-V, --only_verify_arguments: only verify arguments syntax and exit\r\n"
         "-h, --help: display this help and exit\r\n"
+	"-P : create a .dic output file instead of .txt output file, modes merge or replace are applied according the graph's name\r\n"
         "-D <file>, : give a morphological dictionary to process lexical masks";
 
 static void usage() {
@@ -98,7 +100,9 @@ static char *getUtoChar(char charBuffOut[], unichar *s) {
 enum ModeOut {
   PR_SEPARATION, PR_TOGETHER
 }; // inputs separated from outputs vs. each input together with its output
-
+enum GrammarMode {
+  NONE, MERGE, REPLACE
+}; // no grammar mode vs. outputs left inserted vs. inputs replaced by outputs
 enum printOutType {
   GRAPH, FULL, FST2LIST_DEBUG
 }; // we either print each subgraph independently or whole automaton recursively
@@ -244,6 +248,7 @@ public:
   int invocStackIdx;  // invocation stack depth
 
   void printPathNames(U_FILE *f);
+  void setGrammarMode(char* fst2_filename, bool makeDic);
 
   int *ignoreTable;  // 1 where the automaton is ignored, else 0
   int *numOfIgnore;
@@ -261,6 +266,7 @@ public:
   // either explore each subgraph independently or all the automaton recursively
   printOutType display_control; 
   initialType traitAuto; // single or multi initial state
+  GrammarMode grammarMode;
   int wordMode;
   int depthDebug;
 
@@ -809,11 +815,7 @@ public:
     wordPtr = sepR;
     if(!inMorphoMode) {
       while (*wordPtr) {
-        INPUTBUFFER[inBufferCnt++] = *wordPtr;
-        if (automateMode == TRANMODE) {
-          OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
-        }
-        wordPtr++;
+	INPUTBUFFER[inBufferCnt++] = *wordPtr++;
       }
     }
   }
@@ -832,48 +834,65 @@ public:
     }
     if (suffix) {
       setOut = 0;
-      //u_printf("%d %d %d %d \n",inputPtrCnt,outputPtrCnt,*suffix,count_in_line);
       if (inputPtrCnt || outputPtrCnt || *suffix || (count_in_line == 0)) {
         setOut = 1;
         if (prMode == PR_SEPARATION) {
-          wordPtr = sepL;
-          while (*wordPtr) {
-            INPUTBUFFER[inBufferCnt++] = *wordPtr;
-            if (automateMode == TRANMODE) {
-              OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
+          if(inputPtrCnt) {
+            wordPtr = sepL;
+            while (*wordPtr) {
+              INPUTBUFFER[inBufferCnt++] = *wordPtr;
+              if (automateMode == TRANMODE) {
+                OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
+              }
+              wordPtr++;
             }
-            wordPtr++;
+	    for (int i = 0; i < inputPtrCnt; i++) {
+              INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
+            }
+            appendSingleSpace();
           }
-          for (int i = 0; i < inputPtrCnt; i++) {
-            INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
-	        }
-          if (automateMode == TRANMODE) {
+	  if (automateMode == TRANMODE && !(grammarMode == REPLACE && inputPtrCnt &&!isMdg)) {
             for (int i = 0; i < outputPtrCnt; i++) {
               OUTPUTBUFFER[outBufferCnt++] = outputBuffer[i];
             }
+	    if(grammarMode == MERGE) {
+              for (int i = 0; i < inputPtrCnt; i++) {
+                OUTPUTBUFFER[outBufferCnt++] = inputBuffer[i];
+              }
+            }
           }
-          appendSingleSpace();
         } else {
           wordPtr = sepL;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr++;
           }
-          for (int i = 0; i < inputPtrCnt; i++) {
-            INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
+          if(grammarMode == MERGE) {
+            for (int i = 0; i < outputPtrCnt; i++) {
+              INPUTBUFFER[inBufferCnt++] = outputBuffer[i];
+            }
           }
+          else {
+            for (int i = 0; i < inputPtrCnt; i++) {
+              INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
+            }
+	  }
           wordPtr = saveSep;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr++;
           }
           if (automateMode == TRANMODE) {
-            for (int i = 0; i < outputPtrCnt; i++) {
-              INPUTBUFFER[inBufferCnt++] = outputBuffer[i];
+            if(grammarMode == MERGE) {
+              for (int i = 0; i < outputPtrCnt; i++) {
+                INPUTBUFFER[inBufferCnt++] = outputBuffer[i];
+              }
+            }
+            else {
+              for (int i = 0; i < inputPtrCnt; i++) {
+                INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
+              }
             }
           }
-          wordPtr = sepR;
-          while (*wordPtr) {
-            INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-          }
+          appendSingleSpace();
         }
       } // condition de out
 
@@ -898,7 +917,7 @@ public:
           }
         }
       }
-      INPUTBUFFER[inBufferCnt] = 0;
+      INPUTBUFFER[inBufferCnt - 1] = 0;
       OUTPUTBUFFER[outBufferCnt] = 0;   
       if(isKorean) {
         Hanguls_to_Jamos(INPUTBUFFER, jamos, korean, 1);
@@ -906,6 +925,7 @@ public:
       }
       u_fputs(INPUTBUFFER, foutput);
       if ((automateMode == TRANMODE) && outBufferCnt) {
+	OUTPUTBUFFER[outBufferCnt] = 0;
         u_fprintf(foutput, "%S%S", saveSep, OUTPUTBUFFER);
       }
       if (display_control == FST2LIST_DEBUG) {
@@ -917,41 +937,62 @@ public:
     } else { // suffix == 0
       if (inputPtrCnt || outputPtrCnt) {
         if (prMode == PR_SEPARATION) {
-          wordPtr = sepL;
-          while (*wordPtr) {
-            INPUTBUFFER[inBufferCnt++] = *wordPtr;
-            if (automateMode == TRANMODE) {
-              OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
+          if(inputPtrCnt) {
+            wordPtr = sepL;
+            while (*wordPtr) {
+              INPUTBUFFER[inBufferCnt++] = *wordPtr;
+              if (automateMode == TRANMODE) {
+                OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
+              }
+              wordPtr++;
             }
-            wordPtr++;
+            for (int i = 0; i < inputPtrCnt; i++) {
+              INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
+            }
+            appendSingleSpace();
           }
-          for (int i = 0; i < inputPtrCnt; i++) {
-            INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
-          }
-          if (automateMode == TRANMODE) {
+          if (automateMode == TRANMODE && !(grammarMode == REPLACE && inputPtrCnt &&!isMdg)) {
             for (int i = 0; i < outputPtrCnt; i++) {
               OUTPUTBUFFER[outBufferCnt++] = outputBuffer[i];
+            }
+	    if(grammarMode == MERGE) {
+              for (int i = 0; i < inputPtrCnt; i++) {
+                OUTPUTBUFFER[outBufferCnt++] = inputBuffer[i];
+              }
             }
           }
           //        if(recursiveMode == LABEL){
           //          wordPtr = openingQuote;while(*wordPtr)  INPUTBUFFER[inBufferCnt++] = *wordPtr++;
           //          }
-          appendSingleSpace();
         } else {
           wordPtr = sepL;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-	        }
-          for (int i = 0; i < inputPtrCnt; i++) {
-            INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
-	        }
+	  }
+          if(grammarMode == MERGE) {
+            for (int i = 0; i < outputPtrCnt; i++) {
+              INPUTBUFFER[inBufferCnt++] = outputBuffer[i];
+            }
+          }
+          else {
+            for (int i = 0; i < inputPtrCnt; i++) {
+              INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
+            }
+          }
           wordPtr = saveSep;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr++;
 	        }
           if (automateMode == TRANMODE) {
-            for (int i = 0; i < outputPtrCnt; i++) {
-              INPUTBUFFER[inBufferCnt++] = outputBuffer[i];
+            if(grammarMode == MERGE) {
+              for (int i = 0; i < inputPtrCnt; i++) {
+                INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
+              }
+            }
+            else {
+              for (int i = 0; i < outputPtrCnt; i++) {
+                INPUTBUFFER[inBufferCnt++] = outputBuffer[i];
+              }
             }
           }
           if (recursiveMode == LABEL) {
@@ -960,10 +1001,7 @@ public:
               INPUTBUFFER[inBufferCnt++] = *wordPtr++;
             }
           }
-          wordPtr = sepR;
-          while (*wordPtr) {
-            INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-          }
+          appendSingleSpace();
         }
         count_in_line++;
       }
@@ -2177,6 +2215,30 @@ void CFstApp::printPathNames(U_FILE *f) {
 }
 
 /**
+* Set the grammar mode
+* If the option "Process as dictionary-graph" is checked, the grammar mode is set according the graph's name
+* In the other case, apply outputs options (ignore, separate or alternate)
+**/
+void CFstApp::setGrammarMode(char* fst2_filename, bool makeDic) {
+  char* tmp = (char*)malloc(sizeof(char) * strlen(fst2_filename));
+  remove_extension(fst2_filename, tmp);
+  OutputPolicy outputPolicy = MERGE_OUTPUTS;
+  int export_in_morpho_dic;
+  MatchPolicy matchPolicy;
+  int l = (int)strlen(tmp)-1;
+  analyse_fst2_graph_options(tmp, l, &outputPolicy, &export_in_morpho_dic, &matchPolicy);
+  if(outputPolicy == MERGE_OUTPUTS) {
+    grammarMode = MERGE;
+    prMode = PR_SEPARATION;
+  }
+  else if(outputPolicy == REPLACE_OUTPUTS) {
+    grammarMode = REPLACE;
+    prMode = PR_SEPARATION;
+  }
+}
+
+
+/**
  * takes a number (decimal or hex) in char and puts its value in 'val'
  */
 unichar * uascToNum(unichar *uasc, int *val) {
@@ -2579,7 +2641,7 @@ int CFstApp::outWordsOfGraph(int depth) {
 //
 //
 
-const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVKhs:qr:c:g:D:";
+const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVKPhs:qr:c:g:D:";
 const struct option_TS lopts_Fst2List[]= {
   {"output",required_argument_TS,NULL,'o'},
   {"ignore_outputs",required_argument_TS,NULL,'a'},
@@ -2603,6 +2665,7 @@ const struct option_TS lopts_Fst2List[]= {
   {"output_encoding",required_argument_TS,NULL,'q'},
   {"help",no_argument_TS,NULL,'h'},
   {"morphological dics",required_argument_TS,NULL,'D'},
+  {"process as dictionary-graph",no_argument_TS,NULL,'P'},
   {NULL,no_argument_TS,NULL,0}
 };
 
@@ -2629,6 +2692,7 @@ int main_Fst2List(int argc, char* const argv[]) {
   bool only_verify_arguments = false;
   UnitexGetOpt options;
   VersatileEncodingConfig vec = VEC_DEFAULT;
+  bool makeDic = false;
 
   while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2List,lopts_Fst2List,&index))) {
     switch(val) {
@@ -2678,6 +2742,9 @@ int main_Fst2List(int argc, char* const argv[]) {
         aa.morphDicCnt++;
       } 
       break;
+    case 'P':
+      makeDic = true;
+      break;
     case 'I':
       aa.stopExploListFile((char*)&options.vars()->optarg[0]);
       break;
@@ -2701,6 +2768,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       // FALLTHROUGH INTENDED
     case 't':
       aa.automateMode = (val == 't') ? TRANMODE : AUTOMODE;
+      aa.grammarMode = NONE;
       switch (options.vars()->optarg[0]) {
       case 's':
         aa.traitAuto = SINGLE;
@@ -2914,6 +2982,9 @@ int main_Fst2List(int argc, char* const argv[]) {
   aa.vec = vec;
   aa.p = new_locate_parameters();
   load_morphological_dictionaries(&aa.vec, morpho_dic, aa.p);
+  if(makeDic) {
+    aa.setGrammarMode(fst2_filename, makeDic);
+  }
   aa.getWordsFromGraph(changeStrToIdx, changeStrTo, fst2_filename);
   delete ofilename;
   return SUCCESS_RETURN_CODE;
