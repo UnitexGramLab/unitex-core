@@ -653,8 +653,12 @@ void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* ve
                 }
                 u_fclose(header_file);
                 free(line_2);
-                print_standoff(out_file, infos, num_info, list_line, end, block,
-                               block_size, rest, rest_size);
+                if (list_line == NULL) {
+                    error("Invalid standoff file %s\n",stdoff_file);
+                } else {
+                    print_standoff(out_file, infos, num_info, list_line, end, block,
+                                   block_size, rest, rest_size);
+                }
             }
         }        
         free(list_line);
