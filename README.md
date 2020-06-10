@@ -1,6 +1,6 @@
 # Unitex/GramLab Core [![Build Status](https://travis-ci.org/UnitexGramLab/unitex-core.svg?branch=master)](https://travis-ci.org/UnitexGramLab/unitex-core) [![Build status](https://ci.appveyor.com/api/projects/status/ucuu8ocibexmagju?svg=true)](https://ci.appveyor.com/project/martinec/unitex-core)
 
-> [Unitex/GramLab][unitexgramlab] is an open source, cross-platform, multilingual, lexicon- and grammar-based corpus processing suite.
+> [Unitex/GramLab][unitexgramlab] is the open source, cross-platform, multilingual, lexicon- and grammar-based corpus processing suite.
 
 Unitex is the Natural Language Processing (NLP) engine of [Unitex/GramLab][unitexgramlab].
 
