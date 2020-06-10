@@ -88,6 +88,7 @@ typedef struct alphabet_ Alphabet;
 #define IS_UPPER_MACRO(c,alphabet) \
                 ((CASE_FLAG_MACRO(c,alphabet)) & 1)
 
+Alphabet* new_alphabet(int korean);
 Alphabet* load_alphabet(const VersatileEncodingConfig*,const char*);
 Alphabet* load_alphabet(const VersatileEncodingConfig*,const char*,int);
 int is_abstract_or_persistent_alphabet_filename(const char* filename);
