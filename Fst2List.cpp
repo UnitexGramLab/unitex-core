@@ -32,6 +32,7 @@
 #include "Error.h"
 #include "Transitions.h"
 #include "UnitexGetOpt.h"
+#include "Korean.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -269,6 +270,8 @@ public:
   char ofExt[16];
   char ofnameOnly[512];        // output file name
   char defaultIgnoreName[512]; // input file name
+  bool inMorphoMode = false;  // true if the current state is in morphological mode
+  bool isKorean = false;
 
   void fileNameSet(char *ifn, char *ofn) {
     char tmp[512];
@@ -765,11 +768,31 @@ public:
   int outputPtrCnt;           // output pointer counter
   unichar INPUTBUFFER[4096];  // buffer used to print the box inputs 
   unichar OUTPUTBUFFER[4096]; // buffer used to print the box outputs
+  unichar jamos[4096 * 3];    // buffer used for korean
   int inBufferCnt;            // buffer counter for box inputs
   int outBufferCnt;           // buffer counter for box outputs
+  Alphabet *alphabet;
+  Korean *korean;
 
   void resetBufferCounters() {
     inputPtrCnt = outputPtrCnt = inBufferCnt = outBufferCnt = 0;
+  }
+
+  /**
+    * append a single space to the buffers when the morphological mode is off
+  **/
+  void appendSingleSpace() {
+    unichar *wordPtr;
+    wordPtr = sepR;
+    if(!inMorphoMode) {
+      while (*wordPtr) {
+        INPUTBUFFER[inBufferCnt++] = *wordPtr;
+        if (automateMode == TRANMODE) {
+          OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
+        }
+        wordPtr++;
+      }
+    }
   }
 
   /**
@@ -806,16 +829,7 @@ public:
               OUTPUTBUFFER[outBufferCnt++] = outputBuffer[i];
             }
           }
-          wordPtr = sepR;
-          while (*wordPtr) {
-            if (inputPtrCnt) {
-              INPUTBUFFER[inBufferCnt++] = *wordPtr;
-            }
-            if (automateMode == TRANMODE) {
-              OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
-            }
-            wordPtr++;
-          }
+          appendSingleSpace();
         } else {
           wordPtr = sepL;
           while (*wordPtr) {
@@ -862,7 +876,11 @@ public:
         }
       }
       INPUTBUFFER[inBufferCnt] = 0;
-      OUTPUTBUFFER[outBufferCnt] = 0;
+      OUTPUTBUFFER[outBufferCnt] = 0;   
+      if(isKorean) {
+        Hanguls_to_Jamos(INPUTBUFFER, jamos, korean, 1);
+        convert_jamo_to_hangul(jamos, INPUTBUFFER, korean);
+      }
       u_fputs(INPUTBUFFER, foutput);
       if ((automateMode == TRANMODE) && outBufferCnt) {
         u_fprintf(foutput, "%S%S", saveSep, OUTPUTBUFFER);
@@ -895,14 +913,7 @@ public:
           //        if(recursiveMode == LABEL){
           //          wordPtr = openingQuote;while(*wordPtr)  INPUTBUFFER[inBufferCnt++] = *wordPtr++;
           //          }
-          wordPtr = sepR;
-          while (*wordPtr) {
-            INPUTBUFFER[inBufferCnt++] = *wordPtr;
-            if (automateMode == TRANMODE) {
-              OUTPUTBUFFER[outBufferCnt++] = *wordPtr;
-            }
-            wordPtr++;
-          }
+          appendSingleSpace();
         } else {
           wordPtr = sepL;
           while (*wordPtr) {
@@ -1399,6 +1410,8 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
   // load fst2 file
   loadGraph(changeStrToIdx, changeStrTo, fname);
   resetCounters();
+  alphabet = new_alphabet(1);
+  korean = new Korean(alphabet);
   ofNameTmp[0] = 0;
   switch (display_control) {
   case GRAPH: {    // explore each graph separately
@@ -1944,6 +1957,7 @@ int CFstApp::outWordsOfGraph(int depth) {
   inBufferCnt = outBufferCnt = 0;
   inputPtrCnt = outputPtrCnt = 0;
   unichar aaBuffer_for_getLabelNumber[64];
+  bool isWord;  // false if the tag content is not a word (like $< or $>)
 
   //  fini = (tagQ[tagQidx - 1] & (SUBGRAPH_PATH_MARK | LOOP_PATH_MARK)) ?
   //    tagQ[tagQidx -1 ]:0;
@@ -1966,13 +1980,32 @@ int CFstApp::outWordsOfGraph(int depth) {
       outputBufferPtr = u_null_string;
     } else {
       Tag = a->tags[pathStack[s].tag & SUB_ID_MASK];
-      inputBufferPtr = (u_strcmp(Tag->input, u_epsilon_string)) ? 
-              Tag->input : u_null_string;
-      if (Tag->output != NULL) {
-        outputBufferPtr = (u_strcmp(Tag->output, u_epsilon_string)) ? 
-                Tag->output : u_null_string;
-      } else {
-        outputBufferPtr = u_null_string;
+      isWord = false;
+      switch (Tag->type) { // check if the current node is a morphological begin or end, and update the boolean to begin/stop the morphological mode
+        case BEGIN_MORPHO_TAG :  
+          inMorphoMode = true;
+          break;
+        case END_MORPHO_TAG :
+          inMorphoMode = false;
+          appendSingleSpace(); // insert one space between the last word of the morphological mode and the next word
+          continue;
+        case UNDEFINED_TAG:
+          isWord = true;
+          break;
+        default :
+          break;
+      }
+
+      // ignore the tag if his input is not a word (like morphological end and begin tags)
+      if(isWord) {
+        inputBufferPtr = (u_strcmp(Tag->input, u_epsilon_string)) ? 
+                Tag->input : u_null_string;
+        if (Tag->output != NULL) {
+          outputBufferPtr = (u_strcmp(Tag->output, u_epsilon_string)) ? 
+                  Tag->output : u_null_string;
+        } else {
+          outputBufferPtr = u_null_string;
+        }
       }
     }
     //wprintf(L"{%d,%x,%x,%s,%s}",s,pathStack[s].stateNo,pathStack[s].tag,inputBufferPtr,outputBufferPtr);
@@ -2266,7 +2299,7 @@ int CFstApp::outWordsOfGraph(int depth) {
 //
 //
 
-const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVhs:qr:c:g:";
+const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVKhs:qr:c:g:";
 const struct option_TS lopts_Fst2List[]= {
   {"output",required_argument_TS,NULL,'o'},
   {"ignore_outputs",required_argument_TS,NULL,'a'},
@@ -2286,6 +2319,7 @@ const struct option_TS lopts_Fst2List[]= {
   {"io_separator",required_argument_TS,NULL,'g'},
   {"stop_mark",required_argument_TS,NULL,'Q'},
   {"input_encoding",required_argument_TS,NULL,'k'},
+  {"korean",no_argument_TS,NULL,'K'},
   {"output_encoding",required_argument_TS,NULL,'q'},
   {"help",no_argument_TS,NULL,'h'},
   {NULL,no_argument_TS,NULL,0}
@@ -2345,6 +2379,9 @@ int main_Fst2List(int argc, char* const argv[]) {
       break;
     case 'i':
       aa.stopExploList((char*)&options.vars()->optarg[0]);
+      break;
+    case 'K' :
+      aa.isKorean = true;
       break;
     case 'I':
       aa.stopExploListFile((char*)&options.vars()->optarg[0]);
