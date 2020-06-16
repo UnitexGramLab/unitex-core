@@ -372,6 +372,8 @@ public:
       u_fclose(foutput);
     }
     foutput = NULL;
+    delete korean;
+    free_alphabet(alphabet);
   }
 
   /**
