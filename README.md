@@ -70,6 +70,6 @@ Contact unitex-devel@univ-mlv.fr for further inquiries.
 
 ---
 
-Copyright (C) 2019 Université Paris-Est Marne-la-Vallée
+Copyright (C) 2020 Université Paris-Est Marne-la-Vallée
 
 [unitexgramlab]:  https://unitexgramlab.org
