@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1337,13 +1337,18 @@ for (int i=m;i<n;i++) {
  *
  * Note also that this function does not apply to the initial and final states.
  */
-static void expand_box_ranges(Grf* grf) {
+static void expand_box_ranges(Grf* grf,const char* graphFileName) {
 ReverseTransitions* reverse=compute_reverse_transitions(grf);
 int n=grf->n_states;
 for (int i=2;i<n;i++) {
     GrfState* s=grf->states[i];
     int m=1,n_=1;
     vector_ptr* lines=tokenize_box_content(s->box_content);
+    // tokenize_box_content return NULL if there is error
+    if (lines==NULL) {
+      error("Bad graph content '%S' at state position %d of file %s\n",s->box_content,i,graphFileName);
+      continue;
+    }
     unichar* last=(unichar*)lines->tab[lines->nbelems-1];
     if (last[0]=='/') {
         /* If the last line starts with a slash, then the box has an output,
@@ -1514,7 +1519,7 @@ if (n==1 || infos->verbose_name_grf!=0) {
 }
 /* We indicate that we have a .grf */
 vector_int_add(infos->part_of_precompiled_fst2,0);
-expand_box_ranges(grf);
+expand_box_ranges(grf,name);
 /* If necessary, we resize the graph that it can hold all the states */
 if (graph->capacity<grf->n_states) {
    set_state_array_capacity(graph,grf->n_states);

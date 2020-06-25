@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -391,156 +391,156 @@ return n;
  */
 int read_initial_consonants(unichar* input,int *pos_input,int *initial_consonant,unichar *hcj) {
 switch(input[*pos_input]) {
-/*case HCJ_KIYEOK:*/
+case HCJ_KIYEOK:
 case SJ_IC_KIYEOK: {
     *initial_consonant=0;
     *hcj=HCJ_KIYEOK;
-    if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_IC_KIYEOK) {
+    if (input[(*pos_input)+1]==HCJ_KIYEOK || input[(*pos_input)+1]==SJ_IC_KIYEOK) {
         *initial_consonant=1;
         *hcj=HCJ_SSANGKIYEOK;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_SSANGKIYEOK:*/
+case HCJ_SSANGKIYEOK:
 case SJ_IC_SSANGKIYEOK: {
     *initial_consonant=1;
     *hcj=HCJ_SSANGKIYEOK;
     break;
 }
-/*case HCJ_NIEUN:*/
+case HCJ_NIEUN:
 case SJ_IC_NIEUN: {
     *initial_consonant=2;
     *hcj=HCJ_NIEUN;
     break;
 }
-/*case HCJ_TIKEUT:*/
+case HCJ_TIKEUT:
 case SJ_IC_TIKEUT: {
     *initial_consonant=3;
     *hcj=HCJ_TIKEUT;
-    if (/*input[(*pos_input)+1]==HCJ_TIKEUT ||*/ input[(*pos_input)+1]==SJ_IC_TIKEUT) {
+    if (input[(*pos_input)+1]==HCJ_TIKEUT || input[(*pos_input)+1]==SJ_IC_TIKEUT) {
         *initial_consonant=4;
         *hcj=HCJ_SSANGTIKEUT;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_SSANGTIKEUT:*/
+case HCJ_SSANGTIKEUT:
 case SJ_IC_SSANGTIKEUT: {
     *initial_consonant=4;
     *hcj=HCJ_SSANGTIKEUT;
     break;
 }
-/*case HCJ_RIEUL:*/
+case HCJ_RIEUL:
 case SJ_IC_RIEUL: {
     *initial_consonant=5;
     *hcj=HCJ_RIEUL;
     break;
 }
-/*case HCJ_MIEUM:*/
+case HCJ_MIEUM:
 case SJ_IC_MIEUM: {
     *initial_consonant=6;
     *hcj=HCJ_MIEUM;
     break;
 }
-/*case HCJ_PIEUP:*/
+case HCJ_PIEUP:
 case SJ_IC_PIEUP: {
     *initial_consonant=7;
     *hcj=HCJ_PIEUP;
-    if (/*input[(*pos_input)+1]==HCJ_PIEUP ||*/ input[(*pos_input)+1]==SJ_IC_PIEUP) {
+    if (input[(*pos_input)+1]==HCJ_PIEUP || input[(*pos_input)+1]==SJ_IC_PIEUP) {
         *initial_consonant=8;
         *hcj=HCJ_SSANGPIEUP;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_SSANGPIEUP:*/
+case HCJ_SSANGPIEUP:
 case SJ_IC_SSANGPIEUP: {
     *initial_consonant=8;
     *hcj=HCJ_SSANGPIEUP;
     break;
 }
-/*case HCJ_SIOS:*/
+case HCJ_SIOS:
 case SJ_IC_SIOS: {
     *initial_consonant=9;
     *hcj=HCJ_SIOS;
-    if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_IC_SIOS) {
+    if (input[(*pos_input)+1]==HCJ_SIOS || input[(*pos_input)+1]==SJ_IC_SIOS) {
         *initial_consonant=10;
         *hcj=HCJ_SSANGSIOS;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_SSANGSIOS:*/
+case HCJ_SSANGSIOS:
 case SJ_IC_SSANGSIOS: {
     *initial_consonant=10;
     *hcj=HCJ_SSANGSIOS;
     break;
 }
-/*case HCJ_IEUNG:*/
+case HCJ_IEUNG:
 case SJ_IC_IEUNG: {
     *initial_consonant=11;
     *hcj=HCJ_IEUNG;
     break;
 }
-/*case HCJ_CIEUC:*/
+case HCJ_CIEUC:
 case SJ_IC_CIEUC: {
     *initial_consonant=12;
     *hcj=HCJ_CIEUC;
-    if (/*input[(*pos_input)+1]==HCJ_CIEUC ||*/ input[(*pos_input)+1]==SJ_IC_CIEUC) {
+    if (input[(*pos_input)+1]==HCJ_CIEUC || input[(*pos_input)+1]==SJ_IC_CIEUC) {
         *initial_consonant=13;
         *hcj=HCJ_SSANGCIEUC;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_SSANGCIEUC:*/
+case HCJ_SSANGCIEUC:
 case SJ_IC_SSANGCIEUC: {
     *initial_consonant=13;
     *hcj=HCJ_SSANGCIEUC;
     break;
 }
-/*case HCJ_CHIEUCH:*/
+case HCJ_CHIEUCH:
 case SJ_IC_CHIEUCH: {
     *initial_consonant=14;
     *hcj=HCJ_CHIEUCH;
     break;
 }
-/*case HCJ_KHIEUKH:*/
+case HCJ_KHIEUKH:
 case SJ_IC_KHIEUKH: {
     *initial_consonant=15;
     *hcj=HCJ_KHIEUKH;
     break;
 }
-/*case HCJ_THIEUTH:*/
+case HCJ_THIEUTH:
 case SJ_IC_THIEUTH: {
     *initial_consonant=16;
     *hcj=HCJ_THIEUTH;
     break;
 }
-/*case HCJ_PHIEUPH:*/
+case HCJ_PHIEUPH:
 case SJ_IC_PHIEUPH: {
     *initial_consonant=17;
     *hcj=HCJ_PHIEUPH;
     break;
 }
-/*case HCJ_HIEUH:*/
+case HCJ_HIEUH:
 case SJ_IC_HIEUH: {
     *initial_consonant=18;
     *hcj=HCJ_HIEUH;
-    if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_IC_KIYEOK) {
+    if (input[(*pos_input)+1]==HCJ_KIYEOK || input[(*pos_input)+1]==SJ_IC_KIYEOK) {
        *initial_consonant=15;
        *hcj=HCJ_KHIEUKH;
        (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_CIEUC ||*/ input[(*pos_input)+1]==SJ_IC_CIEUC) {
+    } else if (input[(*pos_input)+1]==HCJ_CIEUC || input[(*pos_input)+1]==SJ_IC_CIEUC) {
       *initial_consonant=14;
       *hcj=HCJ_CHIEUCH;
       (*pos_input)++;
-   } else if (/*input[(*pos_input)+1]==HCJ_TIKEUT ||*/ input[(*pos_input)+1]==SJ_IC_TIKEUT) {
+   } else if (input[(*pos_input)+1]==HCJ_TIKEUT || input[(*pos_input)+1]==SJ_IC_TIKEUT) {
       *initial_consonant=16;
       *hcj=HCJ_THIEUTH;
       (*pos_input)++;
-   } else if (/*input[(*pos_input)+1]==HCJ_PIEUP ||*/ input[(*pos_input)+1]==SJ_IC_PIEUP) {
+   } else if (input[(*pos_input)+1]==HCJ_PIEUP || input[(*pos_input)+1]==SJ_IC_PIEUP) {
       *initial_consonant=17;
       *hcj=HCJ_PHIEUPH;
       (*pos_input)++;
@@ -576,53 +576,53 @@ return KR_MATCH;
  */
 int read_vowels(unichar* input,int *pos_input,int *vowel,unichar *hcj) {
 switch(input[*pos_input]) {
-/*case HCJ_A:*/
+case HCJ_A:
 case SJ_A: {
     *vowel=0;
     *hcj=HCJ_A;
-    if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+    if (input[(*pos_input)+1]==HCJ_I || input[(*pos_input)+1]==SJ_I) {
         *vowel=1;
         *hcj=HCJ_AE;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_AE:*/
+case HCJ_AE:
 case SJ_AE: {
     *vowel=1;
     *hcj=HCJ_AE;
     break;
 }
-/*case HCJ_EO:*/
+case HCJ_EO:
 case SJ_EO: {
     *vowel=4;
     *hcj=HCJ_EO;
-    if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+    if (input[(*pos_input)+1]==HCJ_I || input[(*pos_input)+1]==SJ_I) {
         *vowel=5;
         *hcj=HCJ_E;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_E:*/
+case HCJ_E:
 case SJ_E: {
     *vowel=5;
     *hcj=HCJ_E;
     break;
 }
-/*case HCJ_O:*/
+case HCJ_O:
 case SJ_O: {
     *vowel=8;
     *hcj=HCJ_O;
-    if (/*input[(*pos_input)+1]==HCJ_A ||*/ input[(*pos_input)+1]==SJ_A) {
+    if (input[(*pos_input)+1]==HCJ_A || input[(*pos_input)+1]==SJ_A) {
         *vowel=9;
         *hcj=HCJ_WA;
         (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+    } else if (input[(*pos_input)+1]==HCJ_I || input[(*pos_input)+1]==SJ_I) {
         *vowel=11;
         *hcj=HCJ_OE;
         (*pos_input)++;
-        if (/*input[(*pos_input)+1]==HCJ_EO ||*/ input[(*pos_input)+1]==SJ_EO) {
+        if (input[(*pos_input)+1]==HCJ_EO || input[(*pos_input)+1]==SJ_EO) {
             *vowel=10;
             *hcj=HCJ_WAE;
             (*pos_input)++;
@@ -630,143 +630,143 @@ case SJ_O: {
     }
     break;
 }
-/*case HCJ_WA:*/
+case HCJ_WA:
 case SJ_WA: {
     *vowel=9;
     *hcj=HCJ_WA;
     break;
 }
-/*case HCJ_WAE:*/
+case HCJ_WAE:
 case SJ_WAE: {
     *vowel=10;
     *hcj=HCJ_WAE;
     break;
 }
-/*case HCJ_OE:*/
+case HCJ_OE:
 case SJ_OE: {
     *vowel=11;
     *hcj=HCJ_OE;
     break;
 }
-/*case HCJ_U:*/
+case HCJ_U:
 case SJ_U: {
     *vowel=13;
     *hcj=HCJ_U;
-    if (/*input[(*pos_input)+1]==HCJ_EO ||*/ input[(*pos_input)+1]==SJ_EO) {
+    if (input[(*pos_input)+1]==HCJ_EO || input[(*pos_input)+1]==SJ_EO) {
         *vowel=14;
         *hcj=HCJ_WEO;
         (*pos_input)++;
-        if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+        if (input[(*pos_input)+1]==HCJ_I || input[(*pos_input)+1]==SJ_I) {
             *vowel=15;
             *hcj=HCJ_WE;
             (*pos_input)++;
         }
-    } else if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+    } else if (input[(*pos_input)+1]==HCJ_I || input[(*pos_input)+1]==SJ_I) {
         *vowel=16;
         *hcj=HCJ_WI;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_WEO:*/
+case HCJ_WEO:
 case SJ_WEO: {
     *vowel=14;
     *hcj=HCJ_WEO;
     break;
 }
-/*case HCJ_WE:*/
+case HCJ_WE:
 case SJ_WE: {
     *vowel=15;
     *hcj=HCJ_WE;
     break;
 }
-/*case HCJ_WI:*/
+case HCJ_WI:
 case SJ_WI: {
     *vowel=16;
     *hcj=HCJ_WI;
     break;
 }
-/*case HCJ_EU:*/
+case HCJ_EU:
 case SJ_EU: {
     *vowel=18;
     *hcj=HCJ_EU;
-    if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+    if (input[(*pos_input)+1]==HCJ_I || input[(*pos_input)+1]==SJ_I) {
         *vowel=19;
         *hcj=HCJ_YI;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_YI:*/
+case HCJ_YI:
 case SJ_YI: {
     *vowel=19;
     *hcj=HCJ_YI;
     break;
 }
-/*case HCJ_I:*/
+case HCJ_I:
 case SJ_I: {
     *vowel=20;
     *hcj=HCJ_I;
-    if (/*input[(*pos_input)+1]==HCJ_A ||*/ input[(*pos_input)+1]==SJ_A) {
+    if (input[(*pos_input)+1]==HCJ_A || input[(*pos_input)+1]==SJ_A) {
         *vowel=2;
         *hcj=HCJ_YA;
         (*pos_input)++;
-        if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+        if (input[(*pos_input)+1]==HCJ_I || input[(*pos_input)+1]==SJ_I) {
             *vowel=3;
             *hcj=HCJ_YAE;
             (*pos_input)++;
         }
-    } else if (/*input[(*pos_input)+1]==HCJ_EO ||*/ input[(*pos_input)+1]==SJ_EO) {
+    } else if (input[(*pos_input)+1]==HCJ_EO || input[(*pos_input)+1]==SJ_EO) {
         *vowel=6;
         *hcj=HCJ_YEO;
         (*pos_input)++;
-        if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+        if (input[(*pos_input)+1]==HCJ_I || input[(*pos_input)+1]==SJ_I) {
             *vowel=7;
             *hcj=HCJ_YE;
             (*pos_input)++;
         }
-    } else if (/*input[(*pos_input)+1]==HCJ_O ||*/ input[(*pos_input)+1]==SJ_O) {
+    } else if (input[(*pos_input)+1]==HCJ_O || input[(*pos_input)+1]==SJ_O) {
         *vowel=12;
         *hcj=HCJ_YO;
         (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_U ||*/ input[(*pos_input)+1]==SJ_U) {
+    } else if (input[(*pos_input)+1]==HCJ_U || input[(*pos_input)+1]==SJ_U) {
         *vowel=17;
         *hcj=HCJ_YU;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_YA:*/
+case HCJ_YA:
 case SJ_YA: {
     *vowel=2;
     *hcj=HCJ_YA;
     break;
 }
-/*case HCJ_YAE:*/
+case HCJ_YAE:
 case SJ_YAE: {
     *vowel=3;
     *hcj=HCJ_YAE;
     break;
 }
-/*case HCJ_YEO:*/
+case HCJ_YEO:
 case SJ_YEO: {
     *vowel=6;
     *hcj=HCJ_YEO;
     break;
 }
-/*case HCJ_YE:*/
+case HCJ_YE:
 case SJ_YE: {
     *vowel=7;
     *hcj=HCJ_YE;
     break;
 }
-/*case HCJ_YO:*/
+case HCJ_YO:
 case SJ_YO: {
     *vowel=12;
     *hcj=HCJ_YO;
     break;
 }
-/*case HCJ_YU:*/
+case HCJ_YU:
 case SJ_YU: {
     *vowel=17;
     *hcj=HCJ_YU;
@@ -808,17 +808,17 @@ return KR_MATCH;
 int read_final_consonants(unichar* input,int *pos_input,int *final_consonant, unichar *hcj,
                           int all_sequences) {
 switch(input[*pos_input]) {
-/*case HCJ_KIYEOK:*/
+case HCJ_KIYEOK:
 case SJ_FC_KIYEOK:
 case SJ_IC_KIYEOK: {
     *final_consonant=1;
     *hcj=HCJ_KIYEOK;
-    if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_FC_KIYEOK ||
+    if (input[(*pos_input)+1]==HCJ_KIYEOK || input[(*pos_input)+1]==SJ_FC_KIYEOK ||
         input[(*pos_input)+1]==SJ_IC_KIYEOK) {
         *final_consonant=2;
         *hcj=HCJ_SSANGKIYEOK;
         (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
+    } else if (input[(*pos_input)+1]==HCJ_SIOS || input[(*pos_input)+1]==SJ_FC_SIOS ||
             input[(*pos_input)+1]==SJ_IC_SIOS) {
         *final_consonant=3;
         *hcj=HCJ_KIYEOK_SIOS;
@@ -826,101 +826,101 @@ case SJ_IC_KIYEOK: {
     }
     break;
 }
-/*case HCJ_SSANGKIYEOK:*/
+case HCJ_SSANGKIYEOK:
 case SJ_FC_SSANGKIYEOK:
 case SJ_IC_SSANGKIYEOK: {
     *final_consonant=2;
     *hcj=HCJ_SSANGKIYEOK;
     break;
 }
-/*case HCJ_KIYEOK_SIOS:*/
+case HCJ_KIYEOK_SIOS:
 case SJ_FC_KIYEOK_SIOS: {
     *final_consonant=3;
     *hcj=HCJ_KIYEOK_SIOS;
     break;
 }
-/*case HCJ_NIEUN:*/
+case HCJ_NIEUN:
 case SJ_FC_NIEUN:
 case SJ_IC_NIEUN: {
     *final_consonant=4;
-    if (/*input[(*pos_input)+1]==HCJ_CIEUC ||*/ input[(*pos_input)+1]==SJ_FC_CIEUC ||
+    if (input[(*pos_input)+1]==HCJ_CIEUC || input[(*pos_input)+1]==SJ_FC_CIEUC ||
         input[(*pos_input)+1]==SJ_IC_CIEUC) {
         *final_consonant=5;
         (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_HIEUH ||*/ input[(*pos_input)+1]==SJ_FC_HIEUH ||
+    } else if (input[(*pos_input)+1]==HCJ_HIEUH || input[(*pos_input)+1]==SJ_FC_HIEUH ||
         input[(*pos_input)+1]==SJ_IC_HIEUH) {
         *final_consonant=6;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_NIEUN_CIEUC:*/
+case HCJ_NIEUN_CIEUC:
 case SJ_FC_NIEUN_CIEUC: {
     *final_consonant=5;
     *hcj=HCJ_NIEUN_CIEUC;
     break;
 }
-/*case HCJ_NIEUN_HIEUH:*/
+case HCJ_NIEUN_HIEUH:
 case SJ_FC_NIEUN_HIEUH: {
     *final_consonant=6;
     *hcj=HCJ_NIEUN_HIEUH;
     break;
 }
-/*case HCJ_TIKEUT:*/
+case HCJ_TIKEUT:
 case SJ_FC_TIKEUT:
 case SJ_IC_TIKEUT: {
     *final_consonant=7;
     *hcj=HCJ_TIKEUT;
-    if (all_sequences && /*input[(*pos_input)+1]==HCJ_TIKEUT ||*/ (input[(*pos_input)+1]==SJ_FC_TIKEUT ||
+    if ((all_sequences && input[(*pos_input)+1]==HCJ_TIKEUT) || (input[(*pos_input)+1]==SJ_FC_TIKEUT ||
         input[(*pos_input)+1]==SJ_IC_TIKEUT)) {
         (*pos_input)++;
         *hcj=HCJ_SSANGTIKEUT;
     }
     break;
 }
-/*case HCJ_SSANGTIKEUT:*/
+case HCJ_SSANGTIKEUT:
 case SJ_IC_SSANGTIKEUT: {
     if (all_sequences) {
         *hcj=HCJ_SSANGTIKEUT;
     }
     break;
 }
-/*case HCJ_RIEUL:*/
+case HCJ_RIEUL:
 case SJ_FC_RIEUL:
 case SJ_IC_RIEUL:{
     *final_consonant=8;
     *hcj=HCJ_RIEUL;
-    if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_FC_KIYEOK ||
+    if (input[(*pos_input)+1]==HCJ_KIYEOK || input[(*pos_input)+1]==SJ_FC_KIYEOK ||
         input[(*pos_input)+1]==SJ_IC_KIYEOK) {
         *final_consonant=9;
         *hcj=HCJ_RIEUL_KIYEOK;
         (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_MIEUM ||*/ input[(*pos_input)+1]==SJ_FC_MIEUM ||
+    } else if (input[(*pos_input)+1]==HCJ_MIEUM || input[(*pos_input)+1]==SJ_FC_MIEUM ||
         input[(*pos_input)+1]==SJ_IC_MIEUM) {
         *final_consonant=10;
         *hcj=HCJ_RIEUL_MIEUM;
         (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_PIEUP ||*/ input[(*pos_input)+1]==SJ_FC_PIEUP ||
+    } else if (input[(*pos_input)+1]==HCJ_PIEUP || input[(*pos_input)+1]==SJ_FC_PIEUP ||
         input[(*pos_input)+1]==SJ_IC_PIEUP) {
         *final_consonant=11;
         *hcj=HCJ_RIEUL_PIEUP;
         (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
+    } else if (input[(*pos_input)+1]==HCJ_SIOS || input[(*pos_input)+1]==SJ_FC_SIOS ||
         input[(*pos_input)+1]==SJ_IC_SIOS) {
         *final_consonant=12;
         *hcj=HCJ_RIEUL_SIOS;
         (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_THIEUTH ||*/ input[(*pos_input)+1]==SJ_FC_THIEUTH ||
+    } else if (input[(*pos_input)+1]==HCJ_THIEUTH || input[(*pos_input)+1]==SJ_FC_THIEUTH ||
         input[(*pos_input)+1]==SJ_IC_THIEUTH) {
         *final_consonant=13;
         *hcj=HCJ_RIEUL_THIEUTH;
         (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_PHIEUPH ||*/ input[(*pos_input)+1]==SJ_FC_PHIEUPH ||
+    } else if (input[(*pos_input)+1]==HCJ_PHIEUPH || input[(*pos_input)+1]==SJ_FC_PHIEUPH ||
         input[(*pos_input)+1]==SJ_IC_PHIEUPH) {
         *final_consonant=14;
         *hcj=HCJ_RIEUL_PHIEUPH;
         (*pos_input)++;
-    } else if (/*input[(*pos_input)+1]==HCJ_HIEUH ||*/ input[(*pos_input)+1]==SJ_FC_HIEUH ||
+    } else if (input[(*pos_input)+1]==HCJ_HIEUH || input[(*pos_input)+1]==SJ_FC_HIEUH ||
         input[(*pos_input)+1]==SJ_IC_HIEUH) {
         *final_consonant=15;
         *hcj=HCJ_RIEUL_HIEUH;
@@ -928,84 +928,84 @@ case SJ_IC_RIEUL:{
     }
     break;
 }
-/*case HCJ_RIEUL_KIYEOK:*/
+case HCJ_RIEUL_KIYEOK:
 case SJ_FC_RIEUL_KIYEOK: {
     *final_consonant=9;
     *hcj=HCJ_RIEUL_KIYEOK;
     break;
 }
-/*case HCJ_RIEUL_MIEUM:*/
+case HCJ_RIEUL_MIEUM:
 case SJ_FC_RIEUL_MIEUM: {
     *final_consonant=10;
     *hcj=HCJ_RIEUL_MIEUM;
     break;
 }
-/*case HCJ_RIEUL_PIEUP:*/
+case HCJ_RIEUL_PIEUP:
 case SJ_FC_RIEUL_PIEUP: {
     *final_consonant=11;
     *hcj=HCJ_RIEUL_PIEUP;
     break;
 }
-/*case HCJ_RIEUL_SIOS:*/
+case HCJ_RIEUL_SIOS:
 case SJ_FC_RIEUL_SIOS: {
     *final_consonant=12;
     *hcj=HCJ_RIEUL_SIOS;
     break;
 }
-/*case HCJ_RIEUL_THIEUTH:*/
+case HCJ_RIEUL_THIEUTH:
 case SJ_FC_RIEUL_THIEUTH: {
     *final_consonant=13;
     *hcj=HCJ_RIEUL_THIEUTH;
     break;
 }
-/*case HCJ_RIEUL_PHIEUPH:*/
+case HCJ_RIEUL_PHIEUPH:
 case SJ_FC_RIEUL_PHIEUPH: {
     *final_consonant=14;
     *hcj=HCJ_RIEUL_PHIEUPH;
     break;
 }
-/*case HCJ_RIEUL_HIEUH:*/
+case HCJ_RIEUL_HIEUH:
 case SJ_FC_RIEUL_HIEUH: {
     *final_consonant=15;
     *hcj=HCJ_RIEUL_HIEUH;
     break;
 }
-/*case HCJ_MIEUM:*/
+case HCJ_MIEUM:
 case SJ_FC_MIEUM:
 case SJ_IC_MIEUM: {
     *final_consonant=16;
     *hcj=HCJ_MIEUM;
     break;
 }
-/*case HCJ_PIEUP:*/
+case HCJ_PIEUP:
 case SJ_FC_PIEUP:
 case SJ_IC_PIEUP: {
     *final_consonant=17;
     *hcj=HCJ_PIEUP;
-    if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
+    if (input[(*pos_input)+1]==HCJ_SIOS || input[(*pos_input)+1]==SJ_FC_SIOS ||
         input[(*pos_input)+1]==SJ_IC_SIOS) {
         *final_consonant=18;
         *hcj=HCJ_PIEUP_SIOS;
         (*pos_input)++;
-    } else if (all_sequences && /*input[(*pos_input)+1]==HCJ_PIEUP ||*/ (input[(*pos_input)+1]==SJ_FC_PIEUP ||
+    } else if ((all_sequences && input[(*pos_input)+1]==HCJ_PIEUP) || (input[(*pos_input)+1]==SJ_FC_PIEUP ||
         input[(*pos_input)+1]==SJ_IC_PIEUP)) {
         *hcj=HCJ_SSANGPIEUP;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_PIEUP_SIOS:*/
+case HCJ_PIEUP_SIOS:
 case SJ_FC_PIEUP_SIOS: {
     *final_consonant=18;
     *hcj=HCJ_PIEUP_SIOS;
     break;
 }
-/*case HCJ_SIOS:*/
+case HCJ_SIOS:
 case SJ_FC_SIOS:
 case SJ_IC_SIOS: {
     *final_consonant=19;
     *hcj=HCJ_SIOS;
-    if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
+    if (input[(*pos_input)+1]==HCJ_SIOS || input[(*pos_input)+1]==SJ_FC_SIOS ||
         input[(*pos_input)+1]==SJ_IC_SIOS) {
         *final_consonant=20;
         *hcj=HCJ_SSANGSIOS;
@@ -1013,68 +1013,68 @@ case SJ_IC_SIOS: {
     }
     break;
 }
-/*case HCJ_SSANGSIOS:*/
+case HCJ_SSANGSIOS:
 case SJ_FC_SSANGSIOS:
 case SJ_IC_SSANGSIOS: {
     *final_consonant=20;
     *hcj=HCJ_SSANGSIOS;
     break;
 }
-/*case HCJ_IEUNG:*/
+case HCJ_IEUNG:
 case SJ_FC_IEUNG:
 case SJ_IC_IEUNG: {
     *final_consonant=21;
     *hcj=HCJ_IEUNG;
     break;
 }
-/*case HCJ_CIEUC:*/
+case HCJ_CIEUC:
 case SJ_FC_CIEUC:
 case SJ_IC_CIEUC: {
     *final_consonant=22;
     *hcj=HCJ_CIEUC;
-    if (all_sequences && /*input[(*pos_input)+1]==HCJ_CIEUC ||*/ (input[(*pos_input)+1]==SJ_FC_CIEUC ||
+    if ((all_sequences && input[(*pos_input)+1]==HCJ_CIEUC) || (input[(*pos_input)+1]==SJ_FC_CIEUC ||
         input[(*pos_input)+1]==SJ_IC_CIEUC)) {
         *hcj=HCJ_SSANGCIEUC;
         (*pos_input)++;
     }
     break;
 }
-/*case HCJ_SSANGCIEUC:*/
+case HCJ_SSANGCIEUC:
 case SJ_IC_SSANGCIEUC: {
     if (all_sequences) {
         *hcj=HCJ_SSANGCIEUC;
     }
     break;
 }
-/*case HCJ_CHIEUCH:*/
+case HCJ_CHIEUCH:
 case SJ_FC_CHIEUCH:
 case SJ_IC_CHIEUCH: {
     *final_consonant=23;
     *hcj=HCJ_CHIEUCH;
     break;
 }
-/*case HCJ_KHIEUKH:*/
+case HCJ_KHIEUKH:
 case SJ_FC_KHIEUKH:
 case SJ_IC_KHIEUKH: {
     *final_consonant=24;
     *hcj=HCJ_KHIEUKH;
     break;
 }
-/*case HCJ_THIEUTH:*/
+case HCJ_THIEUTH:
 case SJ_FC_THIEUTH:
 case SJ_IC_THIEUTH: {
     *final_consonant=25;
     *hcj=HCJ_THIEUTH;
     break;
 }
-/*case HCJ_PHIEUPH:*/
+case HCJ_PHIEUPH:
 case SJ_FC_PHIEUPH:
 case SJ_IC_PHIEUPH: {
     *final_consonant=26;
     *hcj=HCJ_PHIEUPH;
     break;
 }
-/*case HCJ_HIEUH:*/
+case HCJ_HIEUH:
 case SJ_FC_HIEUH:
 case SJ_IC_HIEUH: {
     *final_consonant=27;

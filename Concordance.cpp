@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -750,7 +750,8 @@ if (output!=NULL) {
    return;
 }
 /* If there is no output, we compute the match from the text */
-int j=0,k;
+int k;
+size_t j=0;
 unichar* s;
 if (start_pos_char!=0) {
    /* If the match doesn't start on the first char of the first token */
