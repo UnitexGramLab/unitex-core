@@ -50,7 +50,6 @@ typedef struct {
 int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,UnxmlizeOpts* options,
         unichar* bastien[],U_FILE* f_bastien, int tolerate_markup_malformation,
         const unichar* selPath);
-
 } // namespace unitex
 
 #endif
