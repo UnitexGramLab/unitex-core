@@ -191,8 +191,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
                    free_Ustring(selPath);
                    return USAGE_ERROR_CODE;
                 }
-                free_Ustring(selPath);
-                selPath = load_xpath_file(&vec,options.vars()->optarg);
+                strcpy(selxPath_filename,options.vars()->optarg);
                 break;
    case 'c': {
        if (!strcmp(options.vars()->optarg,"IGNORE")) {
@@ -290,7 +289,7 @@ if (output[0]=='\0') {
 if (selxPath_filename[0] != '\0') {
     free_Ustring(selPath);
     selPath = load_xpath_file(&vec, selxPath_filename);
-    if (selPath != NULL) {
+    if (selPath == NULL) {
         error("Cannot open xpath file %s\n", selxPath_filename);
         free_Ustring(selPath);
         return DEFAULT_ERROR_CODE;
