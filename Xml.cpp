@@ -51,7 +51,7 @@ class XmlSelect
        ~XmlSelect() {
          clear();
        }
-       bool initSelPath(const char* selPath);
+       bool initSelPath(const unichar* selPath);
        void enterNewTag(const unichar* tag, bool& in_selection);
        void addKeyValueOnTag(const unichar* key, const unichar* value, bool& in_selection);
        void exitTag(bool& in_selection);
@@ -75,7 +75,7 @@ class XmlSelect
 };
 
 // exemple: /TEI/teiHeader//sourceDesc//analytic/idno[@type='DOI']
-bool XmlSelect::initSelPath(const char* selPath)
+bool XmlSelect::initSelPath(const unichar* selPath)
 {
     int maxDepthSelPath = 0;
     size_t pos;
@@ -84,7 +84,7 @@ bool XmlSelect::initSelPath(const char* selPath)
     if ((selPath == NULL) || (selPath[0] == '\0'))
       return true;
 
-    size_t l_path=strlen(selPath);
+    size_t l_path=u_strlen(selPath);
     if (selPath[0]!='/') return false;
     for (pos=0;pos<l_path;pos++) {
       if (selPath[pos]=='/') maxDepthSelPath++;
@@ -148,7 +148,7 @@ bool XmlSelect::initSelPath(const char* selPath)
                   return false;
               }
 
-              const char* begin_val = selPath + pos_egal + 1;
+              const unichar* begin_val = selPath + pos_egal + 1;
               size_t size_val       = pos_end_tag_val - (pos_egal + 1);
 
               if ((size_val >= 2) && (begin_val[0] == begin_val[size_val - 1]) && (begin_val[0] == '\'')) {
@@ -274,7 +274,7 @@ static int decode_html_char(U_FILE* f,U_FILE* f_out,bool write_enabled,
  * (i.e. skipping script code, replacing any tag by a space).
  */
 int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,UnxmlizeOpts* options,
-        unichar* bastien[],U_FILE* f_bastien, int tolerate_markup_malformation, const char* selPath) {
+        unichar* bastien[],U_FILE* f_bastien, int tolerate_markup_malformation, const unichar* selPath) {
 int c;
 int pos=0,new_pos=0;
 void* html_ctx=init_HTML_character_context();
@@ -282,13 +282,14 @@ XmlSelect xmlSelect;
 // ustr1 and ustr2 are recycling Ustring buffer, to avoid a lot of malloc/free
 Ustring* ustr1 = new_Ustring();
 Ustring* ustr2 = new_Ustring();
+const unichar cNull = (unichar)'\0';
 if (selPath == NULL)
-  selPath = "";
+  selPath = &cNull;
 if (!xmlSelect.initSelPath(selPath)) {
     fatal_error("Invalid xml selection path: '%s'\n", selPath);
     return 0;
 }
-bool write_enabled = (selPath[0] == '\0');
+bool write_enabled = (selPath[0] == (unichar)'\0');
 while ((c=u_fgetc_raw(input))!=EOF) {
     int markup_malformation=0;
     pos++;
