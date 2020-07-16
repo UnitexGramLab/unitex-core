@@ -50,6 +50,7 @@ const char* usage_Unxmlize =
          "  --PRLG=XXX: extracts to file XXX special information used in the\n"
          "              PRLG project on ancient Greek (requires --output_offsets)\n"
          "  --selxpath=XXX: specifies the xml selection path\n"
+         "  --selxpath_file=XXX: specifies a file which contain the xml selection path\n"
          "\n"
          "  -t/--html: consider the file as html file (disregard extension)\n"
          "  -x/--xml: consider the file as xml file (disregard extension)\n"
@@ -181,16 +182,16 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
                    free_Ustring(selPath);
                    return USAGE_ERROR_CODE;
                 }
-                strcpy(selxPath_filename,options.vars()->optarg);
+                free_Ustring(selPath);
+                selPath = new_Ustring();
+                u_strcpy(selPath, options.vars()->optarg);
                 break;
    case 'f': if (options.vars()->optarg[0]=='\0') {
                    error("You must specify a non empty xml selection path filename\n");
                    free_Ustring(selPath);
                    return USAGE_ERROR_CODE;
                 }
-                free_Ustring(selPath);
-
-                selPath = load_xpath_file(&vec,options.vars()->optarg);
+                strcpy(selxPath_filename,options.vars()->optarg);
                 break;
    case 'c': {
        if (!strcmp(options.vars()->optarg,"IGNORE")) {
@@ -288,7 +289,7 @@ if (output[0]=='\0') {
 if (selxPath_filename[0] != '\0') {
     free_Ustring(selPath);
     selPath = load_xpath_file(&vec, selxPath_filename);
-    if (selPath != NULL) {
+    if (selPath == NULL) {
         error("Cannot open xpath file %s\n", selxPath_filename);
         free_Ustring(selPath);
         return DEFAULT_ERROR_CODE;
