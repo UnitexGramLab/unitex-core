@@ -2979,7 +2979,7 @@ int main_Fst2List(int argc, char* const argv[]) {
   }
   strcpy(fst2_filename,argv[options.vars()->optind]);
   aa.fileNameSet(argv[options.vars()->optind], ofilename);
-  aa.vec = vec;
+  aa.vec = vec; 
   aa.p = new_locate_parameters();
   load_morphological_dictionaries(&aa.vec, morpho_dic, aa.p);
   if(makeDic) {
