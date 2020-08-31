@@ -25,7 +25,6 @@
 #include "BitMasks.h"
 #include "Persistence.h"
 #include "UnusedParameter.h"
-#include "DELA.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -67,7 +66,6 @@ if (e->output!=NULL) free_cb(e->output,prv_alloc);
 if (e->morphological_filter!=NULL) free_cb(e->morphological_filter,prv_alloc);
 if (e->pattern!=NULL) free_pattern(e->pattern,prv_alloc);
 if (e->variable!=NULL) free_cb(e->variable,prv_alloc);
-if (e->dela_entry!=NULL) free_dela_entry(e->dela_entry,prv_alloc);
 free_list_int(e->matching_tokens,prv_alloc);
 free_cb(e,prv_alloc);
 }
@@ -151,8 +149,6 @@ e->morphological_filter=NULL;
 e->filter_number=-1;
 e->meta=(enum meta_symbol)(-1);
 e->pattern_number=-1;
-e->dela_entry = NULL;
-e->stop = 0;
 return e;
 }
 
@@ -933,8 +929,6 @@ Fst2Tag new_Fst2Tag_clone(Fst2Tag Fst2TagSrc,Abstract_allocator prv_alloc)
     Fst2TagDest->meta = Fst2TagSrc->meta;
     Fst2TagDest->pattern = clone(Fst2TagSrc->pattern,prv_alloc);
     Fst2TagDest->pattern_number = Fst2TagSrc->pattern_number;
-    Fst2TagDest->dela_entry = clone_dela_entry(Fst2TagSrc->dela_entry,prv_alloc);
-    Fst2TagDest->stop = Fst2TagSrc->stop;
 
     Fst2TagDest->compound_pattern = Fst2TagSrc->compound_pattern;
 

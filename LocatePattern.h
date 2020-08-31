@@ -403,9 +403,6 @@ void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,
 unsigned char get_control_byte(const unichar*,const Alphabet*,struct string_hash*,TokenizationPolicy);
 void compute_token_controls(const VersatileEncodingConfig*,Alphabet*,const char*,struct locate_parameters*);
 
-void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p);
-struct locate_parameters* new_locate_parameters();
-
 } // namespace unitex
 
 #endif

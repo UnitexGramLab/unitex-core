@@ -32,11 +32,6 @@
 #include "Error.h"
 #include "Transitions.h"
 #include "UnitexGetOpt.h"
-#include "Korean.h"
-#include "LocatePattern.h"
-#include "MorphologicalLocate.h"
-#include "Korean.h"
-#include "Dico.h"
 
 #include "LocatePattern.h"
 #include "MorphologicalLocate.h"
@@ -91,9 +86,7 @@ const char* usage_Fst2List =
         "-K, indicates that the <fname> argument is in Korean\r\n"
         "-D <file>, morphological dictionary file to load, <file> must have the extension \".bin\"\r\n"
         "-V, --only_verify_arguments: only verify arguments syntax and exit\r\n"
-        "-h, --help: display this help and exit\r\n"
-	"-P : create a .dic output file instead of .txt output file, modes merge or replace are applied according the graph's name\r\n"
-        "-D <file>, : give a morphological dictionary to process lexical masks";
+        "-h, --help: display this help and exit";
 
 static void usage() {
   display_copyright_notice();
@@ -578,16 +571,6 @@ public:
   int cyclePathCnt;
   struct cycleNodeId *headCycNodes;
   int cycNodeCnt;
-
-  /**
-  * structure to represent all the processed lexical masks
-  */
-  struct ProcessedLexicalMask {
-      unichar* input;         // box's input
-      unichar* output;        // box's output
-      int maxEntriesCnt;      // max number of element in dela_entries array
-      int entriesCnt;         // number of entries in dela_entries array
-  };
 
   /**
    * Search in headCycNodes for an index corresponding to
@@ -2402,6 +2385,11 @@ void CFstApp::printPathNames(U_FILE *f) {
   }
 }
 
+/**
+* Set the grammar mode
+* If the option "Process as dictionary-graph" is checked, the grammar mode is set according the graph's name
+* In the other case, apply outputs options (ignore, separate or alternate)
+**/
 void CFstApp::setGrammarMode(char* fst2_filename) {
   char* fst2_filename_cpy = (char*)malloc(sizeof(char) * (strlen(fst2_filename) + 1));
   if(fst2_filename_cpy == NULL){
@@ -2411,7 +2399,7 @@ void CFstApp::setGrammarMode(char* fst2_filename) {
   OutputPolicy outputPolicy = MERGE_OUTPUTS;
   int export_in_morpho_dic;
   MatchPolicy matchPolicy;
-  int l = (int)strlen(fst2_filename)-1;
+  int l = (int)strlen(fst2_filename_cpy) - 1;
   analyse_fst2_graph_options(fst2_filename_cpy, l, &outputPolicy, &export_in_morpho_dic, &matchPolicy);
   if(outputPolicy == MERGE_OUTPUTS) {
     grammarMode = MERGE;
@@ -2424,30 +2412,6 @@ void CFstApp::setGrammarMode(char* fst2_filename) {
   
   free(fst2_filename_cpy);
 }
-
-/**
-* Set the grammar mode
-* If the option "Process as dictionary-graph" is checked, the grammar mode is set according the graph's name
-* In the other case, apply outputs options (ignore, separate or alternate)
-**/
-void CFstApp::setGrammarMode(char* fst2_filename, bool makeDic) {
-  char* tmp = (char*)malloc(sizeof(char) * strlen(fst2_filename));
-  remove_extension(fst2_filename, tmp);
-  OutputPolicy outputPolicy = MERGE_OUTPUTS;
-  int export_in_morpho_dic;
-  MatchPolicy matchPolicy;
-  int l = (int)strlen(tmp)-1;
-  analyse_fst2_graph_options(tmp, l, &outputPolicy, &export_in_morpho_dic, &matchPolicy);
-  if(outputPolicy == MERGE_OUTPUTS) {
-    grammarMode = MERGE;
-    prMode = PR_SEPARATION;
-  }
-  else if(outputPolicy == REPLACE_OUTPUTS) {
-    grammarMode = REPLACE;
-    prMode = PR_SEPARATION;
-  }
-}
-
 
 /**
  * takes a number (decimal or hex) in char and puts its value in 'val'
@@ -2556,8 +2520,9 @@ int CFstApp::outWordsOfGraph(int depth) {
         inputBufferPtr = (u_strcmp(Tag->input, u_epsilon_string)) ?
                          Tag->input : u_null_string;
         if (Tag->output != NULL && processOutput) {
-          if(!u_strcmp(Tag->output, "/") && !isMdg) {  // if the output is '/', it's a MDG, this output is not put in the outputfile
+          if(!u_strcmp(Tag->output, "/") && grammarMode != NONE) {  // if the output is '/', it's a MDG, this output is not put in the outputfile
             isMdg = true;
+            outputBufferPtr = u_null_string;
           }
           else{
             outputBufferPtr = (u_strcmp(Tag->output, u_epsilon_string)) ?
@@ -2853,6 +2818,9 @@ int CFstApp::outWordsOfGraph(int depth) {
     //    }
     markPreCtlChar = markCtlChar;
   } // end for 's = 0; s < pathIdx; s++'
+  if (grammarMode != NONE && !isMdg) {
+    fatal_error("graph was not with '/'");
+  }
   return 0;
 }
 

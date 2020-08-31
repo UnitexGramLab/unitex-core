@@ -39,8 +39,6 @@ void analyse_fst2_graph_options(const char* s,int len,OutputPolicy *outputPolicy
                                    int *export_in_morpho_dic,MatchPolicy *matchPolicy);
 
 int main_Dico(int argc,char* const argv[]);
-void analyse_fst2_graph_options(const char* s,int len,OutputPolicy *outputPolicy,
-                                   int *export_in_morpho_dic,MatchPolicy *matchPolicy);
 
 } // namespace unitex
 

@@ -150,14 +150,6 @@ struct fst2Tag {
     struct list_int* matching_tokens;
 
     /*
-    * These fields are used for dictionary variables
-    * dela_entry corresponds to the dela entry extracted from the binary dictionaries
-    * stop is used to break the path exploration when a lexical mask check any word
-    */
-    struct dela_entry* dela_entry;
-    bool stop;
-
-    /*
      * If the tag can match one or several compound words, a compound pattern is
      * created, and this field is used to store the number of this compound
      * pattern. Note that if a tag ("<Einstein>") can match both simple ("Einstein")
