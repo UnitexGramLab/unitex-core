@@ -1,7 +1,7 @@
 /**
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,6 +38,16 @@
 #include "Korean.h"
 #include "Dico.h"
 
+#include "LocatePattern.h"
+#include "MorphologicalLocate.h"
+#include "Korean.h"
+#include "Dico.h"
+
+#include "LocatePattern.h"
+#include "MorphologicalLocate.h"
+#include "Korean.h"
+#include "Dico.h"
+
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
@@ -46,7 +56,7 @@ namespace unitex {
 
 const char* usage_Fst2List =
     "Usage:\n"
-        "Fst2List [-o <file>][-p (s|f|d)][-(a|t) (s|m)] [-m] [-d] [-f (s|a)] [--io_separator <str>] [--stop_mark <str>][-s <str>] [-r (s|l|x) <str>] [-l <line#>] [-i <subgraphname>]... [-c SS=<0xXXXX>]... <fname>\r\n"
+        "Fst2List [-o <file>][-p (s|f|d)][-(a|t) (s|m)] [-m] [-d] [-K] [-f (s|a)] [-g <str>] [-Q <str>][-s <str>] [-r (s|l|x) <str>] [-l <line#>] [-i <subgraphname>]... [-c SS=<0xXXXX>]... [-D <file>]... <fname>\r\n"
 
         "<fname>: input file name with extension \".fst2\"\r\n"
         "-S, --print: display result on standard output. Exclusive with -o\r\n"
@@ -67,18 +77,19 @@ const char* usage_Fst2List =
         "-c <SS>=<0xXXXX>...: replaces symbol <SS> when it appears between angle brackets \r\n"
         "    by the Unicode character whose hexadecimal number is <0xXXXX>\r\n"
         "-s <L[,R]>: specifies the left (L) and right (R) delimiters that will enclose items. By default, no delimiters are specified\r\n"
-        "-s0, --io_separator <str>: if the program must take outputs into account (-t), this parameter specifies\r\n"
+        "-g <str>: if the program must take outputs into account (-t), this parameter specifies\r\n"
         "    the sequence <str> that will be inserted between input and output. By default, there is no separator.\r\n"
-        "    Prefer the long option --io_separator, the short option -s0 is being deprecated\r\n"
         "-f (a|s): if the program must take outputs into account (-t), this parameter specifies the format\r\n"
         "    of the lines that will be generated: in0 in1 out0 out1 (s) or in0 out0 in1 out1 (a). The default value is s\r\n"
         "    default value is 's'\r\n"
-        "-ss, --stop_mark <stop>: set <stop> as the mark of stop exploration at \"<stop>\". The default value is null.\r\n"
-        "    Prefer the long option --stop_mark, the short option -ss is being deprecated\r\n"
+        "-Q <stop>: set <stop> as the mark of stop exploration at \"<stop>\". The default value is null.\r\n"
         "-m, --word_mode: mode special for description with alphabet\r\n"
         "-d, --disable_loop_check: faster execution at the cost of information about loops\r\n"
         "-v, --verbose: prints information during the process\r\n"
         "-r (s|l|x) <L[,R]>: enclose loops in L and R strings as in (c0|...|cn) by Lc0|..|cnR : default null\r\n"
+        "-P <file>, generate dictionary file\r\n"
+        "-K, indicates that the <fname> argument is in Korean\r\n"
+        "-D <file>, morphological dictionary file to load, <file> must have the extension \".bin\"\r\n"
         "-V, --only_verify_arguments: only verify arguments syntax and exit\r\n"
         "-h, --help: display this help and exit\r\n"
 	"-P : create a .dic output file instead of .txt output file, modes merge or replace are applied according the graph's name\r\n"
@@ -91,8 +102,9 @@ static void usage() {
 
 static char *getUtoChar(char charBuffOut[], unichar *s) {
   int i;
-  for (i = 0; (i < 1024) && s[i]; i++)
+  for (i = 0; (i < 1024) && s[i]; i++){
     charBuffOut[i] = (char) s[i];
+  }
   charBuffOut[i] = 0;
   return charBuffOut;
 }
@@ -100,9 +112,11 @@ static char *getUtoChar(char charBuffOut[], unichar *s) {
 enum ModeOut {
   PR_SEPARATION, PR_TOGETHER
 }; // inputs separated from outputs vs. each input together with its output
+
 enum GrammarMode {
   NONE, MERGE, REPLACE
-}; // no grammar mode vs. outputs left inserted vs. inputs replaced by outputs
+}; // no grammar mode vs outputs left inserted vs inputs replaced by outputs
+
 enum printOutType {
   GRAPH, FULL, FST2LIST_DEBUG
 }; // we either print each subgraph independently or whole automaton recursively
@@ -140,6 +154,7 @@ static unichar *uascToNum(unichar *uasc, int *val);
 #define MAX_CHANGE_SYMBOL_SIZE 32
 #define MAGIC_OUT_STDOUT "<WRITE_U_STDOUT>"
 
+#define NB_LITTERAL_MASKS 14
 /**
  * set one entry in dictionary of symbols for unicode characters
  * write unicode character in changeStrTo[changeStrToIdx][0]
@@ -155,12 +170,14 @@ static int changeStrToVal(int &changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_
   i = 1;
   changeStrTo[changeStrToIdx][i++] = (unichar) '<';
   for (wordPtr = src; i < MAX_CHANGE_SYMBOL_SIZE && (*wordPtr); i++) {
-    if (*wordPtr == (unichar) '=')
+    if (*wordPtr == (unichar) '='){
       break;
+    }
     changeStrTo[changeStrToIdx][i] = (unsigned short) *wordPtr++;
   }
-  if (*wordPtr != (unichar) '=')
+  if (*wordPtr != (unichar) '='){
     return 1;
+  }
   if (i > (MAX_CHANGE_SYMBOL_SIZE - 2)) {
     u_printf("the name of the variable is too long %s", src);
     return 1;
@@ -248,7 +265,7 @@ public:
   int invocStackIdx;  // invocation stack depth
 
   void printPathNames(U_FILE *f);
-  void setGrammarMode(char* fst2_filename, bool makeDic);
+  void setGrammarMode(char* fst2_filename);
 
   int *ignoreTable;  // 1 where the automaton is ignored, else 0
   int *numOfIgnore;
@@ -280,13 +297,12 @@ public:
   char ofExt[16];
   char ofnameOnly[512];        // output file name
   char defaultIgnoreName[512]; // input file name
-  bool inMorphoMode = false;  // true if the current state is in morphological mode
-  bool isKorean = false;  // true if Unitex is launched in korean
-  struct locate_parameters* p;  // parameters to process lexical masks and variables
-  int morphDicCnt = 0;  // number of dic to explore when a lexical mask is encoutered
-  bool mode_morph;  // true if the current state is in morphological mode
-  bool isWord;  // false if the state's content is not a word (like $< or $>)
-  bool isMdg = false;
+  bool inMorphoMode;  // true if the current state is in morphological mode
+  bool isKorean;  // true if the graph is in korean
+  struct locate_parameters* p;
+  int morphDicCnt;  // number of dic to explore when a lexical mask is encountered
+  bool isMdg;  // true if the graph is a morphological dictionary-graph
+  struct hash_table* path_to_stop; /* a hash table to know all the Fst2Tag whose path exploration must be interrupted */
 
   void fileNameSet(char *ifn, char *ofn) {
     char tmp[512];
@@ -314,14 +330,18 @@ public:
    */
   void buildOfileName(const char *fn, const char *ext, char *des) {
     strcpy(des, ofdirName);
-    if (fn)
+    if (fn){
       strcat(des, fn);
-    else
+    }
+    else{
       strcat(des, ofnameOnly);
-    if (ext)
+    }
+    if (ext){
       strcat(des, ext);
-    else
+    }
+    else{
       strcat(des, ofExt);
+    }
   }
 
   CFstApp() :
@@ -347,34 +367,46 @@ public:
             u_null_string), saveEntre(u_null_string), openingQuote(
             u_null_string), closingQuote(u_null_string),
 
+        inMorphoMode(false), isKorean(false), p(NULL), morphDicCnt(0),
+        
+        isMdg(false), path_to_stop(NULL),
+        
         autoCallStack(NULL), transitionListHead(NULL), transitionListTail(NULL),
 
         cycInfos(NULL),
-
         headCyc(0), cyclePathCnt(0), headCycNodes(0), cycNodeCnt(0),
-
-        inputPtrCnt(0), outputPtrCnt(0), inBufferCnt(0), outBufferCnt(0),
-
+        
+        inputPtrCnt(0), outputPtrCnt(0),
+        inBufferCnt(0), outBufferCnt(0),
+        alphabet(NULL), korean(NULL), processedLexicalMasks(NULL),
+        lexicalMaskCnt(0), maxLexicalMaskCnt(8),
+        
         stopSubListIdx(0) {
-    initCallIdMap();
-  }
+          initCallIdMap();
+        }
   ;
   ~CFstApp() {
     stopExploDel();
     cleanCyclePath();
     free_abstract_Fst2(a, &fst2_free);
-    if (saveSep != u_null_string)
-      delete saveSep;
-    if (sep1 != u_null_string)
-      delete sep1;
-    if (stopSignal != u_null_string)
-      delete stopSignal;
-    if (saveEntre != u_null_string)
-      delete saveEntre;
-    if (ignoreTable)
-      delete[] ignoreTable;
-    if (numOfIgnore)
-      delete[] numOfIgnore;
+    if (saveSep != u_null_string){
+      free(saveSep);
+    }
+    if (sep1 != u_null_string){
+      free(sep1);
+    }
+    if (stopSignal != u_null_string){
+      free(stopSignal);
+    }
+    if (saveEntre != u_null_string){
+      free(saveEntre);
+    }
+    if (ignoreTable){
+      free(ignoreTable);
+    }
+    if (numOfIgnore){
+      free(numOfIgnore);
+    }
     deleteCallIdMap();
   }
   ;
@@ -387,6 +419,18 @@ public:
       u_fclose(foutput);
     }
     foutput = NULL;
+    delete korean;
+    free_alphabet(alphabet);
+    for (int i = 0; i < lexicalMaskCnt; i++){
+      free(processedLexicalMasks[i].lexicalMask.input);
+      free(processedLexicalMasks[i].lexicalMask.output);
+      for (int j = 0; j < processedLexicalMasks[i].entriesCnt; j++){
+        free(processedLexicalMasks[i].entries[j].input);
+        free(processedLexicalMasks[i].entries[j].output);
+      }
+      free(processedLexicalMasks[i].entries);
+    }
+    free(processedLexicalMasks);
   }
 
   /**
@@ -489,6 +533,33 @@ public:
     struct cyclePathMark *cyc;
     struct linkCycle *next;
   }*cycInfos;
+
+  /**
+   * structure to hold all the encountered lexical mask
+   */
+  struct LexicalMask {
+    unichar* input;     // lexical mask's input
+    unichar* output;    // lexical mask's output
+  };
+
+  /**
+   * structure to represent the entries extracted from bin dictionaries
+   */
+  struct DicEntry {
+    unichar* input;     // input extracted from dic
+    unichar* output;    // output extracted from inf file
+  };
+
+  /**
+  * structure to represent all the processed lexical masks
+  */
+  struct ProcessedLexicalMask {
+    LexicalMask lexicalMask;    // represents the lexical mask with the corresponding input and output
+    DicEntry *entries;          // entries extracted from morphological dics and equivalent to content of box
+    int maxEntriesCnt;          // max number of element in entries array, useful to reallocation
+    int entriesCnt;             // number of entries in entries field
+  };
+
 
   /**
    * structure to hold
@@ -796,13 +867,13 @@ public:
   unichar jamos[4096 * 3];    // buffer used for korean
   int inBufferCnt;            // buffer counter for box inputs
   int outBufferCnt;           // buffer counter for box outputs
-  Alphabet *alphabet = NULL;
-  Korean *korean = NULL;
-  ProcessedLexicalMask *processedLexicalMasks = NULL;  // represents a lexical mask by his input, output and number of matches in binary dictionaries
-  int lexicalMaskCnt = 0;  // number of processed lexical masks
-  int maxLexicalMaskCnt = 8;
-  struct dela_entry** dela_entries = NULL;  // array of dela_entry, usefull for variables processing
+  Alphabet *alphabet;
+  Korean *korean;
 
+  ProcessedLexicalMask *processedLexicalMasks;
+  int lexicalMaskCnt;
+  int maxLexicalMaskCnt;
+  
   void resetBufferCounters() {
     inputPtrCnt = outputPtrCnt = inBufferCnt = outBufferCnt = 0;
   }
@@ -815,7 +886,7 @@ public:
     wordPtr = sepR;
     if(!inMorphoMode) {
       while (*wordPtr) {
-	INPUTBUFFER[inBufferCnt++] = *wordPtr++;
+        INPUTBUFFER[inBufferCnt++] = *wordPtr++;
       }
     }
   }
@@ -846,16 +917,16 @@ public:
               }
               wordPtr++;
             }
-	    for (int i = 0; i < inputPtrCnt; i++) {
+            for (int i = 0; i < inputPtrCnt; i++) {
               INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
             }
             appendSingleSpace();
           }
-	  if (automateMode == TRANMODE && !(grammarMode == REPLACE && inputPtrCnt &&!isMdg)) {
+          if (automateMode == TRANMODE && !(grammarMode == REPLACE && inputPtrCnt && !isMdg)) {
             for (int i = 0; i < outputPtrCnt; i++) {
               OUTPUTBUFFER[outBufferCnt++] = outputBuffer[i];
             }
-	    if(grammarMode == MERGE) {
+            if(grammarMode == MERGE) {
               for (int i = 0; i < inputPtrCnt; i++) {
                 OUTPUTBUFFER[outBufferCnt++] = inputBuffer[i];
               }
@@ -875,7 +946,7 @@ public:
             for (int i = 0; i < inputPtrCnt; i++) {
               INPUTBUFFER[inBufferCnt++] = inputBuffer[i];
             }
-	  }
+          }
           wordPtr = saveSep;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr++;
@@ -895,7 +966,6 @@ public:
           appendSingleSpace();
         }
       } // condition de out
-
       if ((recursiveMode == LABEL) && setOut) {
         if ((automateMode == TRANMODE) && (prMode == PR_SEPARATION)) {
           wordPtr = openingQuote;
@@ -917,15 +987,15 @@ public:
           }
         }
       }
-      INPUTBUFFER[inBufferCnt - 1] = 0;
-      OUTPUTBUFFER[outBufferCnt] = 0;   
+      INPUTBUFFER[inBufferCnt] = 0;
+      OUTPUTBUFFER[outBufferCnt] = 0;
       if(isKorean) {
         Hanguls_to_Jamos(INPUTBUFFER, jamos, korean, 1);
         convert_jamo_to_hangul(jamos, INPUTBUFFER, korean);
       }
       u_fputs(INPUTBUFFER, foutput);
       if ((automateMode == TRANMODE) && outBufferCnt) {
-	OUTPUTBUFFER[outBufferCnt] = 0;
+        OUTPUTBUFFER[outBufferCnt] = 0;
         u_fprintf(foutput, "%S%S", saveSep, OUTPUTBUFFER);
       }
       if (display_control == FST2LIST_DEBUG) {
@@ -951,11 +1021,11 @@ public:
             }
             appendSingleSpace();
           }
-          if (automateMode == TRANMODE && !(grammarMode == REPLACE && inputPtrCnt &&!isMdg)) {
+          if (automateMode == TRANMODE && !(grammarMode == REPLACE && inputPtrCnt && !isMdg)) {
             for (int i = 0; i < outputPtrCnt; i++) {
               OUTPUTBUFFER[outBufferCnt++] = outputBuffer[i];
             }
-	    if(grammarMode == MERGE) {
+            if(grammarMode == MERGE) {
               for (int i = 0; i < inputPtrCnt; i++) {
                 OUTPUTBUFFER[outBufferCnt++] = inputBuffer[i];
               }
@@ -968,7 +1038,7 @@ public:
           wordPtr = sepL;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-	  }
+          }
           if(grammarMode == MERGE) {
             for (int i = 0; i < outputPtrCnt; i++) {
               INPUTBUFFER[inBufferCnt++] = outputBuffer[i];
@@ -982,7 +1052,7 @@ public:
           wordPtr = saveSep;
           while (*wordPtr) {
             INPUTBUFFER[inBufferCnt++] = *wordPtr++;
-	        }
+          }
           if (automateMode == TRANMODE) {
             if(grammarMode == MERGE) {
               for (int i = 0; i < inputPtrCnt; i++) {
@@ -1019,17 +1089,21 @@ public:
     unichar *wordPtr;
     if ((recursiveMode == LABEL) && !count_in_line) {
       wordPtr = sepL;
-      while (*wordPtr)
+      while (*wordPtr){
         INPUTBUFFER[inBufferCnt++] = *wordPtr++;
+      }
       wordPtr = saveSep;
-      while (*wordPtr)
+      while (*wordPtr){
         INPUTBUFFER[inBufferCnt++] = *wordPtr++;
+      }
       wordPtr = sepR;
-      while (*wordPtr)
+      while (*wordPtr){
         INPUTBUFFER[inBufferCnt++] = *wordPtr++;
+      }
       wordPtr = openingQuote;
-      while (*wordPtr)
+      while (*wordPtr){
         INPUTBUFFER[inBufferCnt++] = *wordPtr++;
+      }
     }
     INPUTBUFFER[inBufferCnt++] = 0;
     u_fprintf(foutput, "%S\n", INPUTBUFFER);
@@ -1066,7 +1140,6 @@ public:
         //        putInt(0,h->pathTagCopy[i].path);
         Tag = a->tags[h->pathTagCopy[i].tag];
         wordPtr = (unichar *) Tag->input;
-
         if (u_strcmp(wordPtr, u_epsilon_string)) {
           //          wwordPtr = saveSep;while(*wwordPtr) inputBuffer[inputPtrCnt++] = *wwordPtr++;
           while (*wordPtr) {
@@ -1128,7 +1201,6 @@ public:
         if ((tmp < st) || (tmp >= ed)) {
           break;
         }
-
         Tag = a->tags[h->pathTagCopy[i].tag];
         wordPtr = (unichar *) Tag->input;
         if (u_strcmp(wordPtr, u_epsilon_string) && *wordPtr) {
@@ -1148,8 +1220,10 @@ public:
         if (outOneWord(u_null_string) != 0) {
           return 1;
         }
-      } else
+      }
+      else{
         resetBufferCounters();
+      }
       h = h->next;
     }
     return 0;
@@ -1302,21 +1376,21 @@ public:
           pathStack[i].stateNo, pathStack[i].tag);
   }
 
-    static void update_last_position(struct locate_parameters* p, int pos) {
+  static void update_last_position(struct locate_parameters* p, int pos) {
     if (pos > p->last_tested_position) {
       p->last_tested_position = pos;
     }
-  } 
+  }
 
   /**
-    * check if the given lexical mask is already processed
-    * output is its output (may be NULL)
-    * if this lexical mask is already processed, this function return the corresponding index in processedLexicalMasks
-    * return -1 in the other case
+    * check if the given lexical mask has already been processed
+    * output parameter is output of box with lexical mask; may be NULL
+    * if this lexical mask has already been processed, this function returns the corresponding index in processedLexicalMasks
+    * returns -1 in the other case
   **/
   int isProcessedLexicalMask(unichar* lexical_mask, unichar* output) {
     for(int i = 0; i < lexicalMaskCnt; i++) {
-      if(!u_strcmp(lexical_mask, processedLexicalMasks[i].input) && !u_strcmp(output, processedLexicalMasks[i].output)) {
+      if(!u_strcmp(lexical_mask, processedLexicalMasks[i].lexicalMask.input) && !u_strcmp(output, processedLexicalMasks[i].lexicalMask.output)) {
         return i;
       }
     }
@@ -1328,59 +1402,81 @@ public:
     * extract the entries matching the lexical mask
     * the entries are put in processedLexicalMask at the index corresponding to the lexical mask
   **/
-  void extractEntriesFromDic(struct locate_parameters* p, Dictionary* dic, int offset, unichar* inflected, int pos_in_inflected,
-                        int pos_offset, Ustring *line_buffer, Ustring* ustr, struct pattern* pattern, 
-                        int index, bool isDic) {
+  void extractEntriesFromDic(struct locate_parameters* param, Dictionary* d, int offset, unichar inflected[], int pos_in_inflected,
+                        int pos_offset, Ustring *line_buffer, Ustring* ustr, struct pattern* pattern, int index, bool getAllDicEntries) {
     int final_state, n_transitions, inf_number;
     int z = save_output(ustr);
-    offset = read_dictionary_state(dic, offset, &final_state, &n_transitions, &inf_number);
-    struct list_ustring* tmp = NULL;
-    struct dela_entry* d = NULL;
+    unichar* token;
+    offset = read_dictionary_state(d, offset, &final_state, &n_transitions, &inf_number);
     if (final_state) {  // if the current state is final, uncompress the entry to obtain the gramatical label
       inflected[pos_in_inflected] = '\0';
+
       if(isKorean) {
         convert_jamo_to_hangul(inflected, jamos, korean);
       }
-      tmp = dic->inf->codes[inf_number];
-      while(tmp != NULL) {  // a word may have several form, each of one of them must be processed
-        uncompress_entry(inflected, tmp->string, line_buffer);
-        d = tokenize_DELAF_line_opt(line_buffer->str, NULL); 
-        if((isDic || is_entry_compatible_with_pattern(d, pattern)) && d != NULL) {  // the pattern matches the gramatical label  
-          if(processedLexicalMasks[lexicalMaskCnt].entriesCnt >= processedLexicalMasks[lexicalMaskCnt].maxEntriesCnt) {            
-            dela_entries = (struct dela_entry**)realloc(dela_entries, (sizeof(struct dela_entry*) * processedLexicalMasks[lexicalMaskCnt].maxEntriesCnt * 2));
-            if(dela_entries == NULL) {
-              fatal_error("realloc error for entries in dela_entries");
-            }
-            processedLexicalMasks[lexicalMaskCnt].maxEntriesCnt *= 2;
+
+      struct list_ustring* tmp = d->inf->codes[inf_number];
+      uncompress_entry(inflected, tmp->string, line_buffer);
+      struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str, NULL);
+      if(getAllDicEntries || is_entry_compatible_with_pattern(dela_entry, pattern)) {  // the pattern matches the gramatical label
+        unichar delimiter[2] = {(unichar)',', (unichar)'\0'};
+        if(processedLexicalMasks[index].entriesCnt >= processedLexicalMasks[index].maxEntriesCnt) {
+          processedLexicalMasks[index].entries = (DicEntry*)realloc(processedLexicalMasks[index].entries, processedLexicalMasks[index].maxEntriesCnt * 2 * sizeof(DicEntry));
+          if(processedLexicalMasks[index].entries == NULL) {
+            fatal_error("realloc error for entries in extractEntriesFromDic");
           }
-          dela_entries[processedLexicalMasks[lexicalMaskCnt].entriesCnt++] = clone_dela_entry(d, NULL);  // add the dela entry into the dela entry list
+          processedLexicalMasks[index].maxEntriesCnt *= 2;
         }
-        free_dela_entry(d, NULL);
-        d = NULL;
-        tmp = tmp->next;
+        unichar* entry = line_buffer->str;
+        token = u_strtok_r(entry, delimiter, &entry);  // input
+
+        if(isKorean && u_strlen(jamos) > 0) {
+          processedLexicalMasks[index].entries[processedLexicalMasks[index].entriesCnt].input = u_strdup(jamos);
+        }
+        else {
+          processedLexicalMasks[index].entries[processedLexicalMasks[index].entriesCnt].input = u_strdup(token);
+        }
+        token = u_strtok_r(entry, delimiter, &entry);  // output
+        processedLexicalMasks[index].entries[processedLexicalMasks[index].entriesCnt++].output = u_strdup(token);
       }
+      
+      free_dela_entry(dela_entry, NULL);
     }
-    else {
-      unichar c;
-      int adr;
-      for (int i = 0; i < n_transitions; i++) {  // if the current state is not final, explores all the outgoing transitions
-        update_last_position(p, pos_offset);
-        offset = read_dictionary_transition(dic,offset,&c,&adr,ustr);
-        inflected[pos_in_inflected] = c;
-        extractEntriesFromDic(p, dic, adr, inflected,pos_in_inflected + 1, pos_offset, line_buffer, ustr, pattern, index, isDic);
-        restore_output(z,ustr);
-      }
+    unichar c;
+    int adr;
+    for (int i = 0; i < n_transitions; i++) {  // if the current state is not final, explores all the outgoing transitions
+      update_last_position(param, pos_offset);
+      offset = read_dictionary_transition(d,offset,&c,&adr,ustr);
+      inflected[pos_in_inflected] = c;
+      extractEntriesFromDic(param, d, adr, inflected,pos_in_inflected + 1, pos_offset, line_buffer, ustr, pattern, index, getAllDicEntries);
+      restore_output(z,ustr);
     }
   }
 
   /**
     * create a subgraph when a new lexical mask is found
     * this subgraph contains two states : the initial state
-    * and the state with all the entries found in processLexicalMask's index corresponding to this lexical mask (the last index i.e lexicalMaskCnt)
+    * and the state with all the entries found in processedLexicalMask's index corresponding to this lexical mask (the last index i.e lexicalMaskCnt)
   **/
   void createLexicalMaskSubgraph() {
     a->number_of_graphs += 1;
-    a->graph_names[a->number_of_graphs] = u_strdup(processedLexicalMasks[lexicalMaskCnt].input);
+    if(processedLexicalMasks[lexicalMaskCnt].lexicalMask.output != NULL) {
+      a->graph_names[a->number_of_graphs] = (unichar*)malloc(sizeof(unichar) * 
+                                            ((int)u_strlen(processedLexicalMasks[lexicalMaskCnt].lexicalMask.input) + 
+                                            (int)u_strlen(processedLexicalMasks[lexicalMaskCnt].lexicalMask.output)) + 2);
+      if(a->graph_names[a->number_of_graphs] == NULL) {
+        fatal_error("malloc error for internal-use graph in createLexicalMaskSubgraph");
+      }
+      u_sprintf(a->graph_names[a->number_of_graphs],"%S%S", processedLexicalMasks[lexicalMaskCnt].lexicalMask.input,
+                processedLexicalMasks[lexicalMaskCnt].lexicalMask.output);
+    }
+    else {
+      a->graph_names[a->number_of_graphs] = (unichar*)malloc(sizeof(unichar) * (int)u_strlen(processedLexicalMasks[lexicalMaskCnt].lexicalMask.input) + 2);
+      if(a->graph_names[a->number_of_graphs] == NULL) {
+        fatal_error("Malloc error for internal-use graph in createLexicalMaskSubgraph");
+      }
+      u_sprintf(a->graph_names[a->number_of_graphs],"%S", processedLexicalMasks[lexicalMaskCnt].lexicalMask.input);
+    }
     a->initial_states[a->number_of_graphs] = a->number_of_states;
     a->number_of_states_per_graphs[a->number_of_graphs] = 2;
     a->number_of_states += 2;
@@ -1398,12 +1494,9 @@ public:
     int k = a->number_of_tags - 1;
     for(int i = last_number_of_tags; i < a->number_of_tags; i++) {
       a->tags[i] = new_Fst2Tag(NULL);
-      a->tags[i]->input = u_strdup(dela_entries[k - last_number_of_tags]->lemma);
-      a->tags[i]->dela_entry = clone_dela_entry(dela_entries[k - last_number_of_tags], NULL);
-      free_dela_entry(dela_entries[k - last_number_of_tags]);
-      dela_entries[k - last_number_of_tags] = NULL;
-      if(processedLexicalMasks[lexicalMaskCnt].output != NULL) {
-        a->tags[i]->output = u_strdup(processedLexicalMasks[lexicalMaskCnt].output);
+      a->tags[i]->input = u_strdup(processedLexicalMasks[lexicalMaskCnt].entries[k - last_number_of_tags].input);
+      if(processedLexicalMasks[lexicalMaskCnt].lexicalMask.output != NULL) {
+        a->tags[i]->output = u_strdup(processedLexicalMasks[lexicalMaskCnt].lexicalMask.output);
       }
       add_transition_to_state(a->states[a->number_of_states - 2], i, a->number_of_states - 1, NULL);
       k--;
@@ -1427,7 +1520,77 @@ public:
     }
     return count;
   }
-
+  
+  /**
+   * lexical masks which should be read literally and not trigger extraction of entries from dictionaries
+   */
+  bool maskMustBeReadLiterally(unichar *lexical_mask){
+    char special_mask[NB_LITTERAL_MASKS][16] = {"<NB>", "<PRE>", "<^>", "<MAJ>", "<PNC>", "<MOT>", "<TDIC>",
+                                                "<MIN>", "<WORD>", "<FIRST>", "<LOWER>", "<UPPER>", "<TOKEN>", "<LETTER>"}; // 4.3 manual
+    if (lexical_mask == NULL || u_starts_with(lexical_mask, "<!")){ // negative lexicals masks are processed literally too
+      return true;
+    }
+    for (int i = 0; i < NB_LITTERAL_MASKS; i++){
+      if (!u_strcmp(lexical_mask, special_mask[i])){
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  /**
+   * tells if the lexical masks is a DIC mask
+   * DIC masks require the extraction of all entries from binary dictionaries
+   * This is a functional difference with LocatePattern
+   * LocatePattern matches "SDIC" only with simple entries and "CDIC" only with multiword entries
+   */
+  bool isDicMask(unichar *lexical_mask){
+     char dic_mask[3][16] = {"<DIC>", "<SDIC>", "<CDIC>"}; // 4.3 manual
+     if (lexical_mask == NULL){
+       return false;
+     }
+     for (int i = 0; i < 3; i++){
+       if (!u_strcmp(lexical_mask, dic_mask[i])){
+         return true;
+       }
+     }
+     return false;
+  }
+  
+  /**
+   * This function returns a hash code for a Fst2Tag.
+   *
+  */
+  static unsigned int Fst2Tag_hash(const void *ptr){
+    uint64_t pointer_int = (uint64_t)ptr;
+    uint64_t hash = (pointer_int >> 48) ^ (pointer_int >> 32) ^ (pointer_int >> 16) ^ pointer_int;
+    return (unsigned int)hash;
+  }
+  
+ /**
+   * This function tests the memory equality of two Fst2Tag.
+   *
+  */
+  static int Fst2Tag_equal(Fst2Tag a, Fst2Tag b){
+    return (a - b);
+  }
+  
+  /**
+   * This function returns a copy of a Fst2Tag.
+   *
+  */
+  static void *Fst2Tag_copy(Fst2Tag org){
+    return new_Fst2Tag_clone(org, STANDARD_ALLOCATOR);
+  }
+  
+  /**
+   * This function returns a Fst2Tag.
+   *
+  */
+  static void Fst2Tag_free(Fst2Tag ptr){
+    free_Fst2Tag(ptr,STANDARD_ALLOCATOR);
+  }
+  
   /**
   * reallocate each pointer whose size depends on the number of graphs
   */
@@ -1435,7 +1598,7 @@ public:
     int total_number_of_graph = a->number_of_graphs + count + 1;
     a->graph_names = (unichar**)realloc(a->graph_names, sizeof(unichar*) * total_number_of_graph);
     if(a->graph_names == NULL) {
-      fatal_error("realloc error for graph_names in reallocFst2reallocFst2");
+      fatal_error("realloc error for graph_names in reallocFst2");
     }
     a->initial_states = (int*)realloc(a->initial_states, sizeof(int) * total_number_of_graph);
     if(a->initial_states == NULL) {
@@ -1443,7 +1606,7 @@ public:
     }
     a->number_of_states_per_graphs = (int*)realloc(a->number_of_states_per_graphs, sizeof(int) * total_number_of_graph);
     if(a->number_of_states_per_graphs == NULL) {
-      fatal_error("realloc error for number_of_states per graph in reallocFst2");
+      fatal_error("realloc error for number_of_states_per_graph in reallocFst2");
     }
     a->states = (Fst2State*)realloc(a->states, (a->number_of_states + (count * 2)) * sizeof(Fst2State));
     if(a->states == NULL) {
@@ -1463,88 +1626,106 @@ public:
     * and create a subgraph with all the entries that match the lexical mask
   **/
   void check_lexical_masks() {
-    unichar* inflected = NULL;
-    inflected = (unichar*)malloc(sizeof(unichar) * 4096);    
-    struct pattern* pattern = NULL;
-    unichar *lexical_mask = NULL;
+    unichar inflected[1024];
+    struct pattern* pattern;
     int n_states = a->number_of_states;
     int count = countLexicalMasks();
-    bool isDic = false;
+    bool getAllDicEntries = false;
+    inMorphoMode = false;
     if(count == 0) {  // no lexical mask in this automaton
       return;
     }
-    reallocFst2(count);  // realloc the automaton according the number of lexical masks
-    for(int j = 0; j < n_states; j++) {  // check all tags to find lexical masks in the automaton
+    reallocFst2(count);
+    for(int j = 0; j < n_states; j++) {
       Transition *t = a->states[j]->transitions;
       while(t != NULL) {
         if(!(t->tag_number & SUBGRAPH_PATH_MARK)) {  // check if the input is sub-graph-call (negative tag)
-          if(a->tags[t->tag_number]->type == BEGIN_MORPHO_TAG)
-            inMorphoMode = 1;
-          else if(a->tags[t->tag_number]->type == END_MORPHO_TAG)
-            inMorphoMode = 0;
-          // check if the input is a lexical mask
-          if((a->tags[t->tag_number]->input[0] == '<' && a->tags[t->tag_number]->input[u_strlen(a->tags[t->tag_number]->input) - 1] == '>') 
-            && u_strcmp(a->tags[t->tag_number]->input, "<E>") && inMorphoMode) {  // the lexical mask must be in morphological mode
-            if(!u_strcmp(a->tags[t->tag_number]->input, "<DIC>")) {  // DIC case, all the entries from the morphological dictionaries will be extracted
-              isDic = true;
-            }
-            // copy the lexical mask withtout '$' symbols
-            lexical_mask = u_strdup(a->tags[t->tag_number]->input);
-            lexical_mask[u_strlen(lexical_mask) -1] = '\0';
-            lexical_mask++;
-            int index = isProcessedLexicalMask(lexical_mask, a->tags[t->tag_number]->output);
-            if(index >= 0) {  // the current lexical mask is already processed
-              if(processedLexicalMasks[index].entriesCnt == 0) {  // this lexical mask doesn't match any entry in morphological dic
-                a->tags[t->tag_number]->stop = 1;  // in this case, the path must be ignored
-              }
-              else {  // the current lexical mask is already processed
-                t->tag_number = SUBGRAPH_PATH_MARK | (a->number_of_graphs - (lexicalMaskCnt - index) + 1);  // the transition references the corresponding sub-graph
-              }
-            }
-            else {  // this lexical mask isn't yet processed
-              if(lexicalMaskCnt >= maxLexicalMaskCnt) {
-                processedLexicalMasks = (ProcessedLexicalMask*)realloc(processedLexicalMasks, sizeof(ProcessedLexicalMask) * maxLexicalMaskCnt * 2);
-                if(processedLexicalMasks == NULL)
-                  fatal_error("realloc error for processedLexicalMasks in outWordsOfGraph");
-                maxLexicalMaskCnt *= 2;
-              }
-              processedLexicalMasks[lexicalMaskCnt].input = u_strdup(lexical_mask);
-              processedLexicalMasks[lexicalMaskCnt].maxEntriesCnt = 64;
-              processedLexicalMasks[lexicalMaskCnt].entriesCnt = 0;
-              if(a->tags[t->tag_number]->output != NULL) {
-                processedLexicalMasks[lexicalMaskCnt].output = u_strdup(a->tags[t->tag_number]->output);
-              }
-              else {
-                processedLexicalMasks[lexicalMaskCnt].output = NULL;
-              }
-              dela_entries = (struct dela_entry**)malloc(sizeof(struct dela_entry*) * processedLexicalMasks[lexicalMaskCnt].maxEntriesCnt);
-              pattern = build_pattern(lexical_mask, NULL, 0, NULL);
-              for(int i = 0; i < morphDicCnt; i++) {
-                // extract all the entries matching the lexical mask
-                extractEntriesFromDic(p, p->morpho_dic[i], p->morpho_dic[i]->initial_state_offset, inflected, 0, 0,
-                                        new_Ustring(), new_Ustring(), pattern, lexicalMaskCnt, isDic);
-              }
-              if(processedLexicalMasks[lexicalMaskCnt].entriesCnt > 0) {
-                createLexicalMaskSubgraph();
-                // modify the tran between the current state (lexical_mask) and the last state to call the sub-graph
-                t->tag_number = SUBGRAPH_PATH_MARK | a->number_of_graphs;
-              }
-              else {  //empty sub-graph, this path must be ignored
-                a->tags[t->tag_number]->stop = 1;
-              }
-              free_pattern(pattern, NULL);
-              pattern = NULL;
-              free(dela_entries);
-              dela_entries = NULL;
-              lexicalMaskCnt++;
-            }
+          if(a->tags[t->tag_number]->type == BEGIN_MORPHO_TAG){
+            inMorphoMode = true;
+          }
+          else if(a->tags[t->tag_number]->type == END_MORPHO_TAG){
+            inMorphoMode = false;
+          }
+          // check if the input tag is a lexical mask
+          if(a->tags[t->tag_number]->input[0] == '<' && a->tags[t->tag_number]->input[u_strlen(a->tags[t->tag_number]->input) - 1] == '>'
+             && u_strcmp(a->tags[t->tag_number]->input, "<E>") && inMorphoMode) {
+             if (maskMustBeReadLiterally(a->tags[t->tag_number]->input)){
+                u_fprintf(U_STDERR, "Warning: %S will be processed literally\n", a->tags[t->tag_number]->input);
+                t = t->next;
+                continue;
+             }
+             else if(isDicMask(a->tags[t->tag_number]->input)) {  // Dic case, all the entries from the morphological dictionaries will be extracted
+               getAllDicEntries = true;
+             }
+             unichar *lexical_mask = (unichar*)malloc(sizeof(unichar) * 64);
+             if (lexical_mask == NULL){
+               fatal_alloc_error("check_lexical_masks");
+             }
+             u_strcpy(lexical_mask, a->tags[t->tag_number]->input);
+             lexical_mask[u_strlen(lexical_mask) -1] = '\0';
+             lexical_mask++;
+             int index = isProcessedLexicalMask(lexical_mask, a->tags[t->tag_number]->output);
+             if(index >= 0) {  // the current lexical mask has already been processed
+               if(processedLexicalMasks[index].entriesCnt == 0) {  // this lexical mask doesn't match any entry in morphological dic
+                 get_value(path_to_stop, a->tags[t->tag_number], HT_INSERT_IF_NEEDED);
+               }
+               else {  // the current lexical mask has already been processed
+                 t->tag_number = SUBGRAPH_PATH_MARK | (a->number_of_graphs - (lexicalMaskCnt - index) + 1);  // the transition references the corresponding subgraph
+               }
+             }
+             else {
+               if(lexicalMaskCnt >= maxLexicalMaskCnt) {
+                 processedLexicalMasks = (ProcessedLexicalMask*)realloc(processedLexicalMasks, sizeof(ProcessedLexicalMask) * maxLexicalMaskCnt * 2);
+                 if(processedLexicalMasks == NULL){
+                   fatal_error("realloc error for processedLexicalMasks in check_lexical_masks");
+                 }
+                 maxLexicalMaskCnt *= 2;
+               }
+               processedLexicalMasks[lexicalMaskCnt].lexicalMask.input = u_strdup(lexical_mask);
+               processedLexicalMasks[lexicalMaskCnt].maxEntriesCnt = 64;
+               processedLexicalMasks[lexicalMaskCnt].entriesCnt = 0;
+               if(a->tags[t->tag_number]->output != NULL) {
+                 processedLexicalMasks[lexicalMaskCnt].lexicalMask.output = u_strdup(a->tags[t->tag_number]->output);
+               }
+               else {
+                 processedLexicalMasks[lexicalMaskCnt].lexicalMask.output = NULL;
+               }
+               processedLexicalMasks[lexicalMaskCnt].entries = (DicEntry*)malloc(sizeof(DicEntry) * processedLexicalMasks[lexicalMaskCnt].maxEntriesCnt);
+               if(processedLexicalMasks[lexicalMaskCnt].entries == NULL) {
+                 fatal_error("malloc error for entries in outWordsOfGraph");
+               }
+               for (int i = 0; i < processedLexicalMasks[lexicalMaskCnt].maxEntriesCnt; i++){
+                 processedLexicalMasks[lexicalMaskCnt].entries[i].input = processedLexicalMasks[lexicalMaskCnt].entries[i].output = NULL;
+               }
+
+               pattern = build_pattern(lexical_mask, NULL, 0, NULL);
+               for(int i = 0; i < morphDicCnt; i++) {
+                 Ustring* ustr = new_Ustring();
+                 Ustring* line_buffer = new_Ustring();
+                 // extract all the entries matching the lexical_mask
+                 extractEntriesFromDic(p, p->morpho_dic[i], p->morpho_dic[i]->initial_state_offset, inflected, 0, 0,
+                                       line_buffer, ustr, pattern, lexicalMaskCnt, getAllDicEntries);
+                 free_Ustring(ustr);
+                 free_Ustring(line_buffer);
+               }
+               free_pattern(pattern, NULL);
+               if(processedLexicalMasks[lexicalMaskCnt].entriesCnt > 0) {
+                 createLexicalMaskSubgraph();
+                 // modify the tran between the current state (lexical_mask)and the last state
+                 t->tag_number = SUBGRAPH_PATH_MARK | a->number_of_graphs;
+               }
+               else {
+                 get_value(path_to_stop, a->tags[t->tag_number], HT_INSERT_IF_NEEDED);
+               }
+               lexicalMaskCnt++;
+             }
+             lexical_mask--;
+             free(lexical_mask);
           }
         }
         t = t->next;
       }
     }
-    free(inflected);
-    inflected = NULL;
   }
 
 private:
@@ -1599,12 +1780,16 @@ private:
 void CFstApp::loadGraph(int& changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *fname) {
   int i_1, j_1;
   Transition *transPtr;
-
-  a = load_abstract_fst2(&vec, fname, 1, &fst2_free);
-  if (a == NULL) {
+  Fst2 *original;
+  original = load_abstract_fst2(&vec, fname, 1, &fst2_free);
+  if (original == NULL) {
     fatal_error("Cannot load graph file %s\n", fname);
   }
-
+  a = new_Fst2_clone(original, STANDARD_ALLOCATOR);
+  if (a == NULL) {
+    fatal_error("Cannot clone original Fst2\n");
+  }
+  free_abstract_Fst2(original, &fst2_free);
   // mark the automaton transitions that invoke subgraphs
   for (i_1 = 0; i_1 < a->number_of_states; i_1++) {
     transPtr = a->states[i_1]->transitions;
@@ -1619,14 +1804,15 @@ void CFstApp::loadGraph(int& changeStrToIdx, unichar changeStrTo[][MAX_CHANGE_SY
       transPtr = transPtr->next;
     }
   }
-
   ignoreTable = (int*)malloc(sizeof(int) * (a->number_of_graphs + 1));
   numOfIgnore = (int*)malloc(sizeof(int) * (a->number_of_graphs + 1));
+  if (ignoreTable == NULL || numOfIgnore == NULL){
+    fatal_alloc_error("loadGraph");
+  }
   for (i_1 = 1; i_1 <= a->number_of_graphs; i_1++) {
     ignoreTable[i_1] = 0;
     numOfIgnore[i_1] = 0;
   }
-
   if (stopSubListIdx) {   // set table of ignored graphs
     for (i_1 = 0; i_1 < stopSubListIdx; i_1++) {
       for (j_1 = 1; j_1 <= a->number_of_graphs; j_1++) {
@@ -1723,8 +1909,16 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
   if(processedLexicalMasks == NULL) {
     fatal_error("Malloc error for processedLexicalMasks in getWordsFromGraph");
   }
+  for (i = 0; i < maxLexicalMaskCnt; i++){
+    processedLexicalMasks[i].entries = NULL;
+  }
+  path_to_stop = new_hash_table((HASH_FUNCTION)Fst2Tag_hash, (EQUAL_FUNCTION)Fst2Tag_equal, (FREE_FUNCTION)Fst2Tag_free, NULL, (KEYCOPY_FUNCTION)Fst2Tag_copy);
   //Checks the automaton's tags to find lexical masks
   check_lexical_masks();
+  for(i = 0; i < morphDicCnt; i++) {
+    free_Dictionary(p->morpho_dic[i], NULL);
+  }
+  free(p->morpho_dic);
   switch (display_control) {
   case GRAPH: {    // explore each graph separately
     if (enableLoopCheck) {
@@ -1751,7 +1945,6 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
     if (!foutput) {
       fatal_error("Cannot open file %s\n", ofNameTmp);
     }
-
     listOut = 1;
 
     for (i = 1; i <= a->number_of_graphs; i++) {
@@ -1890,6 +2083,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
           printSubGraphCycle();
           resetCounters();
         }
+        
         listOut = 1; // output enable
         exploreSubAuto(trans->tag_number & SUB_ID_MASK);
 
@@ -1913,7 +2107,6 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
             }
           }
         }
-
         closeOutput();
       }
       u_fclose(listFile);
@@ -2002,7 +2195,6 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
     //    }
     return 0;
   }
-
   if (is_final_state(a->states[stateNo])) { // terminal node
     if (autoDepth != 1) { // check continue condition
       skipCnt = 0; // find next state
@@ -2020,7 +2212,6 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
           }
         }
       }
-
       if (i == 0) {
         error("unwanted state happened");
         return 1;
@@ -2054,7 +2245,6 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
       }
     }
   } // end if terminal node
-
   for (Transition *trans = a->states[stateNo]->transitions; trans != 0; trans = trans->next) {
     if (trans->tag_number & STOP_PATH_MARK) {
       if (listOut) {
@@ -2089,9 +2279,7 @@ int CFstApp::exploreSubgraphRecursively(int stackStateID, int autoDepth, int sta
         if (listOut) {
           totalPath++;
           stopPath++;
-
           numOfIgnore[trans->tag_number & SUB_ID_MASK]++;
-
           pathStack[pathIdx].stackStateID = stackStateID;
           pathStack[pathIdx].tag = trans->tag_number;
           pathStack[pathIdx].stateNo = STOP_PATH_MARK;
@@ -2214,6 +2402,29 @@ void CFstApp::printPathNames(U_FILE *f) {
   }
 }
 
+void CFstApp::setGrammarMode(char* fst2_filename) {
+  char* fst2_filename_cpy = (char*)malloc(sizeof(char) * (strlen(fst2_filename) + 1));
+  if(fst2_filename_cpy == NULL){
+    fatal_alloc_error("setGrammarMode");
+  }
+  remove_extension(fst2_filename, fst2_filename_cpy);
+  OutputPolicy outputPolicy = MERGE_OUTPUTS;
+  int export_in_morpho_dic;
+  MatchPolicy matchPolicy;
+  int l = (int)strlen(fst2_filename)-1;
+  analyse_fst2_graph_options(fst2_filename_cpy, l, &outputPolicy, &export_in_morpho_dic, &matchPolicy);
+  if(outputPolicy == MERGE_OUTPUTS) {
+    grammarMode = MERGE;
+    prMode = PR_SEPARATION;
+  }
+  else if(outputPolicy == REPLACE_OUTPUTS) {
+    grammarMode = REPLACE;
+    prMode = PR_SEPARATION;
+  }
+  
+  free(fst2_filename_cpy);
+}
+
 /**
 * Set the grammar mode
 * If the option "Process as dictionary-graph" is checked, the grammar mode is set according the graph's name
@@ -2281,20 +2492,21 @@ unichar * uascToNum(unichar *uasc, int *val) {
 int CFstApp::outWordsOfGraph(int depth) {
   int s;
   Fst2Tag Tag;
-  unichar *suffixPtr;
-  unichar *wordPtr;
-  unichar *inputBufferPtr;  // input buffer ptr
-  unichar *outputBufferPtr;  // transducer buffer ptr
-  unichar *chp;
+  unichar *suffixPtr = NULL;
+  unichar *wordPtr = NULL;
+  unichar *inputBufferPtr = NULL;  // buffer for box inputs
+  unichar *outputBufferPtr = NULL; // buffer for box outputs
+  unichar *chp = NULL;
   int indicateFirstUsed;
   int i;
+  int return_value;  // return value when we try to access a value in the hash table
   int markCtlChar, markPreCtlChar;
   depthDebug = pathIdx;
   inBufferCnt = outBufferCnt = 0;
   inputPtrCnt = outputPtrCnt = 0;
   unichar aaBuffer_for_getLabelNumber[64];
   bool isWord;  // false if the tag content is not a word (like $< or $>)
-
+  bool processOutput = true;
   //  fini = (tagQ[tagQidx - 1] & (SUBGRAPH_PATH_MARK | LOOP_PATH_MARK)) ?
   //    tagQ[tagQidx -1 ]:0;
   //
@@ -2310,18 +2522,22 @@ int CFstApp::outWordsOfGraph(int depth) {
     inputBuffer[inputPtrCnt] = outputBuffer[outputPtrCnt] = 0;
     if (!pathStack[s].tag) {
       inputBufferPtr = outputBufferPtr = u_null_string;
-    } else if (pathStack[s].tag & SUBGRAPH_PATH_MARK) {
-      inputBufferPtr = (display_control == GRAPH) ? 
-        (unichar *) a->graph_names[pathStack[s].tag & SUB_ID_MASK] : u_null_string;
+    }
+    else if (pathStack[s].tag & SUBGRAPH_PATH_MARK) {
+      inputBufferPtr = (display_control == GRAPH) ?
+                       (unichar *) a->graph_names[pathStack[s].tag & SUB_ID_MASK] : u_null_string;
       outputBufferPtr = u_null_string;
-    } else {
+    }
+    else {
       Tag = a->tags[pathStack[s].tag & SUB_ID_MASK];
-      if(Tag->stop) {
+      return_value = -1;
+      get_value(path_to_stop, Tag, HT_DONT_INSERT, &return_value);
+      if(return_value == HT_KEY_ALREADY_THERE) {
         break;
       }
       isWord = false;
       switch (Tag->type) { // check if the current node is a morphological begin or end, and update the boolean to begin/stop the morphological mode
-        case BEGIN_MORPHO_TAG :  
+        case BEGIN_MORPHO_TAG :
           inMorphoMode = true;
           break;
         case END_MORPHO_TAG :
@@ -2337,20 +2553,22 @@ int CFstApp::outWordsOfGraph(int depth) {
 
       // ignore the tag if his input is not a word (like morphological end and begin tags)
       if(isWord) {
-        inputBufferPtr = (u_strcmp(Tag->input, u_epsilon_string)) ? 
-                Tag->input : u_null_string;
-        if (Tag->output != NULL) {
-          outputBufferPtr = (u_strcmp(Tag->output, u_epsilon_string)) ? Tag->output : u_null_string;
-          if(!u_strcmp(Tag->output, "/")) {  // if the output is '/', it's a MDG, this output is ignored
+        inputBufferPtr = (u_strcmp(Tag->input, u_epsilon_string)) ?
+                         Tag->input : u_null_string;
+        if (Tag->output != NULL && processOutput) {
+          if(!u_strcmp(Tag->output, "/") && !isMdg) {  // if the output is '/', it's a MDG, this output is not put in the outputfile
             isMdg = true;
-            outputBufferPtr = u_null_string;
           }
-        } else {
+          else{
+            outputBufferPtr = (u_strcmp(Tag->output, u_epsilon_string)) ?
+                              Tag->output : u_null_string;
+          }
+        }
+        else {
           outputBufferPtr = u_null_string;
         }
       }
     }
-    //wprintf(L"{%d,%x,%x,%s,%s}",s,pathStack[s].stateNo,pathStack[s].tag,inputBufferPtr,outputBufferPtr);
     markCtlChar = 0;
     // mark control character
     if (!(pathStack[s].stateNo & STOP_PATH_MARK) && !wordMode && (*inputBufferPtr == '<')) {
@@ -2368,9 +2586,7 @@ int CFstApp::outWordsOfGraph(int depth) {
         //           while(*outputBufferPtr) outputBuffer[outputPtrCnt++] = *outputBufferPtr++;
         //           continue;
       }
-
     }
-    //wprintf(L"\n");
 
     if (pathStack[s].stateNo & LOOP_PATH_MARK) {
       if (recursiveMode == LABEL) {
@@ -2385,14 +2601,14 @@ int CFstApp::outWordsOfGraph(int depth) {
               return 1;
             }
           }
-          while (*inputBufferPtr)
+          while (*inputBufferPtr){
             inputBuffer[inputPtrCnt++] = *inputBufferPtr++;
+          }
           if (automateMode == TRANMODE) {
             while (*outputBufferPtr) {
               outputBuffer[outputPtrCnt++] = *outputBufferPtr++;
             }
           }
-
           if (wordMode) {
             if (inputPtrCnt || outputPtrCnt) {
               if (outOneWord(0) != 0) {
@@ -2420,11 +2636,13 @@ int CFstApp::outWordsOfGraph(int depth) {
         } else {
           resetBufferCounters();
         }
-        while (*suffixPtr)
+        while (*suffixPtr){
           INPUTBUFFER[inBufferCnt++] = *suffixPtr++;
+        }
         wordPtr = closingQuote;
-        while (*wordPtr)
+        while (*wordPtr) {
           INPUTBUFFER[inBufferCnt++] = *wordPtr++;
+        }
         markPreCtlChar = markCtlChar;
         continue;
       } else if (recursiveMode == SYMBOL) { // SYMBOL
@@ -2441,12 +2659,14 @@ int CFstApp::outWordsOfGraph(int depth) {
           inputBuffer[inputPtrCnt++] = *wordPtr;
           wordPtr++;
         }
-        while (*inputBufferPtr)
+        while (*inputBufferPtr){
           inputBuffer[inputPtrCnt++] = *inputBufferPtr++;
+        }
         inputBuffer[inputPtrCnt++] = (unichar) '|';
         if (automateMode == TRANMODE) {
-          while (*outputBufferPtr)
+          while (*outputBufferPtr){
             outputBuffer[outputPtrCnt++] = *outputBufferPtr++;
+          }
           outputBuffer[outputPtrCnt++] = (unichar) '|';
         }
         struct cyclePathMark *h = headCyc;
@@ -2551,7 +2771,6 @@ int CFstApp::outWordsOfGraph(int depth) {
     } // end if LOOP_PATH_MARK
 
     if (pathStack[s].stateNo & STOP_PATH_MARK) {
-      //u_printf("stop %d\n",s);
       if (markPreCtlChar && markCtlChar) {
         if (outOneWord(0) != 0) {
           return 1;
@@ -2586,12 +2805,12 @@ int CFstApp::outWordsOfGraph(int depth) {
           return 1;
         }
       }
-
       switch (display_control) {
       case GRAPH:
         inputBuffer[inputPtrCnt++] = (unichar) '{';
-        while (*inputBufferPtr)
+        while (*inputBufferPtr){
           inputBuffer[inputPtrCnt++] = *inputBufferPtr++;
+        }
         inputBuffer[inputPtrCnt++] = (unichar) '}';
         if (outOneWord(0) != 0) {
           return 1;
@@ -2604,7 +2823,6 @@ int CFstApp::outWordsOfGraph(int depth) {
       markPreCtlChar = markCtlChar;
       continue;
     } // end if SUBGRAPH_PATH_MARK
-
     // make a pair of (input, output)
     if ((*inputBufferPtr == 0) && (*outputBufferPtr == 0)) {
       continue;
@@ -2615,8 +2833,9 @@ int CFstApp::outWordsOfGraph(int depth) {
         return 1;
       }
     }
-    while (*inputBufferPtr)
+    while (*inputBufferPtr){
       inputBuffer[inputPtrCnt++] = *inputBufferPtr++;
+    }
     if (automateMode == TRANMODE) {
       while (*outputBufferPtr) {
         outputBuffer[outputPtrCnt++] = *outputBufferPtr++;
@@ -2641,7 +2860,7 @@ int CFstApp::outWordsOfGraph(int depth) {
 //
 //
 
-const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVKPhs:qr:c:g:D:";
+const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVKPhs:qr:c:g:D:Q:";
 const struct option_TS lopts_Fst2List[]= {
   {"output",required_argument_TS,NULL,'o'},
   {"ignore_outputs",required_argument_TS,NULL,'a'},
@@ -2663,16 +2882,14 @@ const struct option_TS lopts_Fst2List[]= {
   {"input_encoding",required_argument_TS,NULL,'k'},
   {"korean",no_argument_TS,NULL,'K'},
   {"output_encoding",required_argument_TS,NULL,'q'},
+  {"make_dictionary",no_argument_TS,NULL,'P'},
   {"help",no_argument_TS,NULL,'h'},
-  {"morphological dics",required_argument_TS,NULL,'D'},
-  {"process as dictionary-graph",no_argument_TS,NULL,'P'},
+  {"binary dics",required_argument_TS,NULL,'D'},
   {NULL,no_argument_TS,NULL,0}
 };
 
-// FIXME(jhondoe) Use malloc to allocate chars' memory
-// FIXME(jhondoe) Full of possible memory leaks: aa.saveEntre, wordPtr2...
 int main_Fst2List(int argc, char* const argv[]) {
-  char* ofilename = 0;
+  char* ofilename = NULL;
   char morpho_dic[1025] = "";
 
   unichar changeStrTo[16][MAX_CHANGE_SYMBOL_SIZE];
@@ -2705,19 +2922,41 @@ int main_Fst2List(int argc, char* const argv[]) {
         case 's': aa.prMode = PR_SEPARATION; break;
         case 'a': aa.prMode = PR_TOGETHER; break;
         default:
-          error("Invalid arguments: rerun with --help\n");
+          error("Invalid output format (-f), valid values are \"a\" or \"s\": rerun with --help\n");
           return USAGE_ERROR_CODE;
       }
       break;
     case 'd':
       aa.enableLoopCheck = false;
       break;
+    case 'D':
+      // load morphological dictionaries
+      if (options.vars()->optarg[0]!='\0') {
+        if (strcmp(morpho_dic, "") == 0) {
+          strcpy(morpho_dic, options.vars()->optarg);
+        }
+        else {
+          strcat(morpho_dic,";");
+          strcat(morpho_dic,options.vars()->optarg);
+        }
+        aa.morphDicCnt++;
+      }
+      break;
+    case 'P':
+      makeDic = true;
+      break;
     case 'S':
-      ofilename = new char[strlen(MAGIC_OUT_STDOUT) + 1];
+      ofilename = (char *)malloc((strlen(MAGIC_OUT_STDOUT) + 1) * sizeof(char));
+      if(ofilename == NULL){
+         fatal_alloc_error("main_Fst2List");
+      }
       strcpy(ofilename, MAGIC_OUT_STDOUT);
       break;
     case 'o': // set a name for the output file
-      ofilename = new char[strlen((char*)&options.vars()->optarg[0]) + 1];
+      ofilename = (char *)malloc((strlen((char*)&options.vars()->optarg[0]) + 1) * sizeof(char));
+      if(ofilename == NULL){
+        fatal_alloc_error("main_Fst2List");
+      }
       strcpy(ofilename, (char*) &options.vars()->optarg[0]);
       break;
     case 'l':
@@ -2726,24 +2965,8 @@ int main_Fst2List(int argc, char* const argv[]) {
     case 'i':
       aa.stopExploList((char*)&options.vars()->optarg[0]);
       break;
-    case 'K' :
+    case 'K':
       aa.isKorean = true;
-      break;
-    case 'D' :
-      // load morphological dictionaries
-      if (options.vars()->optarg[0]!='\0') {
-        if (!strcmp(morpho_dic, "")) {
-          strcpy(morpho_dic, options.vars()->optarg);
-        }
-        else {
-          strcat(morpho_dic,";");
-          strcat(morpho_dic,options.vars()->optarg);
-        }
-        aa.morphDicCnt++;
-      } 
-      break;
-    case 'P':
-      makeDic = true;
       break;
     case 'I':
       aa.stopExploListFile((char*)&options.vars()->optarg[0]);
@@ -2806,7 +3029,10 @@ int main_Fst2List(int argc, char* const argv[]) {
       // we need to manually increment optind
       options.vars()->optind++;
       // parse the "L[,R]" string
-      aa.saveEntre = new unichar[strlen(&options.vars()->optarg[1]) + 1];
+      aa.saveEntre = (unichar *)malloc((strlen(&options.vars()->optarg[1]) + 1) * sizeof(unichar));
+      if(aa.saveEntre == NULL){
+        fatal_alloc_error("main_Fst2List");
+      }
       wordPtr = (char*) &options.vars()->optarg[2];
       wordPtr2 = aa.saveEntre;
       wordPtr3 = 0;
@@ -2844,7 +3070,10 @@ int main_Fst2List(int argc, char* const argv[]) {
         wordPtr = (char*) &options.vars()->optarg[0];
       }
       wordPtr3 = 0;
-      wordPtr2 = aa.saveSep = new unichar[strlen(wordPtr) + 1];
+      wordPtr2 = aa.saveSep = (unichar *)malloc((strlen(wordPtr) + 1) * sizeof(unichar));
+      if(aa.saveSep == NULL){
+        fatal_alloc_error("main_Fst2List");  
+      }
       while (*wordPtr) {
         if ((*wordPtr < 0x20) || (*wordPtr > 0x7e)) {
           error("Use a separator in ASC code\r\n");
@@ -2868,7 +3097,10 @@ int main_Fst2List(int argc, char* const argv[]) {
       stop_mark:
       wordPtr = (char*) &options.vars()->optarg[1];
       wordPtr3 = 0;
-      wordPtr2 = aa.stopSignal = new unichar[strlen(wordPtr) + 3];
+      wordPtr2 = aa.stopSignal = (unichar *)malloc((strlen(wordPtr) + 3) * sizeof(unichar));
+      if(aa.stopSignal == NULL){
+        fatal_alloc_error("main_Fst2List");
+      }
       ;
       *wordPtr2++ = (unichar) '<';
       while (*wordPtr) {
@@ -2900,7 +3132,10 @@ int main_Fst2List(int argc, char* const argv[]) {
 
       wordPtr = (char*) &options.vars()->optarg[1] - 1;
       wordPtr3 = 0;
-      wordPtr2 = aa.sep1 = new unichar[strlen(wordPtr) + 1];
+      wordPtr2 = aa.sep1 = (unichar *)malloc((strlen(wordPtr) + 1) * sizeof(unichar));
+      if(aa.sep1 == NULL){
+       fatal_alloc_error("main_Fst2List");
+      }
       wordPtr3 = 0;
       while (*wordPtr) {
         if ((*wordPtr < 0x20) || (*wordPtr > 0x7e)) {
@@ -2936,7 +3171,7 @@ int main_Fst2List(int argc, char* const argv[]) {
         aa.sepR = wordPtr2;
       }
       break;
-    } //end case 's'
+    } // end case 's'
     case 'k':
       if (options.vars()->optarg[0] == '\0') {
         error("Empty input_encoding argument\n");
@@ -2972,21 +3207,29 @@ int main_Fst2List(int argc, char* const argv[]) {
   }
 
   if (only_verify_arguments) {
-    // freeing all allocated memory
-    // TODO(jhondoe) free all allocated memory
-    delete ofilename;
+    free(ofilename);
     return SUCCESS_RETURN_CODE;
   }
+
   strcpy(fst2_filename,argv[options.vars()->optind]);
   aa.fileNameSet(argv[options.vars()->optind], ofilename);
-  aa.vec = vec; 
+  aa.vec = vec;
+
   aa.p = new_locate_parameters();
   load_morphological_dictionaries(&aa.vec, morpho_dic, aa.p);
   if(makeDic) {
-    aa.setGrammarMode(fst2_filename, makeDic);
+    aa.setGrammarMode(fst2_filename);
   }
   aa.getWordsFromGraph(changeStrToIdx, changeStrTo, fst2_filename);
-  delete ofilename;
+
+  free(ofilename);
+
+  free_stack_unichar(aa.p->stack);
+  free(aa.p->morpho_dic_bin_free);
+  free(aa.p->morpho_dic_inf_free);
+  free_locate_parameters(aa.p);
+  free_hash_table(aa.path_to_stop);
+
   return SUCCESS_RETURN_CODE;
 }
 

@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -750,7 +750,8 @@ if (output!=NULL) {
    return;
 }
 /* If there is no output, we compute the match from the text */
-int j=0,k;
+int k;
+size_t j=0;
 unichar* s;
 if (start_pos_char!=0) {
    /* If the match doesn't start on the first char of the first token */
@@ -1373,9 +1374,7 @@ while (pos_in_enter_pos < n_enter_char) {
         if (output != NULL) {
             u_fputc_conv_lf_to_crlf_option((unichar)'\n', output, convLFtoCRLF);
         }
-        if (len_written != NULL) {
-            (*len_written) += 1+convLFtoCRLF;
-        }
+        (*len_written) += 1+convLFtoCRLF;
         return pos_in_enter_pos;
     }
 }
@@ -1384,9 +1383,8 @@ const unichar* token_to_write=tokens->token[buffer->int_buffer_[buffer->skip + o
 if (output != NULL) {
     u_fputs_conv_lf_to_crlf_option(token_to_write, output, convLFtoCRLF);
 }
-if (len_written != NULL) {
-    (*len_written) += (int)u_strlen(token_to_write);
-}
+(*len_written) += (int)u_strlen(token_to_write);
+
 return pos_in_enter_pos;
 }
 
@@ -1515,10 +1513,11 @@ while (matches!=NULL) {
         int size_skipped=0;
 
         int copied_begin_first_token = 0;
+        int pos_in_output_dummy      = NULL;
 
         pos_in_enter_pos=move_in_text_with_writing(matches->m.start_pos_in_token,matches->m.end_pos_in_token,text,tokens,
                                                     current_global_position_in_token,output,convLFtoCRLF,
-                                                    do_offset_compute ? (&pos_in_output) : NULL,
+                                                    do_offset_compute ? (&pos_in_output) : &pos_in_output_dummy,
                                                     do_offset_compute ? (&size_skipped) : NULL,
                                                     n_enter_char,enter_pos,pos_in_enter_pos,
                                                     buffer,&current_global_position_in_char);
@@ -1602,8 +1601,9 @@ while (matches!=NULL) {
 }
 /* Finally, we don't forget to dump all the text that may remain after the
  * last match. */
+int pos_in_output_dummy = 0;
 move_to_end_of_text_with_writing(text,tokens,current_global_position_in_token,output,convLFtoCRLF,
-                                do_offset_compute ? (&pos_in_output) : NULL,
+                                do_offset_compute ? (&pos_in_output) : &pos_in_output_dummy,
                                 n_enter_char,enter_pos,pos_in_enter_pos,buffer);
 af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
 free(buffer);

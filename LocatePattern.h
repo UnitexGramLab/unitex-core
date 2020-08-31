@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -388,6 +388,9 @@ struct locate_parameters {
    const char* graph_filename;
 };
 
+void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p);
+struct locate_parameters* new_locate_parameters();
+void free_locate_parameters(struct locate_parameters* p);
 
 int locate_pattern(const char*,const char*,const char*,const char*,const char*,const char*,const char*,
                    MatchPolicy,OutputPolicy, const VersatileEncodingConfig*,const char*,TokenizationPolicy,

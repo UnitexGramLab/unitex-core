@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,9 @@ extern const char* optstring_Dico;
 extern const struct option_TS lopts_Dico[];
 extern const char* usage_Dico;
 
+void analyse_fst2_graph_options(const char* s,int len,OutputPolicy *outputPolicy,
+                                   int *export_in_morpho_dic,MatchPolicy *matchPolicy);
+
 int main_Dico(int argc,char* const argv[]);
 void analyse_fst2_graph_options(const char* s,int len,OutputPolicy *outputPolicy,
                                    int *export_in_morpho_dic,MatchPolicy *matchPolicy);
@@ -42,4 +45,3 @@ void analyse_fst2_graph_options(const char* s,int len,OutputPolicy *outputPolicy
 } // namespace unitex
 
 #endif
-
