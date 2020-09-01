@@ -1555,17 +1555,9 @@ public:
    *
   */
   static int Fst2Tag_equal(Fst2Tag a, Fst2Tag b){
-    return (a - b);
+    return (a == b);
   }
-  
-  /**
-   * This function returns a copy of a Fst2Tag.
-   *
-  */
-  static void *Fst2Tag_copy(Fst2Tag org){
-    return new_Fst2Tag_clone(org, STANDARD_ALLOCATOR);
-  }
-  
+
   /**
    * This function returns a Fst2Tag.
    *
@@ -1895,7 +1887,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
   for (i = 0; i < maxLexicalMaskCnt; i++){
     processedLexicalMasks[i].entries = NULL;
   }
-  path_to_stop = new_hash_table((HASH_FUNCTION)Fst2Tag_hash, (EQUAL_FUNCTION)Fst2Tag_equal, (FREE_FUNCTION)Fst2Tag_free, NULL, (KEYCOPY_FUNCTION)Fst2Tag_copy);
+  path_to_stop = new_hash_table(maxLexicalMaskCnt, (HASH_FUNCTION)Fst2Tag_hash, (EQUAL_FUNCTION)Fst2Tag_equal, (FREE_FUNCTION)Fst2Tag_free, NULL, NULL);
   //Checks the automaton's tags to find lexical masks
   check_lexical_masks();
   for(i = 0; i < morphDicCnt; i++) {
@@ -3196,6 +3188,8 @@ int main_Fst2List(int argc, char* const argv[]) {
   free(aa.p->morpho_dic_bin_free);
   free(aa.p->morpho_dic_inf_free);
   free_locate_parameters(aa.p);
+
+  aa.path_to_stop->free_key = NULL; // prevent the hash table from freeing Fst2 Tag keys
   free_hash_table(aa.path_to_stop);
 
   return SUCCESS_RETURN_CODE;
