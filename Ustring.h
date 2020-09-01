@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -202,6 +202,11 @@ empty(dest);
 u_strcat(dest,src);
 }
 
+inline void u_switch(Ustring* str1,Ustring* str2) {
+Ustring tmp=*str1;
+*str1=*str2;
+*str2=tmp;
+}
 
 /**
  * Removes the '\n' at the end of the given Ustring, if any.

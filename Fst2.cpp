@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -498,9 +498,6 @@ void add_transition_to_state(Fst2State state,int tag_number,int state_number,Abs
 state->transitions=new_Transition(tag_number,state_number,state->transitions,prv_alloc);
 }
 
-
-void set_initial_state(fst2State*,int);
-void set_final_state(fst2State*,int);
 
 /**
  * Reads fst2 states from the given file 'f' and stores them into
