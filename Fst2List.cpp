@@ -1389,9 +1389,6 @@ public:
         if(processedLexicalMasks[index].entriesCnt >= processedLexicalMasks[index].maxEntriesCnt) {
           entries = (struct dela_entry**)realloc(entries, (sizeof(struct dela_entry*) * processedLexicalMasks[lexicalMaskCnt].maxEntriesCnt * 2));
           if(entries == NULL) {
-              fatal_error("realloc error for entries in dela_entries");
-          }
-          if(entries == NULL) {
             fatal_error("realloc error for entries in extractEntriesFromDic");
           }
           processedLexicalMasks[index].maxEntriesCnt *= 2;
@@ -1453,11 +1450,15 @@ public:
     for(int i = last_number_of_tags; i < a->number_of_tags; i++) {
       a->tags[i] = new_Fst2Tag(NULL);
       a->tags[i]->input = u_strdup(entries[lexicalMaskCnt + k - last_number_of_tags]->inflected);
-      struct any* value = get_value(dela_entries, a->tags[i], HT_INSERT_IF_NEEDED);
-      value->_ptr = entries[lexicalMaskCnt + k - last_number_of_tags];
       if(processedLexicalMasks[lexicalMaskCnt].output != NULL) {
         a->tags[i]->output = u_strdup(processedLexicalMasks[lexicalMaskCnt].output);
+        if (u_starts_with(processedLexicalMasks[lexicalMaskCnt].output, "$")){ // var dic
+          struct any* value = get_value(dela_entries, a->tags[i], HT_INSERT_IF_NEEDED);
+          value->_ptr = entries[lexicalMaskCnt + k - last_number_of_tags];
+          entries[lexicalMaskCnt + k - last_number_of_tags] = NULL;
+        }
       }
+      free_dela_entry(entries[lexicalMaskCnt + k - last_number_of_tags]);
       add_transition_to_state(a->states[a->number_of_states - 2], i, a->number_of_states - 1, NULL);
       k--;
     }
@@ -3210,6 +3211,7 @@ int main_Fst2List(int argc, char* const argv[]) {
   aa.vec = vec;
 
   aa.p = new_locate_parameters();
+  (*aa.p->stack->stack) = '\0';
   load_morphological_dictionaries(&aa.vec, morpho_dic, aa.p);
   if(makeDic) {
     aa.setGrammarMode(fst2_filename);
