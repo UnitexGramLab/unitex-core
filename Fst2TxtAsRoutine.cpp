@@ -653,6 +653,7 @@ static void scan_graph(
     }
 
     int end_of_text = pos + p->current_origin == p->text_buffer->size;
+    int end_of_text_next = pos + p->current_origin + 1 == p->text_buffer->size;
     /* The same, but tolerant if there is a remaining space */
     int end_of_text2 = pos + p->current_origin + 1 == p->text_buffer->size
             && p->buffer[pos + p->current_origin] == ' ';
@@ -1145,6 +1146,21 @@ static void scan_graph(
                             push(p->stack, '\n');
                         }
                         scan_graph(n_graph, t->state_number, pos + 1, depth,
+                                match_list, word_token_buffer, p);
+                        restore(p->current_insertions, old_nb_insert);
+                    }
+                    // if <^> see a CR/LF, we match and just emif a LF. This LF will be converted to CRLF if convLFtoCRLF is set
+                    if ((!end_of_text_next) && (p->buffer[pos + p->current_origin] == '\r') && (p->buffer[pos + 1 + p->current_origin] == '\n')) {
+                        // in both modes MERGE and REPLACE, we process the transduction if any
+                        old_nb_insert = backup(p->current_insertions);
+                        emit_output(p, etiq->output, pos);
+                        if (p->output_policy == MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
+                            // if we are in MERGE mode, we add to ouput the char we have read
+                            if (p->convLFtoCRLF==0) // if we convert each LF to CRLF, we don't have to re push CR
+                                push(p->stack, '\r');
+                            push(p->stack, '\n');
+                        }
+                        scan_graph(n_graph, t->state_number, pos + 2, depth,
                                 match_list, word_token_buffer, p);
                         restore(p->current_insertions, old_nb_insert);
                     }
