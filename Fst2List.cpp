@@ -1410,9 +1410,10 @@ public:
       }
 
       struct list_ustring* tmp = d->inf->codes[inf_number];
+      while(tmp != NULL){
       uncompress_entry(inflected, tmp->string, line_buffer);
       struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str, NULL);
-      if(getAllDicEntries || is_entry_compatible_with_pattern(dela_entry, pattern)) {  // the pattern matches the gramatical label
+      if((dela_entry != NULL) && (getAllDicEntries || is_entry_compatible_with_pattern(dela_entry, pattern))) {  // the pattern matches the gramatical label
         unichar delimiter[2] = {(unichar)',', (unichar)'\0'};
         if(processedLexicalMasks[index].entriesCnt >= processedLexicalMasks[index].maxEntriesCnt) {
           processedLexicalMasks[index].entries = (DicEntry*)realloc(processedLexicalMasks[index].entries, processedLexicalMasks[index].maxEntriesCnt * 2 * sizeof(DicEntry));
@@ -1435,6 +1436,9 @@ public:
       }
       
       free_dela_entry(dela_entry, NULL);
+      dela_entry = NULL;
+      tmp = tmp->next;
+      }
     }
     unichar c;
     int adr;
