@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2018 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -4721,7 +4721,6 @@ size_t u_jsonize(const unichar* source,unichar* destination) {
   // return the length of the destination string
   return pos;
 }
-
 #ifndef NO_CPP_TEMPLATE_SUPPORT
 /**
  * @brief Quote-escapes a unichar string
@@ -8313,6 +8312,7 @@ return is_modified;
 }
 
 #else
+
 
 
 int u_deaccentuate_ismodified (unichar* s) {
