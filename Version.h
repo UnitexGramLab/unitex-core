@@ -1,4 +1,4 @@
-hitk/*
+/*
  * Unitex
  *
  * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
