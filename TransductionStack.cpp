@@ -114,7 +114,7 @@ push_input_string(stack,s,0);
  *
  */
 int process_output(unichar* s,struct locate_parameters* p,struct stack_unichar* stack,
-        int capture_in_debug_mode) {
+        int capture_in_debug_mode, OutputVariables *input_variables) {
 int old_stack_pointer=stack->stack_pointer;
 int i1=0;
 if (capture_in_debug_mode) {
@@ -807,13 +807,19 @@ for (;;) {
           /* Not a normal one ? Maybe an output one */
           const Ustring* output=get_output_variable(p->output_variables,name);
           if (output==NULL) {
-              switch (p->variable_error_policy) {
-                  case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
-                  case IGNORE_VARIABLE_ERRORS: continue;
-                  case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+            const Ustring* input=get_output_variable(input_variables,name);
+              if(input==NULL) {
+                switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                }
               }
+              push_output_string(stack,input->str);
           }
-          push_output_string(stack,output->str);
+          else {
+            push_output_string(stack,output->str);
+          }
       } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
@@ -920,7 +926,7 @@ if (capture) {
         push_output_string(p->stack,output+i);
     }
 }
-if (!process_output(output,p,stack,capture && p->debug)) {
+if (!process_output(output,p,stack,capture && p->debug, NULL)) {
     if (capture) {
         free_stack_unichar(stack);
     }
