@@ -162,7 +162,7 @@ u_fclose(f);
  *
  * If the function fails to analyse the options, it does not set any value.
  */
-static void analyse_fst2_graph_options(const char* s,int len,OutputPolicy *outputPolicy,
+void analyse_fst2_graph_options(const char* s,int len,OutputPolicy *outputPolicy,
                                    int *export_in_morpho_dic,MatchPolicy *matchPolicy) {
 OutputPolicy output=MERGE_OUTPUTS;
 int morpho=DONT_PRODUCE_MORPHO_DIC;
