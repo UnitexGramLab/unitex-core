@@ -37,7 +37,6 @@
 namespace unitex {
 
 const int TRANSDUCTION_STACK_SIZE = 16383;
-//static const char* UNITEX_SCRIPT_PATH = "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
 
 /**
  * This function returns a non zero value if c can be a part of a variable name;
