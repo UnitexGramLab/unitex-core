@@ -1541,7 +1541,10 @@ class UnitexString {
    * @attention The caller should not delete the return value
    */
   const unichar* data() const {
-    return UNITEX_STRING_IS_NULL ? '\0' : begin();
+    if (UNITEX_STRING_IS_NULL) {
+      return (const unichar*) '\0';
+    }
+    return begin();
   }
 
   /**
