@@ -374,8 +374,8 @@ int u_strnicmp(const unichar* s1, const unichar* s2, size_t n) {
 
   const unichar*  it1 = s1;
   const unichar*  it2 = s2;
-  const u_info_t* info1 = '\0';
-  const u_info_t* info2 = '\0';
+  const u_info_t* info1 = (const u_info_t *) '\0';
+  const u_info_t* info2 = (const u_info_t *) '\0';
 
   while(n) {
     if(*it1 == '\0' || *it2 == '\0') {
@@ -447,8 +447,8 @@ int u_stricmp(const unichar* s1, const unichar* s2) {
 
   const unichar*  it1 = s1;
   const unichar*  it2 = s2;
-  const u_info_t* info1 = '\0';
-  const u_info_t* info2 = '\0';
+  const u_info_t* info1 = (const u_info_t *) '\0';
+  const u_info_t* info2 = (const u_info_t *) '\0';
 
   for(;;) {
     if(*it1 == '\0' || *it2 == '\0') {
