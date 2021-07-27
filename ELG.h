@@ -578,9 +578,20 @@ class vm {
 
       // load and run the initialization script
       // custom classes are not available right now from here
-      // FIXME(martinec) Remove the hard-coded path
+      // prepare script_name and script_file variables
+      char script_init_name[MAX_TRANSDUCTION_VAR_LENGTH]   = { };
+      char script_init_file[MAX_TRANSDUCTION_VAR_LENGTH]   = { };
+
+      // script name = extension_name.upp
+      strcat(script_init_name, ELG_FUNCTION_DEFAULT_SCRIPT_INIT_NAME);
+      strcat(script_init_name, ELG_FUNCTION_DEFAULT_EXTENSION);
+
+      // script_file = /default/path/extension_name.upp
+      strcat(script_init_file, UNITEX_SCRIPT_PATH);
+      strcat(script_init_file, script_init_name);
+
       // [-0, +0] > (+0)
-      if (luaL_dofile(L,"/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/init.upp")) {
+      if (luaL_dofile(L,script_init_file)) {
         const char* e =lua_tostring(L, -1);
         lua_pop(L,1);
         luaL_error(L,"Error running the initialization script: %s\n",e);
