@@ -2527,7 +2527,6 @@ class MsgLogger {
 
   // Destructor
   ~MsgLogger(){
-    u_printf("destroy\n");
     //params.output_file.flush();
     //params.error_file.flush();
   }
