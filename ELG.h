@@ -47,9 +47,6 @@ namespace unitex {
 # define UNITEX_EXTENSIONS_PATH "path = 'extensions\\\\?.lua';cpath = 'extensions\\\\?.dll'\n"
 #endif
 /* ************************************************************************** */
-static const char* UNITEX_SCRIPT_PATH =
-    "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
-/* ************************************************************************** */
 // LUA_REGISTRYINDEX  : interpreter environment
 // LUA_GLOBALSINDEX   : thread environment
 // LUA_ENVIRONINDEX   : function environment
@@ -505,8 +502,9 @@ int process_extended_function_return_type(int type,
 /* ************************************************************************** */
 class vm {
  public:
-  vm(void)
-      : L(), env(0), local_env_ref(0), main_env_ref_(0) {
+  UNITEX_EXPLICIT_CONVERSIONS
+  vm(const char* scripts_path)
+      : L(), env(0), local_env_ref(0), main_env_ref_(0), scripts_path_(scripts_path) {
     memset(main_env_loaded_, 0, sizeof(int) * ELG_MAIN_EVENTS_COUNT);
   }
 
@@ -587,7 +585,7 @@ class vm {
       strcat(script_init_name, ELG_FUNCTION_DEFAULT_EXTENSION);
 
       // script_file = /default/path/extension_name.upp
-      strcat(script_init_file, UNITEX_SCRIPT_PATH);
+      strcat(script_init_file, scripts_path_);
       strcat(script_init_file, script_init_name);
 
       // [-0, +0] > (+0)
@@ -1063,7 +1061,7 @@ class vm {
 //
 //       strcat(script_name,function_name);
 //       strcat(script_name,ELG_FUNCTION_DEFAULT_EXTENSION);
-//       strcat(script_file,UNITEX_SCRIPT_PATH);
+//       strcat(script_file,scripts_path_);
 //       strcat(script_file,script_name);
 //
 //       //  priming run: loads and runs script's main function
@@ -1453,7 +1451,7 @@ class vm {
       strcat(script_name, ELG_FUNCTION_DEFAULT_EXTENSION);
 
       // script_file = /default/path/extension_name.upp
-      strcat(script_file, UNITEX_SCRIPT_PATH);
+      strcat(script_file, scripts_path_);
       strcat(script_file, script_name);
 
       // check if script_file exists
@@ -1942,6 +1940,7 @@ class vm {
   int local_env_ref;
   int main_env_ref_;
   int main_env_loaded_[ELG_MAIN_EVENTS_COUNT];
+  const char* scripts_path_;
 };
 /* ************************************************************************** */
 }      // namespace unitex

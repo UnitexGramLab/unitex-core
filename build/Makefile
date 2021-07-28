@@ -812,7 +812,7 @@ BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Copyright.o
                      common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o UnitexGetOpt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o \
                      Alphabet.o List_ustring.o Korean.o AbstractFst2Load.o PackFst2.o Fst2.o \
                      Pattern.o List_int.o Transitions.o Symbol.o LanguageDefinition.o Tagset.o \
-                     Ustring.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o File.o \
+                     Ustring.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o whereami.o File.o \
                      BitArray.o HashTable.o FIFO.o BitMasks.o Fst2Check_lib.o ProgramInvoker.o \
                      MF_SU_morpho.o MF_LangMorpho.o MF_Util.o MF_FormMorpho.o MF_Global.o \
                      MF_Operators_Util.o MF_DicoMorpho.o Arabic.o AbstractDelaLoad.o PackInf.o List_pointer.o \
@@ -821,7 +821,7 @@ BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Copyright.o
 
 CASSYS      = Cassys
 CASSYS_OBJS = Main_Cassys.o $(CASSYS_FILE_OBJS) IOBuffer.o Copyright.o Error.o UnitexGetOpt.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o \
-            FIFO.o Concord.o Locate.o Concordance.o Snt.o Text_tokens.o File.o Buffer.o LocateMatches.o LocatePattern.o LocateTrace.o Thai.o NewLineShifts.o \
+            FIFO.o Concord.o Locate.o Concordance.o Snt.o Text_tokens.o whereami.o File.o Buffer.o LocateMatches.o LocatePattern.o LocateTrace.o Thai.o NewLineShifts.o \
             String_hash.o SortTxt.o StringParsing.o DELA.o List_int.o Alphabet.o BitMasks.o Tokenization.o LemmaTree.o PatternTree.o \
             BitArray.o List_pointer.o CompoundWordTree.o AbstractDelaLoad.o PackInf.o Korean.o UserCancelling.o Stack_unichar.o AbstractFst2Load.o PackFst2.o \
             Fst2.o MorphologicalFilters.o LocateFst2Tags.o TransductionVariables.o OptimizedFst2.o Text_parsing.o List_ustring.o ParsingInfo.o \
@@ -833,21 +833,21 @@ CASSYS_OBJS = Main_Cassys.o $(CASSYS_FILE_OBJS) IOBuffer.o Copyright.o Error.o U
 
 
 CHECKDIC      = CheckDic
-CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o File.o DELA.o Alphabet.o String_hash.o \
+CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o whereami.o File.o DELA.o Alphabet.o String_hash.o \
                 List_ustring.o Error.o StringParsing.o UnitexGetOpt.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
                 LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 COMPRESS      = Compress
 COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o \
                 AbstractAllocator.o DELA.o DictionaryTree.o Alphabet.o \
-                String_hash.o AutomatonDictionary2Bin.o File.o List_int.o \
+                String_hash.o AutomatonDictionary2Bin.o whereami.o File.o List_int.o \
                 List_ustring.o Error.o StringParsing.o UnitexGetOpt.o ProgramInvoker.o \
                 BitArray.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o Ustring.o \
                 VirtualFiles.o Persistence.o UnitexRevisionInfo.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CONCORD      = Concord
 CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Text_tokens.o String_hash.o \
-                List_int.o Alphabet.o LocateMatches.o Match.o Concordance.o File.o \
+                List_int.o Alphabet.o LocateMatches.o Match.o Concordance.o whereami.o File.o \
                 Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o LocateTrace.o \
                 TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o \
                 CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o \
@@ -863,7 +863,7 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Copyright.o Af_stdio.o Activi
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Copyright.o Diff.o Concord.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Text_tokens.o String_hash.o List_int.o \
-                Alphabet.o LocateMatches.o Match.o Concordance.o File.o \
+                Alphabet.o LocateMatches.o Match.o Concordance.o whereami.o File.o \
                 Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o LocateTrace.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o \
                 CompoundWordTree.o MorphologicalFilters.o \
                 DELA.o List_ustring.o Fst2.o AbstractDelaLoad.o PackInf.o AbstractFst2Load.o PackFst2.o Pattern.o LocateFst2Tags.o \
@@ -877,12 +877,12 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Copyright.o Diff.o C
                 $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CONVERT      = Convert
-CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o File.o CodePages.o Error.o \
+CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o whereami.o File.o CodePages.o Error.o \
                 HTMLCharacters.o AsciiSearchTree.o UnitexGetOpt.o Arabic.o String_hash.o StringParsing.o \
                 Ustring.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 DICO      = Dico
-DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
+DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o whereami.o File.o Alphabet.o String_hash.o Text_tokens.o \
             List_ustring.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o CompoundWordHashTable.o Fst2.o AbstractDelaLoad.o AbstractFst2Load.o \
             IOBuffer.o Copyright.o Error.o CompoundWordTree.o \
             Pattern.o ParsingInfo.o LocatePattern.o LocateTrace.o LocateMatches.o Match.o OptimizedFst2.o \
@@ -899,7 +899,7 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
 
 DUMPOFFSETS      = DumpOffsets
 DUMPOFFSETS_OBJS = Main_DumpOffsets.o DumpOffsets.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o \
-                AbstractAllocator.o File.o List_ustring.o String_hash.o \
+                AbstractAllocator.o whereami.o File.o List_ustring.o String_hash.o \
                 Error.o StringParsing.o Buffer.o UnitexGetOpt.o Ustring.o \
                 Offsets.o Overlap.o VirtualFiles.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
@@ -911,7 +911,7 @@ ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.
             ElagStateSet.o SymbolAlphabet.o Symbol_op.o Error.o LanguageDefinition.o \
             AutIntersection.o Alphabet.o StringParsing.o DELA.o List_ustring.o \
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o \
-            BitMasks.o FIFO.o Transitions.o ElagDebug.o File.o UnitexGetOpt.o Tfst.o \
+            BitMasks.o FIFO.o Transitions.o ElagDebug.o whereami.o File.o UnitexGetOpt.o Tfst.o \
             TfstStats.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
             $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
@@ -922,7 +922,7 @@ ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Copyright.o Af_stdio.o Act
                 ElagStateSet.o Symbol_op.o LanguageDefinition.o Tagset.o \
                 AutMinimization.o SymbolAlphabet.o AutConcat.o AutComplementation.o \
                 Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o \
-                SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o \
+                SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o whereami.o File.o \
                 Transitions.o ElagDebug.o UnitexGetOpt.o Tfst.o TfstStats.o AbstractDelaLoad.o PackInf.o \
                 CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
@@ -934,7 +934,7 @@ EVAMB_OBJS = Main_Evamb.o Evamb.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogg
              List_int.o BitMasks.o DELA.o List_pointer.o SingleGraph.o \
              BitArray.o HashTable.o FIFO.o Transitions.o \
              Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
-             Tfst.o TfstStats.o File.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
+             Tfst.o TfstStats.o whereami.o File.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
              LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
              $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
@@ -944,7 +944,7 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o Copyright.o LocatePattern.o L
                OptimizedFst2.o TransductionVariables.o \
                ParsingInfo.o CompoundWordTree.o List_int.o Concordance.o Offsets.o \
                DELA.o List_ustring.o Fst2.o Pattern.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o PackInf.o AbstractDelaLoad.o PackFst2.o AbstractFst2Load.o \
-               Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o LocateMatches.o Match.o \
+               Text_tokens.o whereami.o File.o ExtractUnits.o Alphabet.o String_hash.o LocateMatches.o Match.o \
                MorphologicalFilters.o Error.o Buffer.o SortTxt.o StringParsing.o BitArray.o \
                LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o \
                Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o \
@@ -957,7 +957,7 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o Copyright.o LocatePattern.o L
 FLATTEN      = Flatten
 FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Copyright.o Alphabet.o Af_stdio.o ActivityLogger.o \
                common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o Grf2Fst2_lib.o \
-               AbstractFst2Load.o PackFst2.o FlattenFst2.o List_int.o Error.o File.o SingleGraph.o \
+               AbstractFst2Load.o PackFst2.o FlattenFst2.o List_int.o Error.o whereami.o File.o SingleGraph.o \
                BitMasks.o BitArray.o HashTable.o FIFO.o Pattern.o List_ustring.o \
                String_hash.o StringParsing.o Transitions.o DELA.o \
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
@@ -968,7 +968,7 @@ FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Copyright.o Alphabet.o Af_std
 FST2CHECK      = Fst2Check
 FST2CHECK_OBJS = Main_Fst2Check.o Fst2Check.o Fst2Check_lib.o IOBuffer.o Copyright.o Af_stdio.o \
                 ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o Alphabet.o \
-                File.o String_hash.o Error.o TransductionVariables.o ProgramInvoker.o UnitexGetOpt.o \
+                whereami.o File.o String_hash.o Error.o TransductionVariables.o ProgramInvoker.o UnitexGetOpt.o \
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o \
                 Transitions.o DELA.o Symbol.o Symbol_op.o LanguageDefinition.o \
                 Ustring.o Tagset.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o \
@@ -978,7 +978,7 @@ FST2CHECK_OBJS = Main_Fst2Check.o Fst2Check.o Fst2Check_lib.o IOBuffer.o Copyrig
 FST2LIST      = Fst2List
 FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
                 common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o Alphabet.o \
-                File.o String_hash.o Error.o TransductionVariables.o \
+                whereami.o File.o String_hash.o Error.o TransductionVariables.o \
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o \
                 Transitions.o DELA.o Symbol.o Symbol_op.o LanguageDefinition.o \
                 Ustring.o Tagset.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o \
@@ -991,7 +991,7 @@ FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Copyright.o Af_stdio.o Activi
                AbstractFst2Load.o PackFst2.o Alphabet.o ParsingInfo.o \
                TransductionVariables.o String_hash.o Error.o StringParsing.o \
                Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o \
-               Fst2Txt_TokenTree.o Buffer.o Transitions.o File.o \
+               Fst2Txt_TokenTree.o Buffer.o Transitions.o whereami.o File.o \
                Fst2TxtAsRoutine.o DELA.o DicVariables.o TransductionStack.o \
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o Stack_unichar.o \
                Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o \
@@ -1002,7 +1002,7 @@ FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Copyright.o Af_stdio.o Activi
 GRF2FST2      = Grf2Fst2
 GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Copyright.o Alphabet.o Af_stdio.o ActivityLogger.o \
                 common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o \
-                Fst2Check_lib.o Grf2Fst2_lib.o Error.o File.o SingleGraph.o \
+                Fst2Check_lib.o Grf2Fst2_lib.o Error.o whereami.o File.o SingleGraph.o \
                 BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o Pattern.o \
                 List_ustring.o String_hash.o StringParsing.o Transitions.o DELA.o \
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
@@ -1024,7 +1024,7 @@ GRFDIFF3_OBJS = Main_GrfDiff3.o GrfDiff3.o common.o ELG.o table.o utf8.o Unicode
 
 GRFTEST      = GrfTest
 GRFTEST_OBJS = Main_GrfTest.o GrfTest.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o Error.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-            GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o Normalize.o Offsets.o File.o \
+            GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o Normalize.o Offsets.o whereami.o File.o \
             Overlap.o NormalizeAsRoutine.o String_hash.o StringParsing.o AbstractAllocator.o \
             DELA.o Alphabet.o CompressedDic.o LoadInf.o List_ustring.o \
             AbstractDelaLoad.o PackInf.o ProgramInvoker.o Fst2Txt.o Fst2TxtAsRoutine.o \
@@ -1048,7 +1048,7 @@ GRFTEST_OBJS = Main_GrfTest.o GrfTest.o common.o ELG.o table.o utf8.o Unicode.o 
 
 IMPLODETFST      = ImplodeTfst
 IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                   common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Tfst.o File.o SingleGraph.o \
+                   common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Tfst.o whereami.o File.o SingleGraph.o \
                    String_hash.o Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o \
                    List_int.o BitMasks.o DELA.o List_pointer.o Transitions.o \
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
@@ -1058,7 +1058,7 @@ IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Copyright.o Af_st
 
 KEYWORDS      = KeyWords
 KEYWORDS_OBJS = Main_KeyWords.o KeyWords.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o \
-            AbstractAllocator.o Alphabet.o StringParsing.o DELA.o File.o UnitexGetOpt.o \
+            AbstractAllocator.o Alphabet.o StringParsing.o DELA.o whereami.o File.o UnitexGetOpt.o \
             VirtualFiles.o Persistence.o UnitexRevisionInfo.o Error.o String_hash.o Ustring.o List_ustring.o \
             CompressedDic.o AbstractDelaLoad.o PackInf.o LoadInf.o KeyWords_lib.o Tokenization.o \
             $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
@@ -1071,7 +1071,7 @@ LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Copyright.o Af_stdio.o ActivityL
               Pattern.o CompoundWordTree.o LocateFst2Tags.o \
               OptimizedFst2.o Text_parsing.o UserCancelling.o MorphologicalLocate.o LocateMatches.o \
               Match.o TransductionVariables.o TransductionStack.o \
-              ParsingInfo.o File.o MorphologicalFilters.o Error.o StringParsing.o \
+              ParsingInfo.o whereami.o File.o MorphologicalFilters.o Error.o StringParsing.o \
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o \
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o \
               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
@@ -1083,7 +1083,7 @@ LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Copyright.o Af_stdio.o ActivityL
 LOCATETFST      = LocateTfst
 LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
                   common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o UnitexGetOpt.o LocateTfst_lib.o \
-                  Tfst.o File.o Ustring.o SingleGraph.o List_int.o BitMasks.o FIFO.o Transitions.o \
+                  Tfst.o whereami.o File.o Ustring.o SingleGraph.o List_int.o BitMasks.o FIFO.o Transitions.o \
                   Symbol.o LanguageDefinition.o Tagset.o String_hash.o StringParsing.o DELA.o \
                   Alphabet.o List_ustring.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o PackFst2.o Pattern.o \
                   LocateTfstMatches.o Match.o MorphologicalFilters.o Korean.o \
@@ -1098,7 +1098,7 @@ MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o \
                  MF_FormMorpho.o MF_LangMorpho.o List_pointer.o \
                  MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o \
-                 Fst2.o AbstractFst2Load.o PackFst2.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o IOBuffer.o Copyright.o File.o DELA.o StringParsing.o List_ustring.o \
+                 Fst2.o AbstractFst2Load.o PackFst2.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o IOBuffer.o Copyright.o whereami.o File.o DELA.o StringParsing.o List_ustring.o \
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o \
                  Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o Fst2Check_lib.o \
                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
@@ -1114,7 +1114,7 @@ MZREPAIRULP_OBJS = Main_MzRepairUlp.o MzToolsUlp.o MzRepairUlp.o UnitexGetOpt.o 
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o \
-                AbstractAllocator.o File.o DELA.o List_ustring.o String_hash.o \
+                AbstractAllocator.o whereami.o File.o DELA.o List_ustring.o String_hash.o \
                 Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o \
                 UnitexGetOpt.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o Ustring.o \
                 Offsets.o Overlap.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
@@ -1124,7 +1124,7 @@ POLYLEX      = PolyLex
 POLYLEX_OBJS = Main_PolyLex.o PolyLex.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
                 common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Alphabet.o DELA.o AbstractDelaLoad.o PackInf.o \
                 List_ustring.o String_hash.o \
-                NorwegianCompounds.o GermanCompounds.o File.o \
+                NorwegianCompounds.o GermanCompounds.o whereami.o File.o \
                 RussianCompounds.o GeneralDerivation.o Error.o StringParsing.o \
                 DutchCompounds.o UnitexGetOpt.o CompressedDic.o LoadInf.o Ustring.o \
                 VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
@@ -1133,7 +1133,7 @@ POLYLEX_OBJS = Main_PolyLex.o PolyLex.o IOBuffer.o Copyright.o Af_stdio.o Activi
 REBUILDTFST      = RebuildTfst
 REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
                    common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o String_hash.o AbstractFst2Load.o PackFst2.o Fst2.o \
-                   File.o Alphabet.o Error.o StringParsing.o \
+                   whereami.o File.o Alphabet.o Error.o StringParsing.o \
                    Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o \
                    Transitions.o DELA.o List_pointer.o \
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
@@ -1147,7 +1147,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                DELA.o AbstractDelaLoad.o PackInf.o List_ustring.o Fst2.o AbstractFst2Load.o PackFst2.o \
                IOBuffer.o Copyright.o TransductionStack.o Pattern.o \
                Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Alphabet.o \
-               LocateMatches.o Match.o File.o NormalizationFst2.o \
+               LocateMatches.o Match.o whereami.o File.o NormalizationFst2.o \
                PortugueseNormalization.o TransductionVariables.o \
                Text_parsing.o UserCancelling.o MorphologicalLocate.o String_hash.o \
                LocatePattern.o LocateTrace.o Text_tokens.o List_int.o \
@@ -1162,7 +1162,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o RegularExpressions.o Error.o File.o \
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o RegularExpressions.o Error.o whereami.o File.o \
                List_int.o Stack_int.o UnitexGetOpt.o Ustring.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
@@ -1177,21 +1177,21 @@ SEQ2GRF_OBJS = Main_Seq2Grf.o Seq2Grf.o IOBuffer.o Copyright.o Af_stdio.o Activi
                Symbol.o LanguageDefinition.o Tagset.o Overlap.o \
                AbstractFst2Load.o PackFst2.o Fst2.o Pattern.o \
                DELA.o StringParsing.o CompressedDic.o LoadInf.o GrfBeauty.o \
-               File.o Alphabet.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
+               whereami.o File.o Alphabet.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 SORTTXT      = SortTxt
 SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
                common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o \
                ProgramInvoker.o DELA.o StringParsing.o Ustring.o String_hash.o Alphabet.o \
-               CompressedDic.o AbstractDelaLoad.o PackInf.o LoadInf.o List_ustring.o File.o \
+               CompressedDic.o AbstractDelaLoad.o PackInf.o LoadInf.o List_ustring.o whereami.o File.o \
                VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 SPELLCHECK      = SpellCheck
 SPELLCHECK_OBJS = Main_SpellCheck.o SpellCheck.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
                common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o UnitexGetOpt.o \
-               ProgramInvoker.o File.o SpellChecking.o CompressedDic.o AbstractDelaLoad.o PackInf.o \
+               ProgramInvoker.o whereami.o File.o SpellChecking.o CompressedDic.o AbstractDelaLoad.o PackInf.o \
                LoadInf.o List_ustring.o Ustring.o StringParsing.o DELA.o String_hash.o \
                Alphabet.o Keyboard.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
@@ -1199,7 +1199,7 @@ SPELLCHECK_OBJS = Main_SpellCheck.o SpellCheck.o IOBuffer.o Copyright.o Af_stdio
 STATS      = Stats
 STATS_OBJS = Main_Stats.o Stats.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o \
                AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o \
-               ProgramInvoker.o HashTable.o File.o Text_tokens.o String_hash.o \
+               ProgramInvoker.o HashTable.o whereami.o File.o Text_tokens.o String_hash.o \
                LocateMatches.o Match.o DELA.o \
                Alphabet.o StringParsing.o List_int.o List_ustring.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
                LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
@@ -1207,7 +1207,7 @@ STATS_OBJS = Main_Stats.o Stats.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogg
 
 TABLE2GRF      = Table2Grf
 TABLE2GRF_OBJS = Main_Table2Grf.o Table2Grf.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                 common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o File.o Error.o UnitexGetOpt.o \
+                 common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o whereami.o File.o Error.o UnitexGetOpt.o \
                  $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBDIRIO)
 
 TAGGER      = Tagger
@@ -1215,7 +1215,7 @@ TAGGER_OBJS = Main_Tagger.o Tagger.o IOBuffer.o Copyright.o Af_stdio.o ActivityL
               Tfst.o TfstStats.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o UnitexGetOpt.o \
               Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o \
               String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o \
-              File.o TaggingProcess.o Match.o ElagFunctions.o AutDeterminization.o \
+              whereami.o File.o TaggingProcess.o Match.o ElagFunctions.o AutDeterminization.o \
               AutMinimization.o ElagFstFilesIO.o AutIntersection.o Fst2Automaton.o \
               SymbolAlphabet.o ElagStateSet.o Symbol_op.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
               LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
@@ -1225,7 +1225,7 @@ TAGSETNORMTFST = TagsetNormTfst
 TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Copyright.o Af_stdio.o \
                     ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o ElagFstFilesIO.o Ustring.o \
                     String_hash.o Symbol.o LanguageDefinition.o Tagset.o \
-                    Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o \
+                    Error.o whereami.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o \
                     List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o PackFst2.o  Pattern.o \
                     BitMasks.o FIFO.o Transitions.o \
                     Symbol_op.o Fst2Automaton.o UnitexGetOpt.o Tfst.o TfstStats.o \
@@ -1234,13 +1234,13 @@ TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Copyrigh
 
 TEI2TXT      = TEI2Txt
 TEI2TXT_OBJS = Main_TEI2Txt.o TEI2Txt.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o File.o HTMLCharacters.o \
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o whereami.o File.o HTMLCharacters.o \
                AsciiSearchTree.o UnitexGetOpt.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBDIRIO)
 
 TFST2GRF      = Tfst2Grf
 TFST2GRF_OBJS = Main_Tfst2Grf.o Tfst2Grf.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
                common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o \
-               Tfst.o TfstStats.o Sentence2Grf.o File.o List_int.o Error.o StringParsing.o Pattern.o \
+               Tfst.o TfstStats.o Sentence2Grf.o whereami.o File.o List_int.o Error.o StringParsing.o Pattern.o \
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o \
                Alphabet.o Transitions.o Symbol.o Symbol_op.o LanguageDefinition.o \
                Ustring.o Tagset.o UnitexGetOpt.o SingleGraph.o HashTable.o FIFO.o \
@@ -1250,7 +1250,7 @@ TFST2GRF_OBJS = Main_Tfst2Grf.o Tfst2Grf.o IOBuffer.o Copyright.o Af_stdio.o Act
 TFSTTAG      = TfstTag
 TFSTTAG_OBJS = Main_TfstTag.o TfstTag.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
                common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o LocateMatches.o Match.o \
-               Tfst.o TfstStats.o File.o List_int.o Error.o StringParsing.o Pattern.o \
+               Tfst.o TfstStats.o whereami.o File.o List_int.o Error.o StringParsing.o Pattern.o \
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o \
                Alphabet.o Transitions.o Symbol.o Symbol_op.o LanguageDefinition.o \
                Ustring.o Tagset.o UnitexGetOpt.o SingleGraph.o HashTable.o FIFO.o \
@@ -1264,14 +1264,14 @@ TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o TfstStats.o Error.
                    Pattern.o List_ustring.o StringParsing.o String_hash.o \
                    List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o \
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
-                   UnitexGetOpt.o SingleGraph.o BitArray.o HashTable.o FIFO.o File.o \
+                   UnitexGetOpt.o SingleGraph.o BitArray.o HashTable.o FIFO.o whereami.o File.o \
                    AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                    $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = Main_Tokenize.o Tokenize.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
                 common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Alphabet.o String_hash.o \
-                File.o DELA.o AbstractDelaLoad.o PackInf.o List_ustring.o HashTable.o Error.o \
+                whereami.o File.o DELA.o AbstractDelaLoad.o PackInf.o List_ustring.o HashTable.o Error.o \
                 StringParsing.o UnitexGetOpt.o \
                 Offsets.o Overlap.o CompressedDic.o LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
@@ -1282,7 +1282,7 @@ TRAININGTAGGER_OBJS = Main_TrainingTagger.o TrainingTagger.o TrainingProcess.o I
               Tfst.o TfstStats.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o UnitexGetOpt.o \
               Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o \
               String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o \
-              File.o TaggingProcess.o Match.o Compress.o SortTxt.o ProgramInvoker.o Thai.o \
+              whereami.o File.o TaggingProcess.o Match.o Compress.o SortTxt.o ProgramInvoker.o Thai.o \
               DictionaryTree.o AutomatonDictionary2Bin.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
               LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
@@ -1291,7 +1291,7 @@ TXT2TFST      = Txt2Tfst
 TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Copyright.o Text_tokens.o Alphabet.o Af_stdio.o \
                 ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o DELA_tree.o \
                 DELA.o List_ustring.o String_hash.o BuildTextAutomaton.o List_int.o \
-                NormalizationFst2.o Fst2.o AbstractFst2Load.o PackFst2.o File.o Error.o \
+                NormalizationFst2.o Fst2.o AbstractFst2Load.o PackFst2.o whereami.o File.o Error.o \
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o \
                 FIFO.o BitArray.o HashTable.o Transitions.o LocateMatches.o Match.o \
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
@@ -1304,7 +1304,7 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Copyright.o Text_tokens.o 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
                common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o Alphabet.o \
-               TransductionVariables.o String_hash.o Error.o StringParsing.o File.o \
+               TransductionVariables.o String_hash.o Error.o StringParsing.o whereami.o File.o \
                Pattern.o List_ustring.o List_int.o BitMasks.o Fst2TxtAsRoutine.o \
                NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
                UnitexGetOpt.o DicVariables.o TransductionStack.o SingleGraph.o FIFO.o \
@@ -1316,7 +1316,7 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Copyright.o Af_stdio.o Activi
 
 
 UNCOMPRESS       = Uncompress
-UNCOMPRESS_OBJS  = Main_Uncompress.o Uncompress.o File.o Error.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o \
+UNCOMPRESS_OBJS  = Main_Uncompress.o Uncompress.o whereami.o File.o Error.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o \
                    AbstractAllocator.o DELA.o AbstractDelaLoad.o PackInf.o \
                    String_hash.o StringParsing.o List_ustring.o Alphabet.o Af_stdio.o ActivityLogger.o \
                    UnitexGetOpt.o IOBuffer.o Copyright.o CompressedDic.o LoadInf.o Ustring.o \
@@ -1325,7 +1325,7 @@ UNCOMPRESS_OBJS  = Main_Uncompress.o Uncompress.o File.o Error.o common.o ELG.o 
 
 
 UNTOKENIZE       = Untokenize
-UNTOKENIZE_OBJS  = Main_Untokenize.o Untokenize.o File.o Error.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o \
+UNTOKENIZE_OBJS  = Main_Untokenize.o Untokenize.o whereami.o File.o Error.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o \
                    DELA.o AbstractDelaLoad.o PackInf.o \
                    String_hash.o StringParsing.o List_int.o List_ustring.o Text_tokens.o \
                    Alphabet.o Af_stdio.o ActivityLogger.o \
@@ -1334,7 +1334,7 @@ UNTOKENIZE_OBJS  = Main_Untokenize.o Untokenize.o File.o Error.o common.o ELG.o 
                    $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 UNXMLIZE       = Unxmlize
-UNXMLIZE_OBJS  = Main_Unxmlize.o Unxmlize.o File.o Error.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o Xml.o Af_stdio.o \
+UNXMLIZE_OBJS  = Main_Unxmlize.o Unxmlize.o whereami.o File.o Error.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o Xml.o Af_stdio.o \
                  ActivityLogger.o AbstractAllocator.o \
                  UnitexGetOpt.o IOBuffer.o Copyright.o Offsets.o Overlap.o HTMLCharacters.o \
                  AsciiSearchTree.o Alphabet.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
@@ -1351,7 +1351,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   ConcorDiff.o Contexts.o Convert.o DELA.o DELA_tree.o Dico.o DictionaryTree.o \
                   DicVariables.o Diff.o DutchCompounds.o Elag.o ElagComp.o ElagDebug.o ElagFstFilesIO.o \
                   ElagFunctions.o ElagRulesCompilation.o ElagStateSet.o Error.o Evamb.o Extract.o ExtractUnits.o \
-                  FIFO.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2Check_lib.o Fst2List.o Fst2Txt.o \
+                  FIFO.o whereami.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2Check_lib.o Fst2List.o Fst2Txt.o \
                   Fst2Txt_TokenTree.o Fst2TxtAsRoutine.o GeneralDerivation.o GermanCompounds.o UnitexGetOpt.o \
                   Grf2Fst2.o Grf2Fst2_lib.o HashTable.o HTMLCharacters.o ImplodeTfst.o IOBuffer.o Copyright.o \
                   KrMwuDic.o LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
@@ -1390,7 +1390,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   ConcorDiff.o Contexts.o Convert.o DELA.o DELA_tree.o Dico.o DictionaryTree.o \
                   DicVariables.o Diff.o DutchCompounds.o Elag.o ElagComp.o ElagDebug.o ElagFstFilesIO.o \
                   ElagFunctions.o ElagRulesCompilation.o ElagStateSet.o Error.o Evamb.o Extract.o ExtractUnits.o \
-                  FIFO.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2Check_lib.o Fst2List.o Fst2Txt.o \
+                  FIFO.o whereami.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2Check_lib.o Fst2List.o Fst2Txt.o \
                   Fst2Txt_TokenTree.o Fst2TxtAsRoutine.o GeneralDerivation.o GermanCompounds.o UnitexGetOpt.o \
                   Grf2Fst2.o Grf2Fst2_lib.o HashTable.o HTMLCharacters.o ImplodeTfst.o IOBuffer.o Copyright.o \
                   KrMwuDic.o LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
@@ -2083,7 +2083,9 @@ chrono.o: ../base/time/chrono.cpp
 
 safe_bool.o: ../base/boolean/safe_bool.cpp
 	$(CC) -c ../base/boolean/safe_bool.cpp $(OPTIONS)
-	
+
+whereami.o: ../base/vendor/whereami/whereami.c
+	$(CC) -c ../base/vendor/whereami/whereami.c $(OPTIONS)
 #
 # Compilation instructions for ELG
 #
