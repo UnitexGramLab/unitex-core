@@ -90,9 +90,12 @@
 #   make 64BITS=yes JNILIBRARY=yes TRE_DIRECT_COMPILE=yes ADDITIONAL_INCLUDE=/usr/lib/jvm/java-7-openjdk-amd64/include/
 #
 # you can add parameters to ./configure when build TRE with
-# TRE_CONFIGURE_OPTION (by example for cross compiling) 
+# TRE_CONFIGURE_OPTION (by example for cross compiling)
 
-
+# this is from @see https://stackoverflow.com/a/18137056
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+mkfile_dir  := $(dir $(mkfile_path))
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
 ################################
 ##  COMPILATION INSTRUCTIONS  ##
@@ -102,6 +105,9 @@
 
 # default value for SYSTEM is linux-like
 SYSTEM = linux-like
+
+# compile and link LuaJIT directly from vendor sources
+LUAJIT_DIRECT_LINK = yes
 
 ifeq ($(SYSTEM),linux)
 LINUX_LIKE = yes
@@ -229,6 +235,9 @@ TRE_TEMP = $(TRE_SRC)/TEMP
 YAML_SRC = yaml-0.1.6
 YAML_TGZ = ../vendor/yaml-0.1.6.tar.gz
 YAML_TEMP = $(YAML_SRC)/TEMP
+LUAJIT_SRC = luajit-2.3.0
+LUAJIT_TGZ = ../vendor/luajit-2.3.0.tar.gz
+LUAJIT_TEMP = $(LUAJIT_SRC)/TEMP
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LINK_LIB =
@@ -236,7 +245,13 @@ else
 TRE_LINK_LIB = -ltre
 endif
 
-
+ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
+LUAJIT_LINK_LIB =
+else
+# @see Embedding LuaJIT on https://luajit.org/install.html
+DEFFLAGS += -Wl,-E
+LUAJIT_LINK_LIB = -lluajit-5.1 -lm -ldl
+endif
 
 INSTALL_COMMAND = make install
 
@@ -268,6 +283,8 @@ CFLAGS   =  -Wall -D_POSIX_SOURCE #-pedantic
 ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0 -DDEBUG=1 -fuse-ld=gold -Wl,--disable-new-dtags
 UNITEX_RELEASE_MEMORY_AT_EXIT=yes
+# FOR LuaJIT
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
 else
 CFLAGS += -O3
 endif
@@ -332,11 +349,12 @@ ifeq ($(UNITEX_EXPERIMENTAL_MSGLOGGER),yes)
 DEFFLAGS += -DUNITEX_EXPERIMENTAL_MSGLOGGER
 endif
 
-override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".." -Llibtre/lib `pkg-config --libs-only-L luajit` `pkg-config --cflags luajit` -I"../"
+override CFLAGS   += $(DEFFLAGS) -Wl,-E -I"../include_tre" -Ilibtre/include -I".." -Ilibluajit/include/luajit-2.1  -I"../" -Llibtre/lib -Llibluajit/lib
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread -lluajit-5.1 #-lunitex #-lboost_thread -lboost_system
-
+LIBLUAJIT = .libluajit-done
+CLEAN-LIBLUAJIT   = clean-libluajit
+LIBS   = -Llibtre/lib $(TRE_LINK_LIB) $(LUAJIT_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
 EXTENSION =
@@ -384,6 +402,8 @@ BUILD   = $(NAME)-$(VERSION)
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
+LUAJIT_OPTIONS = $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -394,6 +414,12 @@ ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
 endif
 
 YAML_OPTIONS += $(YAML_GCC_OPTIONS)
+
+ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
+	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
+endif
+
+LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
 
 #
 # Compiling instructions for the TRE library
@@ -408,6 +434,8 @@ CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 
 ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
+# FOR LuaJIT
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
 else
 CFLAGS += -O3
 endif
@@ -439,6 +467,12 @@ ifeq ($(TRE_DIRECT_COMPILE), yes)
 LIBTRE   = .libtre-done
 else
 LIBTRE   = libtre.a
+endif
+
+ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
+LIBLUAJIT   = .libluajit-done
+else
+LIBLUAJIT   = libluajit-5.1.a
 endif
 
 # -fPIC is not required because all code is position independent under Windows
@@ -530,6 +564,8 @@ BUILD   = $(NAME)-$(VERSION)
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
+LUAJIT_OPTIONS = $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -540,6 +576,12 @@ ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
 endif
 
 YAML_OPTIONS += $(YAML_GCC_OPTIONS)
+
+ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
+	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
+endif
+
+LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
 
 #
 # Compiling instructions for the TRE library
@@ -554,6 +596,8 @@ CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 
 ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
+# FOR LuaJIT
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
 else
 CFLAGS += -O3
 endif
@@ -583,6 +627,12 @@ ifeq ($(TRE_DIRECT_COMPILE), yes)
 LIBTRE   = .libtre-done
 else
 LIBTRE   = libtre.a
+endif
+
+ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
+LIBLUAJIT   = .libluajit-done
+else
+LIBLUAJIT   = libluajit-5.1.a
 endif
 
 
@@ -677,6 +727,8 @@ endif
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
+LUAJIT_OPTIONS = $(XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -687,6 +739,12 @@ ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
 endif
 
 YAML_OPTIONS += $(YAML_GCC_OPTIONS)
+
+ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
+	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
+endif
+
+LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
 
 #
 # USING TRE STATIC LIBRARY
@@ -699,6 +757,8 @@ CFLAGS = $(INCS)  -Wall
 
 ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0
+# FOR LuaJIT
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
 else
 CFLAGS += -O3
 endif
@@ -729,6 +789,11 @@ else
 LIBTRE   = libtre.a
 endif
 
+ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
+LIBLUAJIT   = .libluajit-done
+else
+LIBLUAJIT   = libluajit-5.1.a
+endif
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -1542,21 +1607,30 @@ endif
 
 YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
+LUAJIT_OPTIONS = $(LUAJIT_XCFLAGS) TARGET_SYS=Linux
+
+ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
+	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
+endif
+
+LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
+
 ifeq ($(LIBRARY),yes)
-all: $(LIBTRE) .libunitex
+all: $(LIBTRE) $(LIBLUAJIT) .libunitex
 else
 ifeq ($(JNILIBRARY),yes)
-all: $(LIBTRE) .libunitexjni
+all: $(LIBTRE) $(LIBLUAJIT) .libunitexjni
 else
 ifeq ($(STATICLIB),yes)
-all: $(LIBTRE) .libunitexstatic
+all: $(LIBTRE) $(LIBLUAJIT) .libunitexstatic
 else
 all: bin
 endif
 endif
 endif
 
-bin: $(LIBTRE) $(BINARIES)
+bin: $(LIBTRE) $(LIBLUAJIT) $(BINARIES)
 	@echo
 	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
 	@echo
@@ -1571,6 +1645,21 @@ $(TRE_SRC): $(TRE_TGZ)
 $(YAML_SRC): $(YAML_TGZ)
 	@echo "unpacking YAML library ..."
 	$(TAR_COMMAND) $(TAR_PARAM) $(YAML_TGZ)
+
+$(LUAJIT_SRC): $(LUAJIT_TGZ)
+	@echo "unpacking LuaJIT library ..."
+	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
+
+ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
+# TODO()
+else
+.libluajit-done: $(LUAJIT_SRC)
+	@echo "Making LuaJIT library using LuaJIT makefile ..."
+	$(MAKE) $(LUAJIT_OPTIONS) -C $(LUAJIT_SRC)
+	mkdir -p libluajit
+	$(MAKE) install PREFIX= DESTDIR=$(mkfile_dir)libluajit -C $(LUAJIT_SRC)
+	touch .libluajit-done
+endif
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 .libtre-done: $(TRE_SRC)
@@ -1634,12 +1723,15 @@ clean-libtre:
 	$(RMR) $(TRE_SRC)
 	$(RM) .libtre-done
 
+clean-libluajit:
+	$(RMR) libluajit
+	$(RMR) $(LUAJIT_SRC)
+	$(RM) .libluajit-done
 
 install: bin
 	$(INSTALL) $(BINARIES) $(APPDIR)
 
-
-clean: $(CLEAN-LIBTRE)
+clean: $(CLEAN-LIBTRE) $(CLEAN-LIBLUAJIT)
 	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
 
 clean-all-but-tre:
@@ -1677,13 +1769,13 @@ else
 ################################
 
 ifeq ($(LIBRARY),yes)
-all: $(LIBTRE) .libunitex
+all: $(LIBTRE) $(LIBLUAJIT) .libunitex
 else
 ifeq ($(JNILIBRARY),yes)
-all: $(LIBTRE) .libunitexjni
+all: $(LIBTRE) $(LIBLUAJIT) .libunitexjni
 else
 ifeq ($(STATICLIB),yes)
-all: $(LIBTRE) .libunitexstatic
+all: $(LIBTRE) $(LIBLUAJIT) .libunitexstatic
 else
 all: bin
 endif
@@ -1696,6 +1788,22 @@ TRE_SRC = tre-0.8.0
 TRE_TGZ = ../vendor/tre-0.8.0.tar.gz
 YAML_SRC = yaml-0.1.6
 YAML_TGZ = ../vendor/yaml-0.1.6.tar.gz
+LUAJIT_SRC = luajit-2.3.0
+LUAJIT_TGZ = ../vendor/luajit-2.3.0.tar.gz
+
+ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
+LUAJIT_LIB =
+.libluajit-done: $(LUAJIT_SRC)
+	@echo "unpacking LuaJIT library ......"
+	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
+	@echo > .libluajit-done
+else
+LUAJIT_LIB = libluajit-5.1.a
+$(LUAJIT_LIB): $(LUAJIT_TGZ)
+	@echo "unpacking LuaJIT library......"
+	$(LUAJIT_COMMAND) $(LUAJIT_PARAM) $(LUAJIT_TGZ)
+endif
+
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LIB =
@@ -1814,7 +1922,7 @@ ifeq ($(SYSTEM),windows)
 #######################
 
 
-bin: $(LIBTRE) $(BINARIES)
+bin: $(LIBTRE) $(LIBLUAJIT) $(BINARIES)
 	@echo ----------------------------------------------------------------------------
 	@echo All is done. You need to move .exe programs from '$(BIN_DIR)' to '$(APPDIR)'.
 
@@ -1834,6 +1942,12 @@ LIBTRE: $(TRE_SRC) $(TRE_LIB)
 
 CLEAN-LIBTRE   =
 LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+
+LIBLUAJIT: $(LUAJIT_SRC) $(LUAJIT_LIB)
+	@echo "Making LuaJIT library..."
+
+CLEAN-LIBLUAJIT   =
+LIBS   = -L"." $(LUAJIT_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -1859,7 +1973,7 @@ else
 #############################
 #############################
 
-bin: $(LIBTRE) $(BINARIES)
+bin: $(LIBTRE) $(LIBLUAJIT) $(BINARIES)
 	@echo
 	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
 	@echo
@@ -1878,8 +1992,20 @@ $(YAML_SRC): $(YAML_TGZ)
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
+LUAJIT_TEMP = $(LUAJIT_SRC)/TEMP
+
+$(LUAJIT_SRC): $(LUAJIT_TGZ)
+	@echo "Unpacking LUAJIT library...."
+	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
+
+LIBLUAJIT: $(LUAJIT_SRC) $(LUAJIT_LIB)
+	@echo "Making LuaJIT library..."
+
 CLEAN-LIBTRE   =
 LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+
+CLEAN-LIBLUAJIT   =
+LIBS   = -L"." $(LUAJIT_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -2295,12 +2421,12 @@ else
 no_o_files:
 	$(RM) -f *.o
 
-.libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o
+.libunitex: no_o_files $(LIBTRE) $(LIBLUAJIT) $(OBJS) Test_lib.o
 	$(RM) Main_*.o	
 	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(BUILD_LIB_OPTIONS) $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) $(TEST_LIB_OPTIONS) ../bin/unitex.dll -o ../bin/Test_lib.exe
 
-.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(OBJS) Test_lib.o
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(LIBLUAJIT) $(OBJS) Test_lib.o
 	-$(RM) Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(BUILD_LIB_OPTIONS) $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
