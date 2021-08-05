@@ -1,0 +1,5 @@
+# All files and directories starting with tilde (~) should be ignored
+~*
+
+.checkstyle
+unitex-core-tests/
