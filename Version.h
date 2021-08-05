@@ -55,7 +55,7 @@
 #define UNITEX_VERSION_REVISION_NUMBER     0
 #define UNITEX_VERSION_SUFFIX              ""
 #define UNITEX_VERSION_TYPE                "stable"
-#define UNITEX_VERSION_IS_UNSTABLE         1
+#define UNITEX_VERSION_IS_UNSTABLE         0
 /* ************************************************************************** */
 #define UNITEX_VERSION_BUILD_IS_ANONYMOUS  1
 #define UNITEX_VERSION_BUILD_NUMBER        0
