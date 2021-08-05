@@ -46,16 +46,16 @@
 #define UNITEX_VERSION_URL_ISSUES          "https://github.com/UnitexGramLab/unitex-core/issues/new"
 #define UNITEX_VERSION_URL_REPOSITORY      "https://github.com/UnitexGramLab/unitex-core"
 /* ************************************************************************** */
-#define UNITEX_VERSION_RELEASE             "Unitex/GramLab 3.3"
-#define UNITEX_VERSION_STRING              "3.3"
-#define UNITEX_VERSION_SEMVER              "3.3.0"
+#define UNITEX_VERSION_RELEASE             "Unitex/GramLab 4.0"
+#define UNITEX_VERSION_STRING              "4.0"
+#define UNITEX_VERSION_SEMVER              "4.0.0"
 /* ************************************************************************** */
-#define UNITEX_VERSION_MAJOR_NUMBER        3
-#define UNITEX_VERSION_MINOR_NUMBER        3
+#define UNITEX_VERSION_MAJOR_NUMBER        4
+#define UNITEX_VERSION_MINOR_NUMBER        0
 #define UNITEX_VERSION_REVISION_NUMBER     0
-#define UNITEX_VERSION_SUFFIX              ""
-#define UNITEX_VERSION_TYPE                "stable"
-#define UNITEX_VERSION_IS_UNSTABLE         0
+#define UNITEX_VERSION_SUFFIX              "alpha"
+#define UNITEX_VERSION_TYPE                "unstable"
+#define UNITEX_VERSION_IS_UNSTABLE         1
 /* ************************************************************************** */
 #define UNITEX_VERSION_BUILD_IS_ANONYMOUS  1
 #define UNITEX_VERSION_BUILD_NUMBER        0
