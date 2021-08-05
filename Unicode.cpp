@@ -4843,54 +4843,6 @@ int XMLize(const unichar* source,unichar* destination) {
   return pos;
 }
 
-/**
- * @brief XML-escapes a unichar string
- *
- * XML-escapes a source string before copy it into destination
- * this function conforms with "Extensible Markup Language (XML)
- * 1.0 (Fifth Edition)"
- *
- * @param[in]  source unichar string to be escaped
- * @param[out] destination unichar array where the escaped string is to be copied
- * @return the length of the destination string
- */
-int XMLize(const unichar* source,unichar* destination) {
-  if (!source) {
-     fatal_error("NULL error in XMLize\n");
-  }
-
-  const unichar* it = source;
-  int pos = 0;
-
-// U_STRCPY_LITERAL macro copies a literal string, starting at pos position,
-// into a destination unichar buffer, then it increments the pos variable by
-// the length of the literal. In this case the length is computed at compile
-// time
-#define U_STRCPY_LITERAL(destination, pos, literal) \
-        u_strcpy(&*(destination+pos),literal);      \
-        pos+=sizeof(literal)-1
-  // loop till the end of string
-  while (*it != '\0') {
-    switch(*it) {
-      case '\'': U_STRCPY_LITERAL(destination,pos,"&apos;"); break;
-      case '"':  U_STRCPY_LITERAL(destination,pos,"&quot;"); break;
-      case '&':  U_STRCPY_LITERAL(destination,pos,"&amp;");  break;
-      case '<':  U_STRCPY_LITERAL(destination,pos,"&lt;");   break;
-      case '>':  U_STRCPY_LITERAL(destination,pos,"&gt;");   break;
-      default :  destination[pos++] = *it;
-    }
-    // advance the character pointer
-    ++it;
-  }
-// undefines U_STRCPY_LITERAL macro right before we use them
-#undef U_STRCPY_LITERAL
-  // indicate the end of the string
-  destination[pos] = '\0';
-
-  // return the length of the destination string
-  return pos;
-}
-
 
 /**
  * Puts a copy of 'src' into 'dst', replacing:
