@@ -1,5 +1,13 @@
+.checkstyle
+
 # All files and directories starting with tilde (~) should be ignored
 ~*
 
-.checkstyle
+# Exclude tests folder
 unitex-core-tests/
+
+# Exclude all in /bin except /elg subdirectory
+# @see https://gist.github.com/hieblmedia/9318457
+!/bin/
+/bin/*
+!/bin/elg/
