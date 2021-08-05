@@ -45,7 +45,7 @@ void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* 
 /**
  * Allocates, initializes and returns a new locate_parameters structure.
  */
-struct locate_parameters* new_locate_parameters(const char* elg_scripts_path) {
+struct locate_parameters* new_locate_parameters(const char* elg_extensions_path) {
 struct locate_parameters* p=(struct locate_parameters*)malloc(sizeof(struct locate_parameters));
 if (p==NULL) {
    fatal_alloc_error("new_locate_parameters");
@@ -152,7 +152,7 @@ p->pos_in_tokens = -1;
 p->pos_in_chars = -1;
 
 // last of all
-p->elg = new vm(elg_scripts_path);
+p->elg = new vm(elg_extensions_path);
 p->elg->restart();
 
 // add p to globals
@@ -224,23 +224,23 @@ int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name
                    int is_korean,int max_count_call,int max_count_call_warning,
                    int stack_max, int max_matches_at_token_pos,int max_matches_per_subgraph,int max_errors,
                    char* arabic_rules,int tilde_negation_operator,int useLocateCache,int allow_trace,char* const trace_params[],
-                   vector_ptr* injected_vars,const char* elg_scripts_path,const char* enter_pos) {
+                   vector_ptr* injected_vars,const char* elg_extensions_path,const char* enter_pos) {
 u_printf("Initializing the Extend Local Grammars (ELG) Engine...\n");
 
-// check if the ELG Scripts path exists and is a directory
-if(!is_directory(elg_scripts_path)) {
-  error("ELG error: %s directory doesn't exist\n", elg_scripts_path);
+// check if the ELGs path exists and is a directory
+if(!is_directory(elg_extensions_path)) {
+  error("ELG error: %s directory doesn't exist\n", elg_extensions_path);
   return 0;
 }
 
 // get the real scripts path
-char real_elg_scripts_path[FILENAME_MAX]="";
-get_real_path(elg_scripts_path, real_elg_scripts_path);
+char real_elg_extensions_path[FILENAME_MAX]="";
+get_real_path(elg_extensions_path, real_elg_extensions_path);
 
-// Make sure that the Scripts' path always ends with a path separator
-add_path_separator(real_elg_scripts_path);
+// Make sure that the ELGs path always ends with a path separator
+add_path_separator(real_elg_extensions_path);
 
-// Check if the ELG init scripts exists
+// Check if the ELG init function exists
 char script_init_name[FILENAME_MAX]   = { };
 char script_init_file[FILENAME_MAX]   = { };
 
@@ -249,7 +249,7 @@ strcat(script_init_name, ELG_FUNCTION_DEFAULT_SCRIPT_INIT_NAME);
 strcat(script_init_name, ELG_FUNCTION_DEFAULT_EXTENSION);
 
 // script_file = /default/path/extension_name.upp
-strcat(script_init_file, real_elg_scripts_path);
+strcat(script_init_file, real_elg_extensions_path);
 strcat(script_init_file, script_init_name);
 
 // throw an error if the init script do not exist
@@ -260,7 +260,7 @@ if (!is_regular_file(script_init_file)) {
 
 U_FILE* out;
 U_FILE* info;
-struct locate_parameters* p=new_locate_parameters(real_elg_scripts_path);
+struct locate_parameters* p=new_locate_parameters(real_elg_extensions_path);
 
 if (stack_max>0) {
     p->stack_max = stack_max;

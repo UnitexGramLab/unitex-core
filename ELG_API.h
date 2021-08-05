@@ -56,7 +56,7 @@
 #define ELG_EXTENSION_EVENT_UNLOAD             "unload_event"
 #define ELG_FUNCTION_ON_FAIL_NAME              "fail_event"
 /* ************************************************************************** */
-#define ELG_FUNCTION_DEFAULT_SCRIPT_DIR_NAME   "Scripts"
+#define ELG_FUNCTION_DEFAULT_SCRIPT_DIR_NAME   "elg"
 #define ELG_FUNCTION_DEFAULT_SCRIPT_INIT_NAME  "init"
 #define ELG_FUNCTION_DEFAULT_EXTENSION         ".upp"
 /* ************************************************************************** */
