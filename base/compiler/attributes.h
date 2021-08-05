@@ -48,6 +48,7 @@
 #include "base/compiler/attribute/inline.h"
 #include "base/compiler/attribute/nonnull.h"
 #include "base/compiler/attribute/noreturn.h"
+#include "base/compiler/attribute/malloc.h"
 #include "base/compiler/attribute/printf_format.h"
 #include "base/compiler/attribute/pure.h"
 #include "base/compiler/attribute/sentinel.h"

@@ -1,0 +1,12 @@
+-- Extended function to return the result of op1 op op2
+-- op1, op2 are operands
+-- op is an operator: {+,-,*,/}
+function calculate (op1, op2, op)
+  if not uMatch.start_with_space() then return false end
+  if     op == "+" then return tostring(op1 + op2)
+  elseif op == "-" then return tostring(op1 - op2)
+  elseif op == "*" then return tostring(op1 * op2)
+  elseif op == "/" then return tostring(op1 / op2)
+  else                  return false
+  end
+end

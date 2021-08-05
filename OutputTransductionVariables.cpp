@@ -344,6 +344,19 @@ if (n==-1) {
 return &v->variables_[n];
 }
 
+/**
+ * Returns a non const pointer on the Ustring associated the variable whose name is 'name',
+ * or NULL if the variable in not in the given variable set.
+ */
+Ustring* get_mutable_output_variable(OutputVariables* v, const unichar* name) {
+  int variable_index = get_value_index(name, v->variable_index, DONT_INSERT);
+  if (variable_index == -1) {
+    return NULL;
+  }
+  return &v->variables_[variable_index];
+}
+
+
 
 #define OFFSET_NB_PENDING 0
 #define OFFSET_NB_FILLED_STRING (sizeof(int))
@@ -658,7 +671,7 @@ fatal_error("Non-existent Ustring pointer in remove_output_variable\n");
  * Concatenates the given string to all strings of the given list.
  * Returns the length of 's'.
  */
-unsigned int add_raw_string_to_output_variables(OutputVariables* var,unichar* s) {
+unsigned int add_raw_string_to_output_variables(OutputVariables* var,const unichar* s, unsigned int length) {
 OutputVarList* list=var->pending;
 if (list==NULL) {
     fatal_error("Should not invoke add_string_to_output_variables on an empty list\n");
@@ -667,7 +680,7 @@ if (s==NULL || s[0]=='\0') return 0;
 unsigned int old=list->var->len;
 OutputVarList* first=list;
 while (list!=NULL) {
-    u_strcat(list->var,s);
+    u_strcat(list->var,s, length);
     list=list->next;
 }
 return first->var->len-old;

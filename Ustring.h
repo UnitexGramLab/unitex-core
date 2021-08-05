@@ -37,6 +37,7 @@ namespace unitex {
  *
  * Author: Olivier Blanc
  * Modified by Sébastien Paumier
+ * Modified by Cristian Martinez
  */
 
 /**
@@ -53,6 +54,8 @@ typedef struct {
    unsigned int len;
 } Ustring;
 
+#define MAXBUF    1024
+#define MINBUF      16
 
 void resize(Ustring* ustr,unsigned int size);
 
@@ -115,6 +118,13 @@ if (ustr==NULL) {
 }
 if (str==NULL || str[0]=='\0') return;
 u_strcat(ustr,str,u_strlen(str));
+}
+
+/*
+ * Returns 1 if a is equal to b, 0 otherwise
+ */
+static inline int u_equal(const Ustring* a,const Ustring* b) {
+  return (a->len == b->len && u_strncmp(a->str, b->str, a->len) == 0);
 }
 
 

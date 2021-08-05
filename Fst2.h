@@ -251,6 +251,10 @@ void free_persistent_fst2(const char* filename);
 
 int get_graph_index(Fst2* fst2,int n_state);
 
+void fst2_output_dot(Fst2 * A);
+
+Fst2Tag create_tag(Fst2* fst2,unichar* line,Abstract_allocator prv_alloc);
+
 } // namespace unitex
 
 #endif

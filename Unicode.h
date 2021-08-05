@@ -33,6 +33,14 @@
 
 #include "AbstractAllocator.h"
 
+#include "base/macro/helper/test.h"
+#include "base/compiler/attributes.h"
+
+#define UNITEX_USE_BASE_UNICODE 1
+
+#if UNITEX_USE(BASE_UNICODE)
+#include "base/unicode/unicode.h"
+#endif
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
@@ -78,6 +86,7 @@ typedef enum {
 #define UTF16_BIG_ENDIAN_FILE 3
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 /**
  * This is the type of a unicode character. Note that it is a 16-bits type,
  * so that it cannot handle characters >= 0xFFFF. Such characters, theoretically
@@ -85,6 +94,7 @@ typedef enum {
  */
 typedef uint16_t unichar;
 
+#endif
 
 /**
  * This structure is used to represent a file with its encoding.
@@ -259,7 +269,11 @@ int u_sscanf(unichar*,const char*,...);
 int u_vsscanf(unichar*,const char*,va_list);
 
 /* ------------------- String functions ------------------- */
+#if !UNITEX_USE(BASE_UNICODE)
 unsigned int u_strlen(const unichar*);
+#else
+size_t u_strlen(const unichar* s);
+#endif
 unsigned int u_strlenWithConvLFtoCRLF(const unichar* s, int convLFtoCRLF);
 unichar* u_strcpy(unichar*,const unichar*);
 unichar* u_strcpy(unichar*,const char*);
@@ -281,16 +295,28 @@ void free_string_optional_buffer(unichar** allocated_buffer, Abstract_allocator 
 
 int is_str_mono_unichar_string(const unichar*, unichar);
 #define is_str_mono_unichar_string(str,c) (((str)!=NULL) && (*(str)==(c)) && (*((str)+1)==0))
+#if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp(const unichar*, const unichar*);
+#endif
 int u_strcmp(const unichar*,const char*);
+#if !UNITEX_USE(BASE_UNICODE)
 int u_strncmp(const unichar*, const unichar*,size_t num);
+#endif
+
+#if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp_ignore_case(const unichar*, const unichar*);
+#else
+#define u_strcmp_ignore_case u_stricmp
+
+#endif
 int u_strcmp_ignore_case(const unichar*, const char*);
 unichar *u_strtok_r(unichar *str, const unichar *delim, unichar **saveptr);
+typedef int (*EQUAL_UNICHAR_FUNCTION)(const unichar*,const unichar*);
 int u_equal(const unichar*, const unichar*);
 int u_equal_ignore_case(const unichar*, const unichar*);
 unichar* u_strdup(const unichar*);
 unichar* u_strndup(const unichar*,int);
+unichar* u_strndup(const char*,int);
 unichar* keycopy(unichar*);
 unichar* u_strdup(const unichar*,unsigned int);
 unichar* u_strdup(const char*);
@@ -319,14 +345,17 @@ size_t convert_utf8_to_unichar(unichar*dest, size_t nb_unichar_alloc_walk, size_
 // define NO_CPP_TEMPLATE_SUPPORT if you archeological C++ compiler don't support template
 #ifndef NO_CPP_TEMPLATE_SUPPORT
 template <typename T>
-int u_escape(const unichar* source, T* destination);
+size_t u_escape(const unichar* source, T* destination);
+
+template <typename T>
+size_t u_quotize(const T* source, T* destination);
 #endif
 
 
 void u_to_char(char*,unichar*);
 void u_to_char_n(char *, const unichar *, unsigned int);
 void u_chomp_new_line(unichar*);
-int JSONize(const unichar* source,unichar* destination);
+size_t u_jsonize(const unichar* source,unichar* destination);
 int XMLize(const unichar* source,unichar* destination);
 int URLize(const unichar*,unichar*);
 int htmlize(const unichar*,unichar*);
@@ -337,7 +366,9 @@ unsigned int hash_unichar(unichar*);
 
 
 /* ------------------- Character functions ------------------- */
+#if !UNITEX_USE(BASE_UNICODE)
 int u_is_digit(unichar);
+#endif
 int u_is_basic_latin_letter(unichar);
 int u_is_ASCII_alphanumeric(unichar);
 int u_is_latin1_supplement_letter(unichar);
@@ -373,7 +404,9 @@ int u_is_Hangul_Jamo_final_consonant(unichar c);
 int u_is_Hangul_Jamo_consonant(unichar c);
 int u_is_Hangul_Jamo_medial_vowel(unichar c);
 //--------End of Hyungue's inserts----------------
+#if !UNITEX_USE(BASE_UNICODE)
 int u_is_letter(unichar);
+#endif
 int u_is_word(const unichar*);
 int u_are_digits(const unichar*);
 
@@ -382,15 +415,19 @@ int u_parse_int(const unichar * str, const unichar ** next = NULL);
 
 
 // Sebastian Nagel's functions
-void u_toupper (unichar* s);
-void u_tolower (unichar* s);
-void u_deaccentuate(unichar* s);
 int u_toupper_ismodified (unichar* s);
 int u_tolower_ismodified (unichar* s);
 int u_deaccentuate_ismodified(unichar* s);
+#if !UNITEX_USE(BASE_UNICODE)
+void u_deaccentuate(unichar* s);
+void u_tolower (unichar* s);
+void u_toupper (unichar* s);
 unichar u_toupper(unichar);
 unichar u_tolower(unichar);
 unichar u_deaccentuate(unichar);
+#else
+// @see base/unicode/case.h
+#endif
 // end of Sebastian Nagel's functions
 
 } // namespace unitex

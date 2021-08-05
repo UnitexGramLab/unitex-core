@@ -259,7 +259,7 @@ Tfst* result=new_Tfst(out_tfst,out_tind,input_tfst->N);
 u_printf("Tagging...\n");
 
 /* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
-struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)((EQUAL_UNICHAR_FUNCTION)u_equal),
         (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
 /* launches tagging process on the input tfst file */

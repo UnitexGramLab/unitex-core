@@ -31,6 +31,7 @@ static ABSTRACTFILE* (*real_fopen)(const char*,const char*)=af_fopen;
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
+#define UNITEX_USE_BASE_UNICODE 1
 namespace unitex {
 
 
@@ -58,8 +59,10 @@ namespace unitex {
 #define CASE_CONVERSION_BY_TAB_LOWER 1
 #endif
 
+#if !UNITEX_USE(BASE_UNICODE)
 /* This array is a bit array used to define characters that are letters */
 static unsigned char tab_is_letter[8192];
+#endif
 
 #ifdef CASE_CONVERSION_BY_TAB_UPPER
 static unichar upperChar[0x10000];
@@ -1481,6 +1484,7 @@ return i;
   */
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 #define GetUtf8Size(ch)  \
         (((((unsigned char)(ch)) & ((unsigned char)0x80))==((unsigned char)0x00)) ? 1 : \
         (((((unsigned char)(ch)) & ((unsigned char)0xe0))==((unsigned char)0xc0)) ? 2 : \
@@ -1497,6 +1501,10 @@ return i;
         (((((unsigned char)(ch)) & ((unsigned char)0xfc))==((unsigned char)0xf8)) ? ((unsigned char)0x03) : \
         (((((unsigned char)(ch)) & ((unsigned char)0xfe))==((unsigned char)0xfc)) ? ((unsigned char)0x01) : 0))))))
 
+#else
+#define GetUtf8Size(c) kUTF8ByteInfo[kUTF8ByteInfoIndex[static_cast<uint8_t>(c)]].width
+#define GetUtf8Mask(c) kUTF8ByteInfo[kUTF8ByteInfoIndex[static_cast<uint8_t>(c)]].mask
+#endif
 
 #define BUFFER_IN_CACHE_SIZE (0x100)
 
@@ -1678,7 +1686,8 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                  {
                     unichar c;
                           unsigned char ch=tab_in[i];
-                          int nbbyte=GetUtf8Size(ch);
+                          int index=kUTF8ByteInfoIndex[static_cast<uint8_t>(ch)];
+                          int nbbyte=kUTF8ByteInfo[index].width;
 
                           if (i+nbbyte > (int)read_binary_in_file)
                           {
@@ -1689,7 +1698,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                               break;
                           }
 
-                          c=((unichar)ch) & GetUtf8Mask(ch);
+                          c=((unichar)ch) & kUTF8ByteInfo[index].mask;
                           int nbbyte_loop=nbbyte;
 
                           if (nbbyte_loop>0) {
@@ -1994,7 +2003,8 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
                 {
                     unichar c;
                     unsigned char ch = tab_in[i];
-                    int nbbyte = GetUtf8Size(ch);
+                    int index=kUTF8ByteInfoIndex[static_cast<uint8_t>(ch)];
+                    int nbbyte=kUTF8ByteInfo[index].width;
 
                     if (i + nbbyte >(int)read_binary_in_file)
                     {
@@ -2005,7 +2015,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
                         break;
                     }
 
-                    c = ((unichar)ch) & GetUtf8Mask(ch);
+                    c=((unichar)ch) & kUTF8ByteInfo[index].mask;
                     int nbbyte_loop = nbbyte;
 
                     if (nbbyte_loop>0) {
@@ -2620,8 +2630,8 @@ return n;
  * It also supports:
  * - %C for printing a unicode character
  * - %S for printing a unicode string
- * - %HS for printing a unicode string in HTML (see htmlize)
  * - %R for printing the reversed of a unicode string
+ * - %HS for printing a unicode string in HTML (see htmlize)
  * - %HR for printing the reversed of a unicode string in HTML (see htmlize)
  * - %US for printing a unicode string as a URL (see URLize)
  * - %UR for printing the reversed of a unicode string as a URL (see URLize)
@@ -2634,10 +2644,10 @@ int n_printed=0;
 int i;
 double d;
 char c;
-void* p;
+const void* p;
 unichar uc;
-char* s;
-unichar* us;
+const char* s;
+const unichar* us;
 while (*format) {
    if (*format=='%') {
       /* If we have a special sequence introduced by '%' */
@@ -2805,9 +2815,13 @@ return (c>='0' && c<='9') || (c>='a' && c<='f') || (c>='A' && c<='F');
 /**
  * Returns a non-zero value if 'c' is a separator; 0 otherwise.
  */
+#if !UNITEX_USE(BASE_UNICODE)
 int is_separator(unichar c) {
 return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');
 }
+#else
+#define is_separator(c) u_has_flag_space(c)
+#endif
 
 
 /**
@@ -3296,12 +3310,14 @@ while (s[i]!='\0') {
 /**
  * Unicode version of strlen.
  */
+#if !UNITEX_USE(BASE_UNICODE)
 unsigned int u_strlen(const unichar* s) {
 register int i=0;
 while (s[i++]) {}
 return (i-1);
 }
 
+#endif
 
 /**
 * Unicode version of strlen, count the number of char after LF to CRLF conversion
@@ -3387,9 +3403,18 @@ unichar* u_strcpy(unichar* dst,const unichar* src)
 }
 
 
+/**
+ * unicode version of strncpy
+ */
+unichar* u_strcpy(unichar *dest,const unichar c) {
+  unichar *s = dest; // backup pointer to start of destination string
+  *dest++ = c;
+  return s;
+}
 
 /**
  * unicode version of strncpy
+ * TODO(xxx) fails with n==0
  */
 unichar* u_strncpy(unichar *dest,const unichar *src,unsigned int n) {
 register unichar c;
@@ -3407,6 +3432,25 @@ while (--n > 0);
 return s;
 }
 
+/**
+ * unicode version of strncpy
+ * TODO(xxx) fails with n==0
+ */
+unichar* u_strncpy(unichar *dest,const char *src,unsigned int n) {
+register unichar c;
+unichar *s = dest; // backup pointer to start of destination string
+do {
+   c = (unsigned char) *src++;
+   *dest++ = c;
+   if (--n == 0)
+     return s;
+} while (c != 0);
+// null-padding
+do
+  *dest++ = 0;
+while (--n > 0);
+return s;
+}
 
 /**
  * unicode version of a secure strcpy : like u_strncpy, but add 0 at end of string
@@ -3474,6 +3518,18 @@ do {
 return s;
 }
 
+/**
+ * Unicode version of strcpy that takes a non unicode source string.
+ */
+char* u_strcpy(char* dest, const char* src) {
+ return strcpy(dest, src);
+}
+
+char* u_strcpy(char* dest, const char c) {
+  char *s = dest; // backup pointer to start of destination string
+  *dest++ = c;
+  return s;
+}
 
 /**
  * Unicode version of strcat.
@@ -3510,6 +3566,7 @@ return dest;
 /**
  * Unicode version of strcmp that tolerates NULL strings.
  */
+#if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp(const unichar* a,const unichar* b) {
 if ((a!=NULL) && (b!=NULL)) {
     const unichar *a_p=a;
@@ -3557,10 +3614,12 @@ if ((a!=NULL) && (b!=NULL)) {
   }
 }
 
+#endif
 
 /**
  * Unicode version of strcmp that tolerates NULL strings and ignores case.
  */
+#if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp_ignore_case(const unichar* a,const unichar* b) {
 if ((a!=NULL) && (b!=NULL)) {
     const unichar *a_p=a;
@@ -3607,8 +3666,10 @@ if ((a!=NULL) && (b!=NULL)) {
   return -1;
   }
 }
+#endif
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 /**
  * unicode version of strncmp
  */
@@ -3619,6 +3680,7 @@ int u_strncmp(const unichar* s1, const unichar* s2, size_t n)
         return (int)(*(const unichar*)(s1 - 1) - *(const unichar*)(s2 - 1));
     return 0;
 }
+#endif
 
 
 /**
@@ -4153,6 +4215,24 @@ if (res==NULL) {
 return u_strcpy(res,str);
 }
 
+/**
+ * Copy at most n chars.
+ */
+unichar* u_strndup(const char* str, int n) {
+if (str==NULL) return NULL;
+int size=0;
+while (size<n && str[size]) size++;
+size_t buflen=(size+1)*sizeof(unichar);
+unichar* res=(unichar*)malloc(buflen);
+if (res==NULL) {
+   fatal_alloc_error("u_strndup");
+}
+if(n > 0) {
+  u_strncpy(res,str,n);
+}
+res[size]='\0';
+return res;
+}
 
 unichar* u_strdup(const char* str,Abstract_allocator prv_alloc) {
 if (str==NULL) return NULL;
@@ -4527,7 +4607,7 @@ if (l>0 && s[l-1]=='\n') {
  * @return the length of the destination string
  */
 template <typename T>
-int u_escape(const unichar* source, T* destination) {
+size_t u_escape(const unichar* source, T* destination) {
   if (!source) {
      fatal_error("NULL error in ASCIIize\n");
   }
@@ -4579,11 +4659,11 @@ int u_escape(const unichar* source, T* destination) {
 
 // Converts all non-ASCII Unicode characters to Unicode escape-sequences
 // destination is a unichar buffer
-template int u_escape(const unichar* source, unichar* destination);
+template size_t u_escape(const unichar* source, unichar* destination);
 
 // Converts all non-ASCII Unicode characters to Unicode escape-sequences
 // destination is a char buffer
-template int u_escape(const unichar* source, char* destination);
+template size_t u_escape(const unichar* source, char* destination);
 
 #endif
 
@@ -4599,7 +4679,7 @@ template int u_escape(const unichar* source, char* destination);
  * @param[out] destination unichar array where the escaped string is to be copied
  * @return the length of the destination string
  */
-int JSONize(const unichar* source,unichar* destination) {
+size_t u_jsonize(const unichar* source,unichar* destination) {
   if (!source) {
      fatal_error("NULL error in JSONize\n");
   }
@@ -4628,6 +4708,127 @@ int JSONize(const unichar* source,unichar* destination) {
       case '&':  U_STRCPY_LITERAL(destination,pos,"\\u0026"); break;
       case '<':  U_STRCPY_LITERAL(destination,pos,"\\u003C"); break;
       case '>':  U_STRCPY_LITERAL(destination,pos,"\\u003E"); break;
+      default :  destination[pos++] = *it;
+    }
+    // advance the character pointer
+    ++it;
+  }
+// undefines U_STRCPY_LITERAL macro right before we use them
+#undef U_STRCPY_LITERAL
+  // indicate the end of the string
+  destination[pos] = '\0';
+
+  // return the length of the destination string
+  return pos;
+}
+#ifndef NO_CPP_TEMPLATE_SUPPORT
+/**
+ * @brief Quote-escapes a unichar string
+ *
+ * Quote-escapes a source string before copy it into destination
+ *
+ * - Puts a backslash in front of the double quote character (hex 22),
+ *   backslash (hex 5C), and newline (hex 0A)
+ * - The nul character (hex 00) becomes \000
+ * - Carriage return (hex 0D) becomes \r
+ * - The string itself is surrounded by double quotes
+ *
+ * @param[in]  source unichar string to be escaped
+ * @param[out] destination unichar array where the escaped string is to be copied
+ * @return the length of the destination string
+ */
+template <typename T>
+size_t u_quotize(const T* source, T* destination) {
+  if (!source) {
+     fatal_error("NULL error in Quotize\n");
+  }
+
+  const T* it = source;
+  int pos = 0;
+
+// U_STRCPY_LITERAL macro copies a literal string, starting at pos position,
+// into a destination unichar buffer, then it increments the pos variable by
+// the length of the literal. In this case the length is computed at compile
+// time
+#define U_STRCPY_LITERAL(destination, pos, literal) \
+        u_strcpy(&*(destination+pos),literal);      \
+        pos+=sizeof(literal)-1
+  // add opening quote
+  U_STRCPY_LITERAL(destination,pos,"\"");
+  // loop till the end of string
+  while (*it != '\0') {
+    if (*it == '"' || *it == '\\' || *it == '\n') {
+      U_STRCPY_LITERAL(destination,pos,"\\");
+      u_strcpy(&*(destination+pos),*it);
+      pos+=1;
+    } else if (u_has_flag_control(*it)) {
+      char buff[10];
+      int len;
+      if (!u_is_digit(*(it + 1))) {
+        len = sprintf(buff, "\\%d",   (int) *it);
+      } else {
+        len = sprintf(buff, "\\%03d", (int) *it);
+      }
+      u_strcpy(&*(destination+pos),buff);
+      pos+=len;
+    } else {
+      destination[pos++] = *it;
+    }
+    // advance the character pointer
+    ++it;
+  }
+  // add closing quote
+  U_STRCPY_LITERAL(destination,pos,"\"");
+// undefines U_STRCPY_LITERAL macro right before we use them
+#undef U_STRCPY_LITERAL
+  // indicate the end of the string
+  destination[pos] = '\0';
+
+  // return the length of the destination string
+  return pos;
+}
+
+// Quote-escapes a unicode string
+template size_t u_quotize(const unichar* source, unichar* destination);
+
+// Quote-escapes a C-string
+template size_t u_quotize(const char* source, char* destination);
+#endif
+
+/**
+ * @brief XML-escapes a unichar string
+ *
+ * XML-escapes a source string before copy it into destination
+ * this function conforms with "Extensible Markup Language (XML)
+ * 1.0 (Fifth Edition)"
+ *
+ * @param[in]  source unichar string to be escaped
+ * @param[out] destination unichar array where the escaped string is to be copied
+ * @return the length of the destination string
+ */
+int XMLize(const unichar* source,unichar* destination) {
+  if (!source) {
+     fatal_error("NULL error in XMLize\n");
+  }
+
+  const unichar* it = source;
+  int pos = 0;
+
+// U_STRCPY_LITERAL macro copies a literal string, starting at pos position,
+// into a destination unichar buffer, then it increments the pos variable by
+// the length of the literal. In this case the length is computed at compile
+// time
+#define U_STRCPY_LITERAL(destination, pos, literal) \
+        u_strcpy(&*(destination+pos),literal);      \
+        pos+=sizeof(literal)-1
+  // loop till the end of string
+  while (*it != '\0') {
+    switch(*it) {
+      case '\'': U_STRCPY_LITERAL(destination,pos,"&apos;"); break;
+      case '"':  U_STRCPY_LITERAL(destination,pos,"&quot;"); break;
+      case '&':  U_STRCPY_LITERAL(destination,pos,"&amp;");  break;
+      case '<':  U_STRCPY_LITERAL(destination,pos,"&lt;");   break;
+      case '>':  U_STRCPY_LITERAL(destination,pos,"&gt;");   break;
       default :  destination[pos++] = *it;
     }
     // advance the character pointer
@@ -4843,9 +5044,11 @@ return code;
 //
 // unicode version of isdigit
 //
+#if !UNITEX_USE(BASE_UNICODE)
 int u_is_digit(unichar c) {
 return (c>='0' && c<='9');
 }
+#endif
 
 
 //
@@ -5161,6 +5364,7 @@ return (c>=0x1F00 && c<=0x1F15) || (c>=0x1F18 && c<=0x1F1D) ||      //$CD:200211
 // returns true if c is a letter in a naive way
 //
 int u_is_letter_internal(unichar c) {
+#if !UNITEX_USE(BASE_UNICODE)
 return u_is_basic_latin_letter(c)
        || u_is_latin1_supplement_letter(c)
        || u_is_latin_extendedA_letter(c)
@@ -5190,9 +5394,13 @@ return u_is_basic_latin_letter(c)
        || u_is_CJK_compatibility_ideograph(c)
 //---------End of Hyungue's inserts--------
        ;
+#else
+  return u_has_flag_letter(c);
+#endif
 }
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 /**
  * Initializes the array : bit i = 1 if i is a letter, 0 otherwise.
  */
@@ -5225,12 +5433,16 @@ for (i=0;i<=0xFFFF;i++) {
 
 return 1;
 }
+#endif
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 // this line is used to initialize automatically the unicode table
 char foo=(char)(init_unicode_table()/*+make_CR()*/);
+#endif
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 /**
  * Returns a non zero value if 'c' is a letter looking up at the unicode table;
  * 0 otherwise.
@@ -5239,6 +5451,7 @@ int u_is_letter(unichar c) {
 return (int)(tab_is_letter[c/8] & (1<<(c%8)));
 }
 
+#endif
 
 /**
  * This function returns 1 if the given string is only made of letters.
@@ -5345,6 +5558,7 @@ Since Unicode code points > 0xffff can't be used with Unitex,
 they are skipped from the table.
 *************************************************************/
 
+#if !UNITEX_USE(BASE_UNICODE)
 #ifdef CASE_CONVERSION_BY_TAB_UPPER
 static unichar u_toupper_switch (unichar c) {
 #else
@@ -8019,6 +8233,7 @@ unichar u_deaccentuate (unichar c) {
   return r;
 }
 
+#endif
 
 #ifdef CASE_CONVERSION_BY_TAB_UPPER
 unichar u_toupper (unichar c) {
@@ -8050,13 +8265,6 @@ return is_modified;
 
 #else
 
-void u_toupper (unichar* s) {
-if (s==NULL) return;
-while (*s!='\0') {
-    *s=u_toupper(*s);
-    s++;
-}
-}
 
 int u_toupper_ismodified (unichar* s) {
 if (s==NULL) return 0;
@@ -8105,13 +8313,7 @@ return is_modified;
 
 #else
 
-void u_tolower (unichar* s) {
-if (s==NULL) return;
-while (*s!='\0') {
-    *s=u_tolower(*s);
-    s++;
-}
-}
+
 
 int u_tolower_ismodified (unichar* s) {
 if (s==NULL) return 0;
@@ -8159,13 +8361,7 @@ return is_modified;
 
 #else
 
-void u_deaccentuate(unichar* s) {
-if (s==NULL) return;
-while (*s!='\0') {
-    *s=u_deaccentuate(*s);
-    s++;
-}
-}
+
 
 int u_deaccentuate_ismodified (unichar* s) {
 if (s==NULL) return 0;

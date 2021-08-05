@@ -101,6 +101,19 @@ free(vec->tab);
 free(vec);
 }
 
+typedef void (*release_p) (void *, void *);
+
+inline void free_vector_ptr_element(vector_ptr* vec,release_p release_ptr=NULL, release_f release_element=NULL) {
+if (vec==NULL) return;
+if (release_ptr!=NULL) {
+   for (int i=0;i<vec->nbelems;i++) {
+     release_ptr(vec->tab[i], (void*) release_element);
+   }
+}
+free(vec->tab);
+free(vec);
+}
+
 
 inline void vector_ptr_resize(vector_ptr* vec,int size) {
 if (size<=0) {

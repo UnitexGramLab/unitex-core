@@ -42,11 +42,10 @@ void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locat
 void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p);
 void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p,const char* local_morpho_dic);
 
-
 /**
  * Allocates, initializes and returns a new locate_parameters structure.
  */
-struct locate_parameters* new_locate_parameters() {
+struct locate_parameters* new_locate_parameters(const char* elg_extensions_path) {
 struct locate_parameters* p=(struct locate_parameters*)malloc(sizeof(struct locate_parameters));
 if (p==NULL) {
    fatal_alloc_error("new_locate_parameters");
@@ -71,10 +70,14 @@ p->DLC_tree=NULL;
 p->optimized_states=NULL;
 p->fst2=NULL;
 p->tokens=NULL;
+p->enter_pos=NULL;
+p->enter_pos_filename=NULL;
 p->current_origin=-1;
+p->last_origin=-1;
 p->max_count_call=0;
 p->max_count_call_warning=0;
 p->buffer=NULL;
+p->locate_mode=TOKENIZED_MODE;
 p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
 p->space_policy=DONT_START_WITH_SPACE;
 p->matching_units=0;
@@ -92,12 +95,14 @@ p->search_limit=0;
 p->input_variables=NULL;
 p->output_variables=NULL;
 p->nb_output_variables=0;
-p->stack=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
+p->literal_output=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
+p->stack_elg=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
 p->alphabet=NULL;
 p->morpho_dic=NULL;
 p->morpho_dic_inf_free=NULL;
 p->morpho_dic_bin_free=NULL;
 p->n_morpho_dics=0;
+p->morpho_dic_index=NULL;
 p->dic_variables=NULL;
 p->left_ctx_shift=0;
 p->left_ctx_base=0;
@@ -132,12 +137,8 @@ p->counting_step.count_cancel_trying=0;
 p->explore_depth=0;
 p->backup_memory_reserve=NULL;
 p->cached_match_vector=new_vector_ptr(16);
-p->fnc_locate_trace_step=NULL;
-p->private_param_locate_trace=NULL;
 memset(&(p->arabic),0,sizeof(ArabicTypoRules));
 p->is_in_cancel_state = 0;
-p->is_in_trace_state = 0;
-p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
 p->debug=0;
 p->weight=-1;
 p->graph_depth_backup_nested=0;
@@ -146,6 +147,19 @@ p->stack_max=STACK_MAX;
 p->max_matches_at_token_pos=MAX_MATCHES_AT_TOKEN_POS;
 p->max_matches_per_subgraph=MAX_MATCHES_PER_SUBGRAPH;
 p->max_errors=MAX_ERRORS;
+
+p->pos_in_tokens = -1;
+p->pos_in_chars = -1;
+
+// last of all
+p->elg = new vm(elg_extensions_path);
+p->elg->restart();
+
+// add p to globals
+// [-0, +1] > (+1)
+p->elg->pushlightuserdata(p);
+// [-1, +0] > (+0)
+p->elg->setglobal(ELG_GLOBAL_LOCATE_PARAMS);
 
 return p;
 }
@@ -156,6 +170,9 @@ return p;
  */
 void free_locate_parameters(struct locate_parameters* p) {
 if (p==NULL) return;
+// first of all
+delete(p->elg);
+
 if (p->recyclable_wchart_buffer!=NULL) {
     free(p->recyclable_wchart_buffer);
 }
@@ -189,6 +206,12 @@ for (int i=0;i<tokens->size;i++) {
 return res;
 }
 
+//    0 continue
+// != 0 fail
+int ABSTRACT_CALLBACK_UNITEX locate_trace(const struct locate_trace_info* locate_info,
+                                         void* private_param) {
+  return 0;
+}
 
 
 int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name,const char* dlf,const char* dlc,const char* err,
@@ -201,11 +224,43 @@ int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name
                    int is_korean,int max_count_call,int max_count_call_warning,
                    int stack_max, int max_matches_at_token_pos,int max_matches_per_subgraph,int max_errors,
                    char* arabic_rules,int tilde_negation_operator,int useLocateCache,int allow_trace,char* const trace_params[],
-                   vector_ptr* injected_vars) {
+                   vector_ptr* injected_vars,const char* elg_extensions_path,const char* enter_pos) {
+u_printf("Initializing the Extend Local Grammars (ELG) Engine...\n");
+
+// check if the ELGs path exists and is a directory
+if(!is_directory(elg_extensions_path)) {
+  error("ELG error: %s directory doesn't exist\n", elg_extensions_path);
+  return 0;
+}
+
+// get the real scripts path
+char real_elg_extensions_path[FILENAME_MAX]="";
+get_real_path(elg_extensions_path, real_elg_extensions_path);
+
+// Make sure that the ELGs path always ends with a path separator
+add_path_separator(real_elg_extensions_path);
+
+// Check if the ELG init function exists
+char script_init_name[FILENAME_MAX]   = { };
+char script_init_file[FILENAME_MAX]   = { };
+
+// script name = extension_name.upp
+strcat(script_init_name, ELG_FUNCTION_DEFAULT_SCRIPT_INIT_NAME);
+strcat(script_init_name, ELG_FUNCTION_DEFAULT_EXTENSION);
+
+// script_file = /default/path/extension_name.upp
+strcat(script_init_file, real_elg_extensions_path);
+strcat(script_init_file, script_init_name);
+
+// throw an error if the init script do not exist
+if (!is_regular_file(script_init_file)) {
+  error("ELG error: %s doesn't exist. Please create at least an empty file\n", script_init_file);
+  return 0;
+}
 
 U_FILE* out;
 U_FILE* info;
-struct locate_parameters* p=new_locate_parameters();
+struct locate_parameters* p=new_locate_parameters(real_elg_extensions_path);
 
 if (stack_max>0) {
     p->stack_max = stack_max;
@@ -254,6 +309,7 @@ p->max_count_call = max_count_call;
 p->max_count_call_warning = max_count_call_warning;
 p->token_filename = tokens;
 p->graph_filename = fst2_name;
+p->enter_pos_filename = enter_pos;
 char* concord = (buffer_filename + (step_filename_buffer * 0));
 char* concord_info = (buffer_filename + (step_filename_buffer * 1));
 
@@ -274,7 +330,8 @@ if (out==NULL) {
    error("Cannot write %s\n",concord);
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
-   free_stack_unichar(p->stack);
+   free_stack_unichar(p->literal_output);
+   free_stack_unichar(p->stack_elg);
    free_locate_parameters(p);
    u_fclose(out);
    free(buffer_filename);
@@ -291,7 +348,8 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
       error("Cannot load alphabet file %s\n",alphabet);
       af_release_mapfile_pointer(p->text_cod,p->buffer);
       af_close_mapfile(p->text_cod);
-      free_stack_unichar(p->stack);
+      free_stack_unichar(p->literal_output);
+      free_stack_unichar(p->stack_elg);
       free_locate_parameters(p);
       if (info!=NULL) u_fclose(info);
       u_fclose(out);
@@ -309,7 +367,8 @@ if (is_cancelling_requested() != 0) {
        free_string_hash(semantic_codes);
        af_release_mapfile_pointer(p->text_cod,p->buffer);
        af_close_mapfile(p->text_cod);
-       free_stack_unichar(p->stack);
+       free_stack_unichar(p->literal_output);
+       free_stack_unichar(p->stack_elg);
        free_locate_parameters(p);
        if (info!=NULL) u_fclose(info);
        u_fclose(out);
@@ -320,13 +379,17 @@ if (is_cancelling_requested() != 0) {
 u_printf("Loading fst2...\n");
 struct FST2_free_info fst2load_free;
 Fst2* fst2load=load_abstract_fst2(vec,fst2_name,1,&fst2load_free);
+
+//fst2_output_dot(fst2load);
+
 if (fst2load==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
-   free_stack_unichar(p->stack);
+   free_stack_unichar(p->literal_output);
+   free_stack_unichar(p->stack_elg);
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
@@ -367,13 +430,17 @@ if (is_cancelling_requested() != 0) {
    close_abstract_allocator(locate_abstract_allocator);
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
-   free_stack_unichar(p->stack);
+   free_stack_unichar(p->literal_output);
+   free_stack_unichar(p->stack_elg);
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
    free(buffer_filename);
    return 0;
 }
+
+// load main extension
+p->elg->load_main_extension(fst2_name, p->fst2);
 
 p->tags=p->fst2->tags;
 #ifdef REGEX_FACADE_ENGINE
@@ -384,7 +451,8 @@ if (p->filters==NULL) {
    free_string_hash(semantic_codes);
    free_Fst2(p->fst2,locate_abstract_allocator);
    close_abstract_allocator(locate_abstract_allocator);
-   free_stack_unichar(p->stack);
+   free_stack_unichar(p->literal_output);
+   free_stack_unichar(p->stack_elg);
    free_locate_parameters(p);
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
@@ -412,6 +480,38 @@ if (p->tokens==NULL) {
    free(buffer_filename);
    return 0;
 }
+
+if(enter_pos) {
+ ABSTRACTMAPFILE* af_enter_pos = af_open_mapfile(enter_pos,MAPFILE_OPTION_READ,0);
+ if (af_enter_pos!=NULL) {
+   const int* enter_pos =(const int*)af_get_mapfile_pointer(af_enter_pos);
+   if (enter_pos != NULL) {
+     int enter_pos_size = af_get_mapfile_size(af_enter_pos)/sizeof(int);
+     p->enter_pos = new_bit_array(p->buffer_size,ONE_BIT);
+     for (int i=0; i<enter_pos_size ; ++i) {
+       set_value(p->enter_pos,enter_pos[i],1);
+     }
+     af_release_mapfile_pointer(af_enter_pos,enter_pos);
+     af_close_mapfile(af_enter_pos);
+   }
+ } else {
+   error("Cannot load enter.pos list %s\n",enter_pos);
+   free_alphabet(p->alphabet);
+   free_string_hash(semantic_codes);
+   free_string_hash(p->tokens);
+   free_Fst2(p->fst2,locate_abstract_allocator);
+   close_abstract_allocator(locate_abstract_allocator);
+   free_locate_parameters(p);
+   af_release_mapfile_pointer(p->text_cod,p->buffer);
+   af_close_mapfile(p->text_cod);
+   if (info!=NULL) u_fclose(info);
+   u_fclose(out);
+   free(buffer_filename);
+   return 0;
+ }
+
+}
+
 Abstract_allocator locate_work_abstract_allocator = locate_abstract_allocator;
 
 p->match_cache=(LocateCache*)malloc_cb(p->tokens->size * sizeof(LocateCache),locate_work_abstract_allocator);
@@ -438,9 +538,6 @@ if (p->filter_match_index==NULL) {
 }
 #endif
 
-if (allow_trace!=0) {
-   open_locate_trace(p,&p->fnc_locate_trace_step,&p->private_param_locate_trace,trace_params);
-}
 extract_semantic_codes_from_tokens(p->tokens,semantic_codes,locate_abstract_allocator);
 u_printf("Loading morphological dictionaries...\n");
 load_morphological_dictionaries(vec,morpho_dic_list,p,morpho_bin);
@@ -527,11 +624,34 @@ p->al.prv_alloc_recycle_morphlogical_content_buffer=morphlogical_content_buffer_
 p->al.pa.prv_alloc_backup_growing_recycle=locate_recycle_backup_abstract_allocator;
 p->al.prv_alloc_trace_info_allocator=locate_recycle_locate_trace_info_allocator;
 p->al.prv_alloc_context=locate_recycle_context_abstract_allocator;
+
+//  commented on 08/17/17 to use instead elg events feature
+//p->fnc_locate_trace_step = locate_trace;
+//p->lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->al.prv_alloc_trace_info_allocator);
+//p->lti->size_struct_locate_trace_info = (int)sizeof(locate_trace_info);
+//p->lti->is_on_morphlogical=0;
+//p->lti->pos_in_tokens=-1;
+//p->lti->current_state=NULL;
+//p->lti->current_state_index=0;
+//p->lti->pos_in_chars=0;
+//p->lti->matches=NULL;
+//p->lti->n_matches=0;
+//p->lti->ctx=NULL;
+//p->lti->p=p;
+//p->lti->step_number=-1;
+//p->lti->jamo=NULL;
+//p->lti->pos_in_jamo=0;
+
 launch_locate(out,text_size,info,p);
-if (allow_trace!=0) {
-   close_locate_trace(p,p->fnc_locate_trace_step,p->private_param_locate_trace);
-}
+
+// unload main extension
+p->elg->unload_main_extension();
+
+//  commented on 08/17/17 to use instead elg events feature
+//free_cb(p->lti,p->al.prv_alloc_trace_info_allocator);
+
 free_bit_array(p->failfast);
+free_bit_array(p->enter_pos);
 free_Variables(p->input_variables);
 free_OutputVariables(p->output_variables);
 af_release_mapfile_pointer(p->text_cod,p->buffer);
@@ -550,7 +670,8 @@ int free_abstract_allocator_item=(get_allocator_cb_flag(locate_abstract_allocato
 if (free_abstract_allocator_item) {
   free_optimized_states(p->optimized_states,p->fst2->number_of_states,locate_abstract_allocator);
 }
-free_stack_unichar(p->stack);
+free_stack_unichar(p->literal_output);
+free_stack_unichar(p->stack_elg);
 /** Too long to free the DLC tree if it is big
  * free_DLC_tree(p->DLC_tree);
  */
@@ -584,6 +705,7 @@ if (p->jamo_tags!=NULL) {
     free(p->jamo_tags);
 }
 free_string_hash(p->tokens);
+
 free_lemma_node(root);
 free(p->token_control);
 for (int i=0;i<n_text_tokens;i++) {
@@ -602,6 +724,9 @@ for (int i=0;i<p->n_morpho_dics;i++) {
 free(p->morpho_dic);
 free(p->morpho_dic_inf_free);
 free(p->morpho_dic_bin_free);
+free_string_hash(p->morpho_dic_index);
+
+//delete p->elg; free on free_locate_parameters(p)
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 free_DLC_tree(p->DLC_tree);
 #endif
@@ -620,7 +745,6 @@ for (int i=0;s[i]!='\0';i++) {
 return n;
 }
 
-
 /**
  * Takes a string containing .bin names separated with semi-colons and
  * loads the corresponding dictionaries.
@@ -636,6 +760,9 @@ p->morpho_dic_inf_free=(struct INF_free_info*)malloc(p->n_morpho_dics*sizeof(str
 if (p->morpho_dic==NULL || p->morpho_dic_bin_free==NULL || p->morpho_dic_inf_free==NULL) {
    fatal_alloc_error("load_morphological_dictionaries");
 }
+
+p->morpho_dic_index = new_string_hash(p->n_morpho_dics);
+
 char bin[FILENAME_MAX];
 int pos;
 for (int i=0;i<p->n_morpho_dics;i++) {
@@ -650,6 +777,12 @@ for (int i=0;i<p->n_morpho_dics;i++) {
    }
    char inf[FILENAME_MAX];
    remove_extension(bin,inf);
+
+   // if "/path/to/dic/foo.dic" is a morphological dictionary, then
+   // do p->morpho_dic_index[i] = "foo"
+   UnitexString u_name(filename_without_path(inf));
+   get_value_index(u_name.c_unichar(), p->morpho_dic_index);
+
    strcat(inf,".inf");
    p->morpho_dic[i]=new_Dictionary(vec,bin,inf);
 }

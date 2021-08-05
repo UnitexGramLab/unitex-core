@@ -71,7 +71,7 @@ struct fst2txt_parameters {
     * we cache it here, in order to avoid problems if the fst2 is freed
     * before 'token_tree'. */
    int n_token_trees;
-   Variables* variables;
+   InputVariables* variables;
    /* Here are the text buffer and the current origin in it */
    struct buffer* text_buffer;
    int current_origin;

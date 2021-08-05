@@ -101,6 +101,10 @@ if (filters->size>0) {
          }
       }
       if (replaceLetters==1) {
+         if(alph==NULL){
+           error("\nWARNING: If you want to use a custom case-insensitive matching in morphological filters\n");
+           error("you must define an alphabet file.\n");
+         }
          /* If we must replace letters by the set of their case variants
           * like".+e" -> ".+[eE]" */
          unichar temp[2048];

@@ -48,15 +48,15 @@
 #define UNITEX_BASE_INTEGER_TYPES_H_                                // NOLINT
 /* ************************************************************************** */
 // Unitex headers
-#include "base/macro/macro.h"         // UNITEX_HAVE
-#include "base/compiler/compliance.h" // UNITEX_COMPILER_COMPLIANT
-#include "base/compiler/version.h"    // UNITEX_COMPILER_AT_LEAST
-#include "base/integer/wordsize.h"    // UNITEX_WORDSIZE_IS
-#include "base/compiler/keywords.h"   // UNITEX_STATIC_ASSERT
-#include "base/compiler/intrinsics.h" // __uint128_t, __m128
+#include "base/macro/macro.h"                 // UNITEX_HAVE
+#include "base/compiler/compliance.h"         // UNITEX_COMPILER_COMPLIANT
+#include "base/compiler/version.h"            // UNITEX_COMPILER_AT_LEAST
+#include "base/integer/wordsize.h"            // UNITEX_WORDSIZE_IS
+#include "base/compiler/keywords.h"           // UNITEX_STATIC_ASSERT
+#include "base/compiler/intrinsic/support.h"  // __uint128_t, __m128
 /* ************************************************************************** */
 // C system files                  (try to order the includes alphabetically)
-#include <stdlib.h>                // size_t
+#include <stdlib.h>                           // size_t
 /* ************************************************************************** */
 // Portable integer types (for uint64_t, uint32_t types and literal macros)
 #if   UNITEX_COMPILER_COMPLIANT(CXX11)    ||\

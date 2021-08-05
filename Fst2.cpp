@@ -272,32 +272,35 @@ if (!u_strcmp(input,"{$}")) {
    tag->type=TEXT_END_TAG;
    return tag;
 }
-/*
- * IMPORTANT: if the tag is a variable declaration, we must add this variable
- *            to the variable list of the fst2 .
- */
-int length=u_strlen(input);
-if (input[0]=='$' &&
-    (input[length-1]=='(' || input[length-1]==')')) {
-    int output_var=(input[1]=='|');
-   tag->variable=u_strdup(&(input[1+output_var]),length-2-output_var,prv_alloc);
-   if (!output_var) {
-       fst2->input_variables=sorted_insert(tag->variable,fst2->input_variables,prv_alloc);
-       if (input[length-1]=='(') {
-           tag->type=BEGIN_VAR_TAG;
-       }
-       else {
-           tag->type=END_VAR_TAG;
-       }
-   } else {
-       fst2->output_variables=sorted_insert(tag->variable,fst2->output_variables,prv_alloc);
-       if (input[length-1]=='(') {
-           tag->type=BEGIN_OUTPUT_VAR_TAG;
-       }
-       else {
-           tag->type=END_OUTPUT_VAR_TAG;
-       }
-   }
+
+if(fst2) {
+  /*
+   * IMPORTANT: if the tag is a variable declaration, we must add this variable
+   *            to the variable list of the fst2 .
+   */
+  int length=u_strlen(input);
+  if (input[0]=='$' &&
+      (input[length-1]=='(' || input[length-1]==')')) {
+      int output_var=(input[1]=='|');
+     tag->variable=u_strdup(&(input[1+output_var]),length-2-output_var,prv_alloc);
+     if (!output_var) {
+         fst2->input_variables=sorted_insert(tag->variable,fst2->input_variables,prv_alloc);
+         if (input[length-1]=='(') {
+             tag->type=BEGIN_VAR_TAG;
+         }
+         else {
+             tag->type=END_VAR_TAG;
+         }
+     } else {
+         fst2->output_variables=sorted_insert(tag->variable,fst2->output_variables,prv_alloc);
+         if (input[length-1]=='(') {
+             tag->type=BEGIN_OUTPUT_VAR_TAG;
+         }
+         else {
+             tag->type=END_OUTPUT_VAR_TAG;
+         }
+     }
+  }
 }
 return tag;
 }
@@ -1040,6 +1043,41 @@ for (int i=1;i<=fst2->number_of_graphs;i++) {
 }
 /* Should not happen */
 return -1;
+}
+
+
+void fst2_output_dot(Fst2 * A) {
+
+
+  u_printf("# FST2 output\n\n");
+
+  for (int i = 1; i <= A->number_of_graphs; i++) {
+
+    int base = A->initial_states[i];
+
+    u_printf(
+      "digraph G%d {\n"
+      "  graph [ center = true, orientation = landscape, rankdir = LR ];\n"
+      "  node  [ shape  = circle ];\n\n", i);
+
+    for (int q = 0; q < A->number_of_states_per_graphs[i]; q++) {
+
+      int qq = base + q;
+
+      u_printf( "\n  %d [ label=\"%d\" ", q, q);
+      if (is_final_state(A->states[qq])) { u_printf("shape=\"doublecircle\" "); }
+      u_printf( "];\n");
+
+      for (Transition* trans = A->states[qq]->transitions; trans; trans = trans->next) {
+        if(A->tags[trans->tag_number]->output) {
+          u_printf( "  %d -> %d [ label=\"%S:%S\" ];\n", q, trans->state_number - base, A->tags[trans->tag_number]->input,A->tags[trans->tag_number]->output);
+        } else {
+          u_printf( "  %d -> %d [ label=\"%S\" ];\n", q, trans->state_number - base, A->tags[trans->tag_number]->input);
+        }
+      }
+    }
+    u_printf( "}\n\n");
+  }
 }
 
 } // namespace unitex

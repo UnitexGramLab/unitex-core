@@ -58,7 +58,6 @@ namespace unitex {
 #define KR_HCJ_START        0x3130
 #define KR_HCJ_END      0x318E
 
-
 /**
  * Here we define the Hangul Compatibility Jamos used in the library.
  * In the Hangul Compatibility Jamo charset, no difference is made between
@@ -243,7 +242,7 @@ public:
       }
       initJamoMap();
       alphabet=alph;
-      table=new_hash_table(1024,0.75f,(HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+      table=new_hash_table(1024,0.75f,(HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)((EQUAL_UNICHAR_FUNCTION)u_equal),
               (FREE_FUNCTION)free,(FREE_FUNCTION)free,(KEYCOPY_FUNCTION)keycopy);
    };
 

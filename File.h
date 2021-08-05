@@ -214,6 +214,7 @@ char* to_native_path_separators(char* filename);
 int get_real_path(const char* filename, char* resolved_name);
 UnitexFileType get_file_type(const char* filename);
 void get_snt_path(const char*,char*);
+int get_exec_path(char* exec_path);
 const char* filename_without_path(const char* filename);
 void remove_path(const char*,char*);
 void remove_path_and_extension(const char*,char*);

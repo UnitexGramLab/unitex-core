@@ -166,7 +166,7 @@ if ((f_tind = u_fopen(BINARY,output_tind,U_WRITE)) == NULL) {
    return DEFAULT_ERROR_CODE;
 }
 /* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
-struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)((EQUAL_UNICHAR_FUNCTION)u_equal),
         (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
 u_fprintf(f_tfst,"%010d\n",tfst->N);

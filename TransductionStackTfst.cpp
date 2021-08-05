@@ -448,7 +448,7 @@ if (!process_output_tfst(stack_foo,output,p,capture && p->debug)) {
     return 0;
 }
 if (capture) {
-    *captured_chars=add_raw_string_to_output_variables(p->output_variables,stack_foo->str);
+    *captured_chars=add_raw_string_to_output_variables(p->output_variables,stack_foo->str,u_strlen(stack_foo->str));
     free_Ustring(stack_foo);
 }
 return 1;

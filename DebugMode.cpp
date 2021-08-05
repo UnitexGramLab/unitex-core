@@ -84,6 +84,7 @@ while (*s!='\0') {
         s++;
     }
 }
+//u_fprintf(f,"%S",output->str);
 u_fputs(output->str,f);
 free_Ustring(tmp);
 free_Ustring(output);

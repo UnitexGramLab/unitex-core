@@ -40,6 +40,7 @@ namespace unitex {
 void* get_persistent_structure(const char* filename);
 void set_persistent_structure(const char* filename,void* ptr);
 int is_persistent_structure(void* ptr);
+int is_persistent_filename(const char* filename);
 
 } // namespace unitex
 

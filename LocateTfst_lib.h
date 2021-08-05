@@ -85,7 +85,7 @@ struct locate_tfst_infos {
     AmbiguousOutputPolicy ambiguous_output_policy;
     VariableErrorPolicy variable_error_policy;
 
-    Variables* input_variables;
+    InputVariables* input_variables;
     OutputVariables* output_variables;
     struct dic_variable* dic_variables;
 

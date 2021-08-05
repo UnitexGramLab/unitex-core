@@ -30,7 +30,9 @@
 
 namespace unitex {
 
+#ifndef MIN
 #define MIN(a, b) ((a <= b) ? a : b)
+#endif
 
 
 static inline void traits_copy(symbol_t * dest, const symbol_t * src) {

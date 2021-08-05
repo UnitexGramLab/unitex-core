@@ -46,7 +46,7 @@
 #include "base/compiler/features.h"       // UNITEX_HAS_FEATURE
 #include "base/compiler/version.h"        // COMPILER_AT_LEAST_*, COMPILER_IS
 #include "base/compiler/identifiers.h"    // UNITEX_COUNTER, UNITEX_FILE_LINE
-#include "base/macro/macro.h"       // UNITEX_HAS
+#include "base/macro/macro.h"             // UNITEX_HAS
 #include "base/preprocessor/stringify.h"  // UNITEX_PP_STRINGIFY_NAME
 /* ************************************************************************** */
 // C++ system files                (try to order the includes alphabetically)
@@ -82,21 +82,21 @@
           _Static_assert(bool_constexpr, UNITEX_PP_STRINGIFY_NAME(__VA_ARGS__))
 # endif   // __has_extension(cxx_static_assert)
 #else    // !UNITEX_COMPILER_COMPLIANT(CXX11)
-/// the code below is the static_assert update 10.0 by Pádraig Brady
+/// the code below is the static_assert update 11.0 by Pádraig Brady
 /// @see http://www.pixelbeat.org/programming/gcc/static_assert.html
 #define UNITEX_ASSERT_CONCAT_(a, b) a##b
 #define UNITEX_ASSERT_CONCAT(a, b)  UNITEX_ASSERT_CONCAT_(a, b)
 // These can't be used after statements in C89
 #if UNITEX_HAS(MACRO_COUNTER)
   #define UNITEX_STATIC_ASSERT(bool_constexpr, ...)                         \
-    ;enum { UNITEX_ASSERT_CONCAT(static_assert_, UNITEX_COUNTER) = 1/(!!(bool_constexpr)) }
+    ;enum { UNITEX_ASSERT_CONCAT(static_assert_, UNITEX_COUNTER) = 1/(int)(!!(bool_constexpr)) }
 #else  // !defined(__COUNTER__)
    // This can't be used twice on the same line so ensure if using in headers
    // that the headers are not included twice (by wrapping in #ifndef...#endif)
    // Note it doesn't cause an issue when used on same line of separate modules
    // compiled with gcc -combine -fwhole-program
   #define UNITEX_STATIC_ASSERT(bool_constexpr, ...)                         \
-    ;enum { UNITEX_ASSERT_CONCAT(assert_line_, UNITEX_FILE_LINE) = 1/(!!(bool_constexpr)) }
+    ;enum { UNITEX_ASSERT_CONCAT(assert_line_, UNITEX_FILE_LINE) = 1/(int)(!!(bool_constexpr)) }
 #endif  //  __COUNTER__
 #endif  // UNITEX_COMPILER_COMPLIANT(CXX11)
 /* ************************************************************************** */

@@ -51,6 +51,7 @@
 #include "base/compiler/keyword/noexcept.h"
 #include "base/compiler/keyword/nullptr.h"
 #include "base/compiler/keyword/override.h"
+#include "base/compiler/keyword/restrict.h"
 #include "base/compiler/keyword/static_assert.h"
 #include "base/compiler/keyword/thread_local.h"
 /* ************************************************************************** */

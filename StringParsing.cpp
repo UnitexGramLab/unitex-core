@@ -86,16 +86,17 @@ const unichar STRING_EMPTY[] = { 0 };
 
 static inline int string_contains_unichar(const unichar* s,unichar c) {
 for (;;) {
-    if ((*(s)) == c) return 1;
     if ((*(s)) == 0) return 0;
-    if ((*(s + 1)) == c) return 1;
+    if ((*(s)) == c) return 1;
     if ((*(s + 1)) == 0) return 0;
-    if ((*(s + 2)) == c) return 1;
+    if ((*(s + 1)) == c) return 1;
     if ((*(s + 2)) == 0) return 0;
-    if ((*(s + 3)) == c) return 1;
+    if ((*(s + 2)) == c) return 1;
     if ((*(s + 3)) == 0) return 0;
+    if ((*(s + 3)) == c) return 1;
     s += 4;
 }
+ return 0;
 }
 
 

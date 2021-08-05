@@ -43,8 +43,8 @@
  * please contact unitex-ws@amabis.fr
  */
 /* ************************************************************************** */
-#ifndef UNITEX_BASE_INTEGER_TYPES_H_                                // NOLINT
-#define UNITEX_BASE_INTEGER_TYPES_H_                                // NOLINT
+#ifndef UNITEX_BASE_INTEGER_LITERALS_H_                             // NOLINT
+#define UNITEX_BASE_INTEGER_LITERALS_H_                             // NOLINT
 /* ************************************************************************** */
 // Unitex headers
 #include "base/integer/types.h"    // portable integer types
@@ -69,4 +69,4 @@
 # endif  // UINT64_C
 #endif  // UNITEX_WORDSIZE_IS(64)
 /* ************************************************************************** */
-#endif  // UNITEX_BASE_INTEGER_TYPES_H_                             // NOLINT
+#endif  // UNITEX_BASE_INTEGER_LITERALS_H_                          // NOLINT

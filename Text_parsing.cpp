@@ -45,8 +45,8 @@ namespace unitex {
 static int binary_search(int, int*, int);
 static int find_compound_word(int, int, struct DLC_tree_info*,
         struct locate_parameters*);
-static unichar* get_token_sequence(struct locate_parameters*, int, int);
-void shift_variable_bounds(Variables*, int);
+unichar* get_token_sequence(struct locate_parameters*, int, int);
+void shift_variable_bounds(InputVariables*, int);
 static void add_match(int, unichar*, struct locate_parameters*, Abstract_allocator);
 static void real_add_match(struct match_list*, struct locate_parameters*, Abstract_allocator);
 static struct match_list* eliminate_longer_matches(struct match_list*, int, int,
@@ -94,15 +94,11 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     p->token_error_ctx.n_matches_at_token_pos__locate = 0;
     p->token_error_ctx.n_matches_at_token_pos__morphological_locate = 0;
 
-
-    p->is_in_trace_state = 0;
-    if ((p->fnc_locate_trace_step != NULL))
-        p->is_in_trace_state = 1;
-
     //fill_buffer(p->token_buffer, f);
     OptimizedFst2State initial_state =
             p->optimized_states[p->fst2->initial_states[1]];
     p->current_origin = 0;
+	  p->last_origin = 0;
     int n_read = 0;
     int unite;
     clock_t startTime = clock();
@@ -114,9 +110,19 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
             create_variable_backup_memory_reserve(p->input_variables,1);
     p->backup_memory_reserve = backup_reserve;
     int current_token;
+
+    // add special token constants
+    p->elg->setup_special_constants(p);
+
+    // setup local environment
+    p->elg->setup_local_environment();
+
+    int pos = 0;
+
     while (p->current_origin < p->buffer_size &&
-            p->buffer[p->current_origin] < p->tokens->size &&
-            p->number_of_matches != p->search_limit) {
+           p->buffer[p->current_origin] < p->tokens->size &&
+          (p->search_limit == -1 || p->number_of_matches < p->search_limit)) {
+
         if (unite != 0) {
             n_read = p->current_origin % unite;
             if (n_read == 0 && ((currentTime = clock()) - startTime > DELAY)) {
@@ -126,16 +132,25 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                         / (float) text_size);
             }
         }
-        current_token = p->buffer[p->current_origin];
-        if (!(current_token == p->SPACE && p->space_policy
-                == DONT_START_WITH_SPACE) && !get_value(p->failfast,
-                current_token)) {
+
+        // we always set pos as 0 from here to force call_token_event to update
+        // the current_origin if the index changes
+        pos = 0;
+
+        // the current token is equal to p->buffer[pos + current_origin] or equal
+        // to p->buffer[index] when there is a function implementing call_token_event
+        // that returns a valid index position
+        current_token = p->elg->call_token_event(p, ELG_MAIN_EVENT_SLIDE, &pos, &p->current_origin);
+
+        if (!(current_token == p->SPACE && p->space_policy == DONT_START_WITH_SPACE) &&
+            !get_value(p->failfast,current_token)) {
 
             int cache_found = 0;
-            if (p->useLocateCache)
+            if (p->useLocateCache) {
                 cache_found =  consult_cache(p->buffer, p->current_origin,
                     p->buffer_size, p->match_cache,
                     p->cached_match_vector);
+            }
             if (cache_found) {
                 /* If we have found matches in the cache, we use them */
                 for (int i=0;i<p->cached_match_vector->nbelems;i++) {
@@ -152,7 +167,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
             } else {
                 /* Standard locate procedure */
                 p->stack_base = -1;
-                p->stack->stack_pointer = -1;
+                p->literal_output->top = -1;
                 struct parsing_info* matches = NULL;
                 p->left_ctx_shift = 0;
                 p->left_ctx_base = 0;
@@ -165,20 +180,18 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->explore_depth=-1;
                 p->token_error_ctx.n_matches_at_token_pos__morphological_locate = 0;
 
-                if (p->is_in_cancel_state == 1)
+                if (p->is_in_cancel_state == 1) {
                   p->is_in_cancel_state = 0;
-                p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
+                }
                 p->no_fail_fast=0;
                 p->weight=-1;
-                int n_matches=0;
-                locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, &n_matches, NULL, p);
+                struct locate_n_matches n_matches;
+
+                locate(initial_state, pos, &matches, &n_matches, NULL, p);
 
                 clean_allocator(p->al.pa.prv_alloc_vector_int_inside_token);
 
-
-                int count_call_real = p->counting_step.count_call;
-                count_call_real -= (p->is_in_trace_state == 0) ? (p->counting_step.count_cancel_trying) : (p->counting_step_count_cancel_trying_real_in_debug_or_trace);
-
+                int count_call_real = p->counting_step.count_call - p->counting_step.count_cancel_trying;
 
 //u_printf("token number %d : %d step\n",p->current_origin,count_call_real,p->tokens);
 
@@ -253,6 +266,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                     clear_dic_variable_list(&(p->dic_variables));
                 }
             }
+            p->last_origin = p->current_origin;
         }
         reset_Variables(p->input_variables);
         p->match_list = save_matches(p->match_list,p->current_origin, out, p, p->al.prv_alloc_generic);
@@ -261,7 +275,10 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     free_reserve(backup_reserve);
     p->backup_memory_reserve = NULL;
 
-    p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->al.prv_alloc_generic);
+    if ((p->search_limit == -1 || p->number_of_matches < p->search_limit)) {
+      p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->al.prv_alloc_generic);
+    }
+
     u_printf("100%% done      \n\n");
     u_printf("%d match%s\n", p->number_of_matches,
             (p->number_of_matches == 1) ? "" : "es");
@@ -277,7 +294,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
         u_printf("(%2.3f%% of the text is covered)\n", (float) (((float)per_halfhundred)
                 / (float) 1000.0));
     }
-    u_printf("%u exploration step\n",(unsigned int)total_count_step);
+    u_printf("%u exploration step%s\n",(unsigned int)total_count_step, (p->number_of_outputs
+            == 1) ? "" : "s");
 
     /*
     {
@@ -356,7 +374,7 @@ static inline void update_last_tested_position(struct locate_parameters* p, int 
 
 //
 // return 1 if s is a digit sequence, 0 else
-//
+// TODO(martinec) replace with u_test_flag(s,U_FLAG_DIGIT)
 static inline int local_is_not_a_digit_token(const unichar* s) {
 int i=0;
 while (s[i]!='\0') {
@@ -375,129 +393,213 @@ int ret=pos == 0 && (p->current_origin == 0
 return ret;
 }
 
+static inline int at_text_end(struct locate_parameters* p,int pos) {
+  int ret = (pos + p->current_origin     == p->buffer_size) ||
+            (pos + p->current_origin + 1 == p->buffer_size  &&
+   p->buffer[pos + p->current_origin]    == p->SPACE);
+  return ret;
+}
+
+
+/**
+ * This is the core function of the Locate program.
+ * Returns the number of times the exploration reaches a final state and adds a match
+ */
+int locate(OptimizedFst2State current_state,
+             int pos,
+             struct parsing_info** matches,
+             struct locate_n_matches* n_matches,
+             struct list_context* ctx,
+             struct locate_parameters* p) {
+  // put the arguments of the locate call on the global environment
+  //p->elg->set_locate_call_params(current_state, pos, matches, n_matches, ctx, p);
+
+  // save the minimal unit of analysis
+  LocateMode locate_mode = p->locate_mode;
+
+  int locate_matches = n_matches->maingraph;
+
+  // call locate
+  core_tokenized_locate(current_state, pos, matches, n_matches, ctx, p);
+
+  // restore the minimal unit of analysis
+  p->locate_mode = locate_mode;
+
+  // put the arguments of the locate call on the global environment
+  //p->elg->set_locate_call_params(current_state, pos, matches, n_matches, ctx, p);
+  return n_matches->maingraph - locate_matches;
+}
+
+int extended_locate(unichar* output,
+                    int start,
+                    int end,
+                    int previous_stack_top,
+                    int previous_weight,
+                    int append_space_on_merge_mode,
+                    OptimizedFst2State current_state,
+                    int pos,
+                    struct parsing_info** matches,
+                    struct locate_n_matches* n_matches,
+                    struct list_context* ctx,
+                    struct locate_parameters* p) {
+  if (p->output_policy == MERGE_OUTPUTS && append_space_on_merge_mode) {
+      push_input_char(p->literal_output, ' ', p->protect_dic_chars);
+  }
+
+  // to store extended outputs and render literal outputs
+  extended_output_render r;
+
+  // when outputs are not ignored the current extended output
+  // is processed
+  if (p->output_policy != IGNORE_OUTPUTS) {
+      /* We process its output */
+      if (!deal_with_extended_output(output,p,&r)) {
+          return 0;
+      }
+  }
+
+  // when we're capturing output variables in debug mode,
+  // deal_with_extended_output() push some control characters
+  // to the literal stack. We use the following variable
+  // to keep the current stack while processing an extended
+  // output which returns multiple values
+  int stack_top_extended_output = p->literal_output->top;
+
+  // if the cardinality is equal to zero this means no output,
+  // this happens, e.g., when the p->output_policy is equal
+  // to IGNORE_OUTPUTS or when the current output is empty,
+  // a cardinality equal or greater than 1 means that there
+  // are at least n literals outputs associated to the
+  // current extended output
+  int count = r.cardinality == 0 ? 1 : r.cardinality;
+  int n = 0;
+
+  int loop_matches = 0;
+  int locate_matches = 0;
+  int captured_chars = 0;
+  int n_count = 0;
+
+  struct stack_unichar* literal_output = NULL;
+
+  // loop over all literal outputs
+  // the loop could be break using the cut operator:
+  // !  : break after first match
+  while (n < count) {
+    captured_chars=0;
+
+    // when the output_policy is equal to IGNORE_OUTPUTS, then
+    // r.cardinality is always 0. If r.cardinality is 0 then
+    // r.render(n) always returns NULL
+    literal_output = r.render(n);
+
+    // if literal_output is NULL append_literal_output() does
+    // nothing, otherwise it appends the given output to the
+    // literal stack
+    append_literal_output(literal_output, p, &captured_chars);
+
+    if (p->output_policy == MERGE_OUTPUTS) {
+        /* Then, if we are in merge mode, we push the tokens that have
+         * been read to the output */
+        for (int y = start; y < end; y++) {
+          push_input_string(
+              p->literal_output,
+              p->tokens->value[p->buffer[y + p->current_origin]],
+              p->protect_dic_chars);
+        }
+    }
+
+    //  we continue the exploration of the grammar
+    locate_matches = locate(current_state,
+                            end,
+                            matches,
+                            n_matches,
+                            ctx,
+                            p);
+
+    // once we have finished, we restore to the previous status
+
+    // we restore the weight
+    p->weight = previous_weight;
+
+    // we restore the current output stack
+    p->literal_output->top = stack_top_extended_output;
+
+    // we restore the output variables
+    if (p->nb_output_variables != 0) {
+      remove_chars_from_output_variables(p->output_variables,
+                                         captured_chars);
+    }
+
+    // if we have at least two remaining outputs and the exploration
+    // of the grammar reached a final state, then we can apply the
+    // stop after policy
+    if (count - n > 1 && locate_matches) {
+      loop_matches += locate_matches;
+      // try to cut the remaining outputs
+      r.cut(&n, &loop_matches, &n_count);
+    }
+
+    // next literal output
+    n++;
+  } // while (i < count)
+
+  // we restore the stack
+  p->literal_output->top = previous_stack_top;
+
+  return 1;
+}
 
 /**
  * This is the core function of the Locate program.
  */
-void locate(/*int graph_depth,*/ /* 0 means that we are in the top level graph */
+void core_tokenized_locate(/*int graph_depth,*/ /* 0 means that we are in the top level graph */
 OptimizedFst2State current_state, /* current state in the grammar */
 int pos, /* position in the token buffer, relative to the current origin */
 //int depth, /* number of nested calls to 'locate' */
 struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
-int *n_matches, /* number of sequences that have matched. It may be different from
+struct locate_n_matches* n_matches, /* number of sequences that have matched. It may be different from
  * the length of the 'matches' list if a given sequence can be
  * matched in several ways. It is used to detect combinatorial
  * explosions due to bad written grammars. */
 struct list_context* ctx, /* information about the current context, if any */
 struct locate_parameters* p /* miscellaneous parameters needed by the function */
 ) {
-#ifdef REGEX_FACADE_ENGINE
-    int filter_number;
-#endif
-    int pos2 = -1, ctrl = 0, end_of_compound;
-    int token, token2;
-    Transition* t1;
-    int stack_top = p->stack->stack_pointer;
-    int old_weight1=p->weight;
-    unichar* output;
-    int captured_chars;
+    // the minimal unit of analysis is the token
+    p->locate_mode = TOKENIZED_MODE;
 
     if ((p->counting_step.count_cancel_trying) == 0) {
 
-        if (p->is_in_cancel_state != 0)
-            return;
+      if (p->is_in_cancel_state != 0) {
+        return;
+      }
 
-        if (p->is_in_trace_state == 0) {
-
-            if ((p->max_count_call) > 0) {
-                if ((p->counting_step.count_call) >= (p->max_count_call)) {
-                    p->counting_step.count_cancel_trying = 0;
-                    p->is_in_cancel_state = 1;
-                    return;
-                }
-            }
-
-            p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
-            if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
-                    +COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-                p->counting_step.count_cancel_trying = (p->max_count_call) - (p->counting_step.count_call);
-            }
-
-            if (is_cancelling_requested() != 0) {
-                p->counting_step.count_cancel_trying = 0;
-                p->is_in_cancel_state = 2;
-                return;
-            }
-            (p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
+      if ((p->max_count_call) > 0) {
+        if ((p->counting_step.count_call) >= (p->max_count_call)) {
+          p->counting_step.count_cancel_trying = 0;
+          p->is_in_cancel_state = 1;
+          return;
         }
-        else
-        {
-            if ((p->fnc_locate_trace_step != NULL)) {
-                locate_trace_info* lti;
-                lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->al.prv_alloc_trace_info_allocator);
-                if (lti==NULL) {
-                    fatal_alloc_error("locate");
-                }
-                lti->size_struct_locate_trace_info = (int)sizeof(locate_trace_info);
-                lti->is_on_morphlogical = 0;
+      }
 
-                lti->pos_in_tokens=pos;
+      p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
+      if (((p->max_count_call) > 0)
+          && (((p->counting_step.count_call) + COUNT_CANCEL_TRYING_INIT_CONST)
+              > (p->max_count_call))) {
+        p->counting_step.count_cancel_trying = (p->max_count_call)
+            - (p->counting_step.count_call);
+      }
 
-                lti->current_state=current_state;
-
-                lti->current_state_index=0;
-                lti->pos_in_chars=0;
-
-                lti->matches=matches;
-                lti->n_matches=(n_matches == NULL) ? (-1) : (*n_matches);
-                lti->ctx=ctx;
-                lti->p=p;
-
-                lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
-
-                lti->jamo=NULL;
-                lti->pos_in_jamo=0;
-
-                p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(lti,p->private_param_locate_trace);
-                free_cb(lti,p->al.prv_alloc_trace_info_allocator);
-            }
-
-            if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {
-                if ((p->max_count_call) > 0) {
-                    if ((p->counting_step.count_call) >= (p->max_count_call)) {
-                        p->counting_step.count_cancel_trying = 0;
-                        p->is_in_cancel_state = 1;
-                        return;
-                    }
-                }
-
-                p->counting_step_count_cancel_trying_real_in_debug_or_trace = COUNT_CANCEL_TRYING_INIT_CONST;
-                if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
-                        +COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-                    p->counting_step_count_cancel_trying_real_in_debug_or_trace = (p->max_count_call) - (p->counting_step.count_call);
-                }
-
-                if (is_cancelling_requested() != 0) {
-                    p->counting_step.count_cancel_trying = 0;
-                    p->is_in_cancel_state = 2;
-                    return;
-                }
-                (p->counting_step.count_call) += (p->counting_step_count_cancel_trying_real_in_debug_or_trace);
-            }
-
-            p->counting_step_count_cancel_trying_real_in_debug_or_trace --;
-            //  prepare now to be at 0 after the "--" (we don't want another test for performance */
-            (p->counting_step.count_cancel_trying)++;
-        }
+      if (is_cancelling_requested() != 0) {
+        p->counting_step.count_cancel_trying = 0;
+        p->is_in_cancel_state = 2;
+        return;
+      }
+      (p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
     }
+
     (p->counting_step.count_cancel_trying)--;
 
-    /* The following static variable holds the number of matches at
-     * one position in text. */
-    //static int n_matches_at_token_pos;
-
-
-    p->explore_depth ++ ;
+    p->explore_depth++;
 
 /*
     if (p->explore_depth == 0) {
@@ -505,8 +607,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
     }
 */
-
-
     if ((p->explore_depth) > p->stack_max) {
         /* If there are too much recursive calls */
         error_at_token_pos("\nMaximal stack size reached!\n"
@@ -524,6 +624,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         p->explore_depth -- ;
         return;
     }
+
+    int old_weight1=p->weight;
+
+    int stack_top = p->literal_output->top;
+
     if (current_state->control & 1) {
         /* If we are in a final state... */
         if (ctx != NULL) {
@@ -536,6 +641,12 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         /* In we are in the top level graph, we have a match */
         if ((p->graph_depth) == 0) {
             (p->token_error_ctx.n_matches_at_token_pos__morphological_locate)++;
+
+            p->elg->save_local_environment();
+
+            // this is to track if the match is effectively added
+            struct match_list* latest_match = p->match_cache_last;
+
             if (p->output_policy == IGNORE_OUTPUTS) {
                 if (pos > 0) {
                     add_match(pos + p->current_origin-1,NULL, p, p->al.prv_alloc_generic);
@@ -543,18 +654,22 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                     add_match(pos + p->current_origin,NULL, p, p->al.prv_alloc_generic);
                 }
             } else {
-                p->stack->stack[stack_top + 1] = '\0';
+                p->literal_output->buffer[stack_top + 1] = '\0';
                 if (pos > 0) {
                     add_match(pos + p->current_origin-1,
-                            p->stack->stack + p->left_ctx_base, p, p->al.prv_alloc_generic);
+                            p->literal_output->buffer + p->left_ctx_base, p, p->al.prv_alloc_generic);
                 } else {
                     add_match(pos + p->current_origin,
-                            p->stack->stack + p->left_ctx_base, p, p->al.prv_alloc_generic);
+                            p->literal_output->buffer + p->left_ctx_base, p, p->al.prv_alloc_generic);
                 }
+            }
+            // increase the number of matches at the top level
+            if(latest_match != p->match_cache_last) {
+              (n_matches->maingraph)++;
             }
         } else {
             /* If we are in a subgraph */
-            if (*n_matches >= p->max_matches_per_subgraph) {
+            if (n_matches->subgraph >= p->max_matches_per_subgraph) {
                 /* If there are too much matches, we suspect an error in the grammar
                  * like an infinite recursion */
                 error_at_token_pos(
@@ -565,52 +680,26 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
             } else {
                 /* If everything is fine, we add this match to the match list of the
                  * current graph level */
-                (*n_matches)++;
-                p->stack->stack[stack_top + 1] = '\0';
+                (n_matches->subgraph)++;
+                p->literal_output->buffer[stack_top + 1] = '\0';
                 if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
                     (*matches) = insert_if_different(pos, -1, -1, (*matches),
-                            p->stack->stack_pointer,
-                            &(p->stack->stack[p->stack_base + 1]),
+                            p->literal_output->top,
+                            &(p->literal_output->buffer[p->stack_base + 1]),
                             p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
                             p->left_ctx_base, NULL, -1, NULL, p->weight,&p->al.pa);
                 } else {
                     (*matches) = insert_if_absent(pos, -1, -1, (*matches),
-                            p->stack->stack_pointer,
-                            &(p->stack->stack[p->stack_base + 1]),
+                            p->literal_output->top,
+                            &(p->literal_output->buffer[p->stack_base + 1]),
                             p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
                             p->left_ctx_base, NULL, -1, NULL, p->weight,&p->al.pa);
                 }
             }
         }
     }
-    int end_of_text = pos + p->current_origin == p->buffer_size;
-    /* The same, but tolerant if there is a remaining space */
-    int end_of_text2 = pos + p->current_origin + 1 == p->buffer_size
-            && p->buffer[pos + p->current_origin] == p->SPACE;
 
-    /* If we have reached the end of the token buffer, we indicate it by setting
-     * the current tokens to -1 */
-    if ((((pos + p->current_origin) >= p->buffer_size)) || (pos==-1)) {
-        token = -1;
-        token2 = -1;
-    } else {
-        token = p->buffer[pos + p->current_origin];
-        if (token == p->SPACE) {
-            pos2 = pos + 1;
-        }
-        /* Now, we deal with the SPACE, if any. To do that, we use several variables:
-         * pos: current position in the token buffer, relative to the current origin
-         * pos2: position of the first non-space token from 'pos'.
-         * token2: token at pos2  or -1 if 'pos2' is outside the token buffer */
-        else {
-            pos2 = pos;
-        }
-        if ((pos2 + p->current_origin) >= p->buffer_size) {
-            token2 = -1;
-        } else {
-            token2 = p->buffer[pos2 + p->current_origin];
-        }
-    }
+    Transition* t1;
 
     /**
      * SUBGRAPHS
@@ -652,7 +741,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
             while (t1 != NULL) {
                 /* We reset some parameters before exploring the subgraph */
                 struct parsing_info* L = NULL;
-                p->stack_base = p->stack->stack_pointer;
+                p->stack_base = p->literal_output->top;
                 p->dic_variables = NULL;
                 if (dic_variables_backup != NULL) {
                     p->dic_variables = clone_dic_variable_list(dic_variables_backup);
@@ -663,12 +752,18 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
                 p->graph_depth ++ ;
                 p->weight=-1;
-                int n_matches_in_subgraph=0;
+
+                struct locate_n_matches n_local_matches;
+
                 locate(/*graph_depth + 1,*/ /* Exploration of the subgraph */
                        p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
-                       pos, &L, &n_matches_in_subgraph, NULL, /* ctx is set to NULL because the end of a context must occur in the
+                       pos, &L, &n_local_matches, NULL, /* ctx is set to NULL because the end of a context must occur in the
                          * same graph than its beginning */
                        p);
+
+                n_matches->maingraph += n_local_matches.maingraph;
+                n_matches->subgraph  += n_local_matches.subgraph;
+
                 p->graph_depth -- ;
 
                 p->stack_base = old_StackBase;
@@ -681,9 +776,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                     do {
                         /* We restore the settings that we had at the end of the subgraph exploration */
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            u_strcpy(&(p->stack->stack[stack_top + 1]),
+                            u_strcpy(&(p->literal_output->buffer[stack_top + 1]),
                                     L->stack);
-                            p->stack->stack_pointer = L->stack_pointer;
+                            p->literal_output->top = L->stack_pointer;
 
                             if (save_previous_ptr_var == NULL && ctx==NULL) {
                                 save_previous_ptr_var
@@ -723,7 +818,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
                         p->left_ctx_shift = old_left_ctx_shift;
                         p->left_ctx_base = old_left_ctx_base;
-                        p->stack->stack_pointer = stack_top;
+                        p->literal_output->top = stack_top;
                         if (p->dic_variables != NULL) {
                             clear_dic_variable_list(&(p->dic_variables));
                         }
@@ -747,7 +842,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         } while ((graph_call_list = graph_call_list->next) != NULL);
         /* Finally, we have to restore the stack and other backup stuff */
         p->weight=old_weight2;
-        p->stack->stack_pointer = stack_top;
+        p->literal_output->top = stack_top;
         p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
         if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
             if (save_previous_ptr_var != NULL) {
@@ -774,18 +869,47 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         p->dic_variables = dic_variables_backup;
     } /* End of processing subgraphs */
 
+    /* If we have reached the end of the token buffer, we indicate it by setting
+     * the current tokens to -1 */
+    int token, token2, pos2 = -1;
+    if ((((pos + p->current_origin) >= p->buffer_size)) || (pos==-1)) {
+        token = -1;
+        token2 = -1;
+    } else {
+        token = p->buffer[pos + p->current_origin];
+        if (token == p->SPACE) {
+            pos2 = pos + 1;
+        }
+        /* Now, we deal with the SPACE, if any. To do that, we use several variables:
+         * pos: current position in the token buffer, relative to the current origin
+         * pos2: position of the first non-space token from 'pos'.
+         * token2: token at pos2  or -1 if 'pos2' is outside the token buffer */
+        else {
+            pos2 = pos;
+        }
+        if ((pos2 + p->current_origin) >= p->buffer_size) {
+            token2 = -1;
+        } else {
+            token2 = p->elg->call_token_event(p, ELG_MAIN_EVENT_TOKEN, &pos2, &p->current_origin);
+        }
+    }
+
+    unichar* output;
+    int captured_chars;
+#ifdef REGEX_FACADE_ENGINE
+    int filter_number;
+#endif
+
     /**
      * METAS
      */
     struct opt_meta* meta_list = current_state->metas;
-    if (meta_list != NULL) {
-        /* We cache the control bytes of the pos2 token. The pos token has not interest,
-         * because it is 1) a space or 2) equal to the pos2 one. */
-        if (token2 != -1)
-            ctrl = p->token_control[token2];
-        else
-            ctrl = 0;
-    }
+    /* We cache the control bytes of the pos2 token. The pos token has not interest,
+     * because it is 1) a space or 2) equal to the pos2 one. */
+    int ctrl = meta_list != NULL && token2 != -1 ? p->token_control[token2] : 0;
+
+    int end_of_compound = -1;
+
     while (meta_list != NULL) {
         /* We process all the meta of the list */
         t1 = meta_list->transition;
@@ -857,12 +981,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
             case META_TEXT_END:
                 p->no_fail_fast=1;
-                if (end_of_text || end_of_text2) {
+                if (at_text_end(p,pos)) {
                     start = pos;
                     end = pos;
                 }
                 break;
-
             case META_WORD:
             case META_MOT:
                 update_last_tested_position(p, pos2);
@@ -912,18 +1035,20 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                              * As we don't want to process lists of [start,end[ ranges, we
                              * directly handle here the case of a token sequence. */
                             if (p->output_policy == MERGE_OUTPUTS && pos2!=pos) {
-                                push_input_char(p->stack, ' ',
+                                push_input_char(p->literal_output, ' ',
                                         p->protect_dic_chars);
                             }
                             captured_chars=0;
                             if (p->output_policy != IGNORE_OUTPUTS) {
-                                if (!deal_with_output(output,p,&captured_chars)) {
+                                extended_output_render r;
+                                if (!deal_with_extended_output(output,p,&r)) {
                                     break;
                                 }
+                                append_literal_output(r.render(0), p, &captured_chars);
                             }
                             if (p->output_policy == MERGE_OUTPUTS) {
                                 for (int x = pos2; x <= end_of_compound; x++) {
-                                    push_input_string(p->stack,
+                                    push_input_string(p->literal_output,
                                             p->tokens->value[p->buffer[x
                                                     + p->current_origin]],
                                             p->protect_dic_chars);
@@ -933,7 +1058,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                                     p->optimized_states[t1->state_number],
                                     end_of_compound + 1, matches,
                                     n_matches, ctx, p);
-                            p->stack->stack_pointer = stack_top;
+                            p->literal_output->top = stack_top;
                             p->weight=old_weight1;
                             if (p->nb_output_variables != 0) {
                                 remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -998,17 +1123,19 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                          * of [start,end[ ranges, we directly handle here the case of a
                          * token sequence. */
                         if (p->output_policy == MERGE_OUTPUTS && pos2!=pos) {
-                            push_input_char(p->stack, ' ', p->protect_dic_chars);
+                            push_input_char(p->literal_output, ' ', p->protect_dic_chars);
                         }
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_output(output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(output,p,&r)) {
                                 break;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
                             for (int x = pos2; x <= end_of_compound; x++) {
-                                push_input_string(p->stack,
+                                push_input_string(p->literal_output,
                                         p->tokens->value[p->buffer[x
                                                 + p->current_origin]],
                                         p->protect_dic_chars);
@@ -1022,7 +1149,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                         if (p->nb_output_variables != 0) {
                             remove_chars_from_output_variables(p->output_variables,captured_chars);
                         }
-                        p->stack->stack_pointer = stack_top;
+                        p->literal_output->top = stack_top;
                     }
                 }
                 /* Anyway, we could have a tag compound word like {aujourd'hui,.ADV} */
@@ -1045,7 +1172,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 }
                 break;
 
-                            case META_UPPER: case META_MAJ:
+             case META_UPPER: case META_MAJ:
                 if (token2 == -1)
                     break;
                 update_last_tested_position(p, pos2);
@@ -1068,7 +1195,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 }
                 break;
 
-                        case META_LOWER: case META_MIN:
+             case META_LOWER: case META_MIN:
                 if (token2 == -1)
                     break;
                 update_last_tested_position(p, pos2);
@@ -1091,7 +1218,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 }
                 break;
 
-                        case META_FIRST: case META_PRE:
+             case META_FIRST: case META_PRE:
                 if (token2 == -1)
                     break;
                 update_last_tested_position(p, pos2);
@@ -1190,7 +1317,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 }
                 if (p->output_policy == MERGE_OUTPUTS) {
                     if (pos2 != pos)
-                        push_input_char(p->stack, ' ', p->protect_dic_chars);
+                        push_input_char(p->literal_output, ' ', p->protect_dic_chars);
                 }
                 /* we don't know if enter_morphological_mode will modify variable
                  so we increment the dirty flag, without any associated decrement, to be sure
@@ -1198,7 +1325,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 inc_dirty(p->backup_memory_reserve);
                 enter_morphological_mode(/*graph_depth,*/ t1->state_number, pos2,
                         matches, n_matches, ctx, p);
-                p->stack->stack_pointer = stack_top;
+                p->literal_output->top = stack_top;
                 break;
 
             case META_END_MORPHO:
@@ -1206,9 +1333,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 fatal_error("Unexpected morphological mode end tag $>\n");
                 break;
 
-            // avoid ‘META_LETTER’ and ‘META_LETTRE’ not handled in switch warning
+            // avoid ‘META_LETTER’ not handled in switch warning
             case META_LETTER:
-            case META_LETTRE:
               // do nothing
               break;
 
@@ -1220,7 +1346,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                     p->left_ctx_shift = pos2;
                 }
                 int old_left_ctx_stack_base = p->left_ctx_base;
-                p->left_ctx_base = p->stack->stack_pointer + 1;
+                p->left_ctx_base = p->literal_output->top + 1;
                 /*int* var_backup=NULL;
                  if (p->output_policy!=IGNORE_OUTPUTS) {
                  var_backup=create_variable_backup(p->variables);
@@ -1235,92 +1361,79 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 p->weight=old_weight1;
                 p->left_ctx_shift = current_shift;
                 p->left_ctx_base = old_left_ctx_stack_base;
-                p->stack->stack_pointer = stack_top;
+                p->literal_output->top = stack_top;
                 break;
             } /* End of the switch */
 
+            // if the transition has matched
             if (start != -1) {
-                /* If the transition has matched */
-                if (p->output_policy == MERGE_OUTPUTS && start == pos2 && pos2!=pos) {
-                    push_input_char(p->stack, ' ', p->protect_dic_chars);
-                }
-                captured_chars=0;
-                if (p->output_policy != IGNORE_OUTPUTS) {
-                    /* We process its output */
-                    if (!deal_with_output(output,p,&captured_chars)) {
-                        goto next;
-                    }
-                }
-                if (p->output_policy == MERGE_OUTPUTS) {
-                    /* Then, if we are in merge mode, we push the tokens that have
-                     * been read to the output */
-                    for (int y = start; y < end; y++) {
-                        push_input_string(p->stack,
-                                p->tokens->value[p->buffer[y
-                                        + p->current_origin]],
-                                p->protect_dic_chars);
-                    }
-                }
-                /* Then, we continue the exploration of the grammar */
-                locate(/*graph_depth,*/ p->optimized_states[t1->state_number], end,
-                        matches, n_matches, ctx, p);
-                /* Once we have finished, we restore the stack */
-                p->weight=old_weight1;
-                p->stack->stack_pointer = stack_top;
-                if (p->nb_output_variables != 0) {
-                  remove_chars_from_output_variables(p->output_variables,captured_chars);
-                }
+              if(!(extended_locate(
+                     output,
+                     start,
+                     end,
+                     stack_top,
+                     old_weight1,
+                     start == pos2 && pos2!=pos,
+                     p->optimized_states[t1->state_number],
+                     end,
+                     matches,
+                     n_matches,
+                     ctx,
+                     p))) {
+                goto next;
+              }
             }
             next: t1 = t1->next;
         }
         meta_list = meta_list->next;
     }
 
-/**
- * OUTPUT VARIABLE STARTS
- */
-struct opt_variable* output_variable_list = current_state->output_variable_starts;
-Ustring* recycle_Ustring=NULL;
-while (output_variable_list != NULL) {
+    /**
+     * OUTPUT VARIABLE STARTS
+     */
+    struct opt_variable* output_variable_list = current_state->output_variable_starts;
+    Ustring* recycle_Ustring=NULL;
+    while (output_variable_list != NULL) {
 
-    if (recycle_Ustring==NULL) {
-        recycle_Ustring=new_Ustring();
+        if (recycle_Ustring==NULL) {
+            recycle_Ustring=new_Ustring();
+        }
+        else {
+            empty(recycle_Ustring);
+        }
+        swap_output_variable_content(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
+
+        set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+        locate(/*graph_depth,*/
+                p->optimized_states[output_variable_list->transition->state_number],
+                pos, matches, n_matches, ctx, p);
+        p->weight=old_weight1;
+        unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+
+        swap_output_variable_content(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
+
+        p->literal_output->top = stack_top;
+        output_variable_list=output_variable_list->next;
     }
-    else {
-        empty(recycle_Ustring);
+    if (recycle_Ustring!=NULL) {
+        free_Ustring(recycle_Ustring);
+        recycle_Ustring=NULL;
     }
-    swap_output_variable_content(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
 
-    set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
-    locate(/*graph_depth,*/
-            p->optimized_states[output_variable_list->transition->state_number],
-            pos, matches, n_matches, ctx, p);
-    p->weight=old_weight1;
-    unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
-
-    swap_output_variable_content(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
-
-    p->stack->stack_pointer = stack_top;
-    output_variable_list=output_variable_list->next;
-}
-if (recycle_Ustring!=NULL) {
-    free_Ustring(recycle_Ustring);
-    recycle_Ustring=NULL;
-}
-/**
- * OUTPUT VARIABLE ENDS
- */
-output_variable_list = current_state->output_variable_ends;
-while (output_variable_list != NULL) {
-    unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
-    locate(/*graph_depth,*/
-            p->optimized_states[output_variable_list->transition->state_number],
-            pos, matches, n_matches, ctx, p);
-    p->weight=old_weight1;
-    set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
-    p->stack->stack_pointer = stack_top;
-    output_variable_list=output_variable_list->next;
-}
+    /**
+     * OUTPUT VARIABLE ENDS
+     */
+    output_variable_list = current_state->output_variable_ends;
+    while (output_variable_list != NULL) {
+        unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+        locate(/*graph_depth,*/
+                p->optimized_states[output_variable_list->transition->state_number],
+                pos, matches, n_matches, ctx, p);
+        p->weight=old_weight1;
+        set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+        p->literal_output->top = stack_top;
+        output_variable_list=output_variable_list->next;
+    }
 
     /**
      * VARIABLE STARTS
@@ -1339,7 +1452,7 @@ while (output_variable_list != NULL) {
                 p->optimized_states[variable_list->transition->state_number],
                 pos, matches, n_matches, ctx, p);
         p->weight=old_weight1;
-        p->stack->stack_pointer = stack_top;
+        p->literal_output->top = stack_top;
         if (ctx == NULL) {
             /* We do not restore previous value if we are inside a context, in order
              * to allow extracting things from contexts (see the
@@ -1371,7 +1484,7 @@ while (output_variable_list != NULL) {
                 p->optimized_states[variable_list->transition->state_number],
                 pos, matches, n_matches, ctx, p);
         p->weight=old_weight1;
-        p->stack->stack_pointer = stack_top;
+        p->literal_output->top = stack_top;
         if (ctx == NULL) {
             /* We do not restore previous value if we are inside a context, in order
              * to allow extracting things from contexts (see the
@@ -1389,6 +1502,7 @@ while (output_variable_list != NULL) {
     struct opt_contexts* contexts = current_state->contexts;
     if (contexts != NULL) {
         Transition* t2;
+        locate_n_matches context_matches;
         for (int n_ctxt = 0; n_ctxt < contexts->size_positive; n_ctxt = n_ctxt
                 + 2) {
             t2 = contexts->positive_mark[n_ctxt];
@@ -1396,14 +1510,15 @@ while (output_variable_list != NULL) {
                 /* The optimization may have nulled transitions in this array */
                 continue;
             }
+
             /* We look for a positive context from the current position */
             struct list_context* c = new_list_context(0, ctx, p->al.prv_alloc_context);
             locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
-                    NULL, 0, c, p);
+                    NULL, &context_matches, c, p);
             p->weight=old_weight1;
             /* Note that there is no match to free since matches cannot be built within a context */
-            p->stack->stack_pointer = stack_top;
-            p->stack->stack[stack_top+1]='\0';
+            p->literal_output->top = stack_top;
+            p->literal_output->buffer[stack_top+1]='\0';
             if (c->n) {
                 /* If the context has matched, then we can explore all the paths
                  * that starts from the context end */
@@ -1415,21 +1530,21 @@ while (output_variable_list != NULL) {
                      * but we remove the input part in order
                      * not to produce an invalid concordance
                      */
-                    backup=u_strdup(p->stack->stack);
-                    u_strcat(p->stack->stack,c->output+stack_top+1);
-                    int pos3=u_strlen(p->stack->stack);
-                    p->stack->stack_pointer=pos3-1;
+                    backup=u_strdup(p->literal_output->buffer);
+                    u_strcat(p->literal_output->buffer,c->output+stack_top+1);
+                    int pos3=u_strlen(p->literal_output->buffer);
+                    p->literal_output->top=pos3-1;
                 }
                 while (states != NULL) {
                     locate(/*graph_depth,*/
                             p->optimized_states[states->state_number], pos,
                             matches, n_matches, ctx, p);
                     p->weight=old_weight1;
-                    p->stack->stack_pointer = stack_top;
+                    p->literal_output->top = stack_top;
                     states = states->next;
                 }
                 if (p->debug) {
-                    u_strcpy(p->stack->stack,backup);
+                    u_strcpy(p->literal_output->buffer,backup);
                     free(backup);
                 }
             }
@@ -1441,10 +1556,10 @@ while (output_variable_list != NULL) {
             /* We look for a negative context from the current position */
             struct list_context* c = new_list_context(0, ctx, p->al.prv_alloc_context);
             locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
-                    NULL, 0, c, p);
+                    NULL, &context_matches, c, p);
             p->weight=old_weight1;
             /* Note that there is no matches to free since matches cannot be built within a context */
-            p->stack->stack_pointer = stack_top;
+            p->literal_output->top = stack_top;
             if (!c->n) {
                 /* If the context has not matched, then we can explore all the paths
                  * that starts from the context end */
@@ -1454,7 +1569,7 @@ while (output_variable_list != NULL) {
                             p->optimized_states[states->state_number], pos,
                             matches, n_matches, ctx, p);
                     p->weight=old_weight1;
-                    p->stack->stack_pointer = stack_top;
+                    p->literal_output->top = stack_top;
                     states = states->next;
                 }
             }
@@ -1475,8 +1590,8 @@ while (output_variable_list != NULL) {
              * and we return */
             ctx->n = 1;
             if (ctx->output==NULL) {
-                p->stack->stack[p->stack->stack_pointer+1]='\0';
-                set_list_context_output(ctx,p->stack->stack);
+                p->literal_output->buffer[p->literal_output->top+1]='\0';
+                set_list_context_output(ctx,p->literal_output->buffer);
             }
             p->explore_depth -- ;
             return;
@@ -1521,17 +1636,19 @@ while (output_variable_list != NULL) {
 #endif
                 if (OK) {
                     if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
-                        push_input_char(p->stack, ' ', p->protect_dic_chars);
+                        push_input_char(p->literal_output, ' ', p->protect_dic_chars);
                     }
                     captured_chars=0;
                     if (p->output_policy != IGNORE_OUTPUTS) {
-                        if (!deal_with_output(output,p,&captured_chars)) {
+                        extended_output_render r;
+                        if (!deal_with_extended_output(output,p,&r)) {
                             goto next4;
                         }
+                        append_literal_output(r.render(0), p, &captured_chars);
                     }
                     if (p->output_policy == MERGE_OUTPUTS) {
                         for (int x = pos2; x <= end_of_compound; x++) {
-                            push_input_string(p->stack,
+                            push_input_string(p->literal_output,
                                     p->tokens->value[p->buffer[x
                                             + p->current_origin]],
                                     p->protect_dic_chars);
@@ -1541,7 +1658,7 @@ while (output_variable_list != NULL) {
                             end_of_compound + 1, matches, n_matches,
                             ctx, p);
                     p->weight=old_weight1;
-                    p->stack->stack_pointer = stack_top;
+                    p->literal_output->top = stack_top;
                     remove_chars_from_output_variables(p->output_variables,captured_chars);
                 }
             }
@@ -1581,17 +1698,19 @@ while (output_variable_list != NULL) {
 #endif
                 if (OK) {
                     if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
-                        push_input_char(p->stack, ' ', p->protect_dic_chars);
+                        push_input_char(p->literal_output, ' ', p->protect_dic_chars);
                     }
                     captured_chars=0;
                     if (p->output_policy != IGNORE_OUTPUTS) {
-                        if (!deal_with_output(output,p,&captured_chars)) {
+                        extended_output_render r;
+                        if (!deal_with_extended_output(output,p,&r)) {
                             goto next6;
                         }
+                        append_literal_output(r.render(0), p, &captured_chars);
                     }
                     if (p->output_policy == MERGE_OUTPUTS) {
                         for (int x = pos2; x <= end_of_compound; x++) {
-                            push_input_string(p->stack,
+                            push_input_string(p->literal_output,
                                     p->tokens->value[p->buffer[x
                                             + p->current_origin]],
                                     p->protect_dic_chars);
@@ -1601,7 +1720,7 @@ while (output_variable_list != NULL) {
                             end_of_compound + 1, matches, n_matches,
                             ctx, p);
                     p->weight=old_weight1;
-                    p->stack->stack_pointer = stack_top;
+                    p->literal_output->top = stack_top;
                     remove_chars_from_output_variables(p->output_variables,captured_chars);
                 }
                 /* This useless empty block is just here to enable the declaration of the next6 label */
@@ -1621,16 +1740,18 @@ while (output_variable_list != NULL) {
                             pattern_list->pattern_number),
                             pattern_list->negation)) {
                         if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
-                            push_input_char(p->stack, ' ', p->protect_dic_chars);
+                            push_input_char(p->literal_output, ' ', p->protect_dic_chars);
                         }
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_output(output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(output,p,&r)) {
                                 goto next2;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
-                            push_input_string(p->stack,
+                            push_input_string(p->literal_output,
                                     p->tokens->value[token2],
                                     p->protect_dic_chars);
                         }
@@ -1638,7 +1759,7 @@ while (output_variable_list != NULL) {
                                 p->optimized_states[t1->state_number], pos2 + 1,
                                 matches, n_matches, ctx, p);
                         p->weight=old_weight1;
-                        p->stack->stack_pointer = stack_top;
+                        p->literal_output->top = stack_top;
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
                     }
                 } else {
@@ -1647,16 +1768,18 @@ while (output_variable_list != NULL) {
                     if (pattern_list->negation && (p->token_control[token2]
                             & MOT_TOKEN_BIT_MASK)) {
                         if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
-                            push_input_char(p->stack, ' ', p->protect_dic_chars);
+                            push_input_char(p->literal_output, ' ', p->protect_dic_chars);
                         }
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_output(output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(output,p,&r)) {
                                 goto next2;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
-                            push_input_string(p->stack,
+                            push_input_string(p->literal_output,
                                     p->tokens->value[token2],
                                     p->protect_dic_chars);
                         }
@@ -1664,7 +1787,7 @@ while (output_variable_list != NULL) {
                                 p->optimized_states[t1->state_number], pos2 + 1,
                                 matches, n_matches, ctx, p);
                         p->weight=old_weight1;
-                        p->stack->stack_pointer = stack_top;
+                        p->literal_output->top = stack_top;
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
                     }
                 }
@@ -1692,22 +1815,24 @@ while (output_variable_list != NULL) {
                 {
                     output = p->tags[t1->tag_number]->output;
                     if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
-                        push_input_char(p->stack, ' ', p->protect_dic_chars);
+                        push_input_char(p->literal_output, ' ', p->protect_dic_chars);
                     }
                     captured_chars=0;
                     if (p->output_policy != IGNORE_OUTPUTS) {
-                        if (!deal_with_output(output,p,&captured_chars)) {
+                        extended_output_render r;
+                        if (!deal_with_extended_output(output,p,&r)) {
                             goto next3;
                         }
+                        append_literal_output(r.render(0), p, &captured_chars);
                     }
                     if (p->output_policy == MERGE_OUTPUTS) {
-                        push_input_string(p->stack, p->tokens->value[token2],
+                        push_input_string(p->literal_output, p->tokens->value[token2],
                                 p->protect_dic_chars);
                     }
                     locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
                             pos2 + 1, matches, n_matches, ctx, p);
                     p->weight=old_weight1;
-                    p->stack->stack_pointer = stack_top;
+                    p->literal_output->top = stack_top;
                     remove_chars_from_output_variables(p->output_variables,captured_chars);
                 }
                 next3: t1 = t1->next;
@@ -1807,7 +1932,7 @@ static int find_compound_word(int pos, int pattern_number,
 /**
  * Returns a string corresponding to the tokens in the range [start;end].
  */
-static unichar* get_token_sequence(struct locate_parameters*p,
+unichar* get_token_sequence(struct locate_parameters*p,
         int start, int end) {
     unichar* recyclable_buffer = p->recyclable_unichar_buffer;
     unichar* recyclable_buffer_limit = recyclable_buffer + p->size_recyclable_unichar_buffer ;
@@ -1868,13 +1993,13 @@ static void add_match(int end, unichar* output, struct locate_parameters* p, Abs
     if (end > p->last_matched_position) {
         p->last_matched_position = end;
     }
-    int start = p->current_origin + p->left_ctx_shift;
+    int start =  p->current_origin + p->left_ctx_shift;
     unichar* z=output;
     if (p->debug && p->left_ctx_base!=0) {
         /* In debug mode, we always use the whole output. It will be
          * the match writing operation into the concordance index that
          * will rebuild the actual output parsing the full debug one */
-        z=p->stack->stack;
+        z=p->literal_output->buffer;
     }
     remove_matches_with_lesser_weights(p->weight,&(p->match_cache_first),&(p->match_cache_last),prv_alloc);
     if (p->match_cache_first!=NULL && p->match_cache_first->weight>p->weight) {
@@ -2204,11 +2329,9 @@ struct match_list* ptr;
              *  - if the range differs (start and/or end position are different),
              *    a new match is counted
              */
-            if (!(p->start_position_last_printed_match
-                    == l->m.start_pos_in_token
-                    && p->end_position_last_printed_match
-                            == l->m.end_pos_in_token)) {
-                (p->number_of_matches)++;
+            if (!(p->start_position_last_printed_match == l->m.start_pos_in_token &&
+                  p->end_position_last_printed_match   == l->m.end_pos_in_token)) {
+              (p->number_of_matches)++;
             }
         } else {
             /* If we don't allow ambiguous outputs, we count the matches */
@@ -2262,16 +2385,52 @@ struct match_list* ptr;
         }
         p->start_position_last_printed_match = l->m.start_pos_in_token;
         p->end_position_last_printed_match = l->m.end_pos_in_token;
-        if (p->number_of_matches == p->search_limit) {
-            /* If we have reached the search limitation, we free the remaining
-             * matches and return */
+
+        // suppose a single match with 3 ambiguous outputs, if the search limit
+        // is equal to 1, the code below will suppress 2 of the ambiguous outputs,
+        // taking in account that the search limitation is related to matches and
+        // not to the outputs, this behavior is not appropriate.
+//        if (p->number_of_matches == p->search_limit) {
+//            /* If we have reached the search limitation, we free the remaining
+//             * matches and return */
+//            while (l != NULL) {
+//                ptr = l;
+//                l = l->next;
+//                free_match_list_element(ptr, prv_alloc);
+//            }
+//            return NULL;
+//        }
+        // this is an experimental change to avoid the issue described above
+        if ((p->search_limit != -1 && p->number_of_matches == p->search_limit)) {
+          // if no ambiguous outputs are allowed and we have reached the search
+          // limitation, we free the remaining matches and return
+          if (p->ambiguous_output_policy != ALLOW_AMBIGUOUS_OUTPUTS) {
             while (l != NULL) {
                 ptr = l;
                 l = l->next;
                 free_match_list_element(ptr, prv_alloc);
             }
             return NULL;
+          }
+          else {
+          // if ambiguous outputs are allowed and we have reached the search
+          // limitation, we only free the non-ambiguous remaining matches
+            struct match_list* ptr_aux = l;
+            while (l != NULL) {
+              ptr = l;
+              l = l->next;
+              // test if we have a non-ambiguous match
+              if (l && !(p->start_position_last_printed_match == l->m.start_pos_in_token &&
+                         p->end_position_last_printed_match   == l->m.end_pos_in_token)) {
+                ptr->next = l->next;
+                free_match_list_element(l, prv_alloc);
+                l = ptr;
+              }
+            }
+            l = ptr_aux;
+          }
         }
+
         ptr = l->next;
         free_match_list_element(l, prv_alloc);
         return save_matches(ptr, current_position, f, p, prv_alloc);
@@ -2283,7 +2442,7 @@ struct match_list* ptr;
 /**
  * Apply the given shift to all variable bounds in the given variable set.
  */
-void shift_variable_bounds(Variables* v, int shift) {
+void shift_variable_bounds(InputVariables* v, int shift) {
     if (v == NULL) {
         return;
     }

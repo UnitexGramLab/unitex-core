@@ -54,7 +54,8 @@ if (text==NULL) {
 struct list_ustring* tokens=NULL;
 unichar tmp[2];
 tmp[1]='\0';
-for (int l=u_strlen(text)-1;l>=0;l--) {
+int length=u_strlen(text)-1;
+for (int l=length;l>=0;l--) {
    tmp[0]=text[l];
    tokens=new_list_ustring(tmp,tokens);
 }
@@ -71,7 +72,7 @@ struct list_ustring* tokenize_word_by_word(const unichar* text,const Alphabet* a
 if (text==NULL) {
    fatal_error("NULL text in tokenize_word_by_word\n");
 }
-unichar tmp[4096];
+unichar tmp[MAX_TOKEN_LENGTH];
 int pos=0;
 struct list_ustring* tokens=NULL;
 struct list_ustring* end=NULL;
@@ -79,12 +80,12 @@ while (text[pos]!='\0') {
    if (is_letter(text[pos],alphabet)) {
       /* If we have a letter, we must read the whole letter sequence */
       int j=0;
-      while (j<(4096-1) && is_letter(text[pos],alphabet)) {
+      while (j<(MAX_TOKEN_LENGTH-1) && is_letter(text[pos],alphabet)) {
          /* The while loop end if we find a non letter character,
           * including '\0' */
          tmp[j++]=text[pos++];
       }
-      if (j==(4096-1)) {
+      if (j==(MAX_TOKEN_LENGTH-1)) {
          fatal_error("Word too long in tokenize_word_by_word\n");
       }
       tmp[j]='\0';

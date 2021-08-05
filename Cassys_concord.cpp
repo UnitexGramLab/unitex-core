@@ -553,7 +553,7 @@ void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* ve
                     else {
                         infos = (standOffInfo*)realloc(infos, (num_info + 1) * sizeof(standOffInfo));
                         infos[num_info].entList = new_hash_table((HASH_FUNCTION)hash_unichar,
-                                    (EQUAL_FUNCTION)u_equal,(FREE_FUNCTION)free,
+                                    (EQUAL_FUNCTION)((EQUAL_UNICHAR_FUNCTION)u_equal),(FREE_FUNCTION)free,
                                     NULL,(KEYCOPY_FUNCTION)keycopy);
                         infos[num_info].type = (unichar*)malloc(sizeof(unichar) * (u_strlen(type) + 1));
                         u_strcpy(infos[num_info].type,type);

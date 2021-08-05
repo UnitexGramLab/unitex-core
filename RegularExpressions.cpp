@@ -639,6 +639,7 @@ while (value==-1) {
       case 6: {
          /* Should not appear, since we quit the automaton when we have read the final '\0' */
          fatal_error("reg_2_grf: illegal position in state 6\n");
+         break;
       }
       /* state 7 */
       case 7: {

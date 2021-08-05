@@ -67,11 +67,10 @@ class Chrono {
    */
   static const time_unit_t kOneMillisecondInMicroseconds = TIME_UNIT_C(1000);
 
-// /**
-//  * Predefined zero time value, 01/01/1970 00:00:00 (UTC)
-//  */
-// static const Chrono Zero;
-// to be initialized on chrono.cpp as const Chrono Chrono::Zero;
+  /**
+   * Predefined zero time value, 01/01/1970 00:00:00 (UTC)
+   */
+  static const Chrono Zero;
 
   // Constructors
 

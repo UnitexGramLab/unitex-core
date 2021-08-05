@@ -59,5 +59,6 @@
 #include "thread/thread.h"              // Portable thread types and functions
 #include "time/time.h"                  // Portable time-related functions
 #include "unilog/unilog.h"              // Unicode-aware message logging
+#include "unicode/unicode.h"            // Unicode code points handling
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_COMMON_H_                                    // NOLINT

@@ -40,7 +40,7 @@ namespace unitex {
 
 
 /* This enumeration is used to indicate if we use transitions tagged
- * by integers or bu pointers */
+ * by integers or by pointers */
 typedef enum {
    INT_TAGS,
    PTR_TAGS

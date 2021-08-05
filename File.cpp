@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include "File.h"
 #include "Error.h"
+#include "base/vendor/whereami/whereami.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -421,6 +422,29 @@ int get_real_path(const char* filename, char* resolved_name) {
 }
 
 /**
+ * Gets the absolute path of the Unitex program
+ * @return different from SUCCESS_RETURN_CODE if fails
+ * @remarks if exec_path is a null pointer, function will fail
+ * @author Cristian Martinez
+ */
+int get_exec_path(char* exec_path) {
+  // check that the arguments are not NULL pointers
+  fatal_assert(!exec_path, "NULL error in get_exec_path exec_path\n");
+
+  // temporal buffer to store the resolved_name
+  char filename[FILENAME_MAX + 1] = {0};
+
+  // whereami snippet
+  int length, dirname_length;
+  length = wai_getExecutablePath(NULL, 0, &dirname_length);
+  wai_getExecutablePath(filename, length, &dirname_length);
+  filename[dirname_length] = '\0';
+
+  // return real path
+  return get_real_path(filename, exec_path);
+}
+
+/**
  * Takes a file name, removes its extension and adds the suffix "_snt"
  * followed by the separator character.
  *
@@ -431,7 +455,6 @@ remove_extension(filename,result);
 strcat(result,"_snt");
 strcat(result,PATH_SEPARATOR_STRING);
 }
-
 
 /**
  * Takes a file name and copies it without its path, if any, into 'result'.

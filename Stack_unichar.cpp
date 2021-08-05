@@ -37,11 +37,11 @@ struct stack_unichar* s=(struct stack_unichar*)malloc(sizeof(struct stack_unicha
 if (s==NULL) {
    fatal_alloc_error("new_stack_unichar");
 }
-s->stack=(unichar*)malloc(capacity*sizeof(unichar));
-if (s->stack==NULL) {
+s->buffer=(unichar*)malloc(capacity*sizeof(unichar));
+if (s->buffer==NULL) {
    fatal_alloc_error("new_stack_unichar");
 }
-s->stack_pointer=-1;
+s->top=-1;
 s->capacity=capacity;
 return s;
 }
@@ -52,7 +52,7 @@ return s;
  */
 void free_stack_unichar(struct stack_unichar* stack) {
 if (stack==NULL) return;
-if (stack->stack!=NULL) free(stack->stack);
+if (stack->buffer!=NULL) free(stack->buffer);
 free(stack);
 }
 
@@ -64,7 +64,7 @@ int is_empty(const struct stack_unichar* stack) {
 if (stack==NULL) {
    fatal_error("NULL error in is_empty\n");
 }
-return (stack->stack_pointer==-1);
+return (stack->top==-1);
 }
 
 
@@ -75,7 +75,7 @@ void empty(struct stack_unichar* stack) {
 if (stack==NULL) {
    fatal_error("NULL error in empty\n");
 }
-stack->stack_pointer=-1;
+stack->top=-1;
 }
 
 
@@ -86,7 +86,7 @@ int is_full(const struct stack_unichar* stack) {
 if (stack==NULL) {
    fatal_error("NULL error in is_full\n");
 }
-return (stack->stack_pointer==stack->capacity-1);
+return (stack->top==stack->capacity-1);
 }
 
 
@@ -109,20 +109,62 @@ void fatal_error_full_stack_push()
 
 
 /**
+ * Pushes the given source stack on the given destination stack.
+ */
+void push_stack(struct stack_unichar* dst,const struct stack_unichar* src, unsigned int size) {
+  if (dst == NULL || src == NULL) {
+    fatal_error("NULL error in push_stack\n");
+  }
+
+  // if the source stack is empty there is nothing to do
+  if (is_empty(src)) {
+    return;
+  }
+
+  // avoid to push more characters than the capacity of the given source stack
+  if (src->capacity < (int) size ) {
+    size = (unsigned int) src->capacity;
+  }
+
+  // if necessary, we enlarge the internal buffer
+  if ((dst->top + (int) size + 1) >= dst->capacity) {
+    resize(dst, dst->top + (int) size + 1);
+  }
+
+  // push the source stack into the destination one
+  for (unsigned int i = 0; i < size; ++i) {
+    dst->buffer[++(dst->top)] = *(src->buffer + i);
+  }
+}
+
+
+/**
  * Pushes the given characters from an array on the given stack.
  */
 void push_array(struct stack_unichar* stack,const unichar *array,unsigned int size) {
 if (stack==NULL) {
    fatal_error("NULL error in push_array\n");
 }
-if ((stack->stack_pointer + (int)size + 1) >= stack->capacity) {
-   resize(stack,stack->stack_pointer + (int)size + 1);
+if ((stack->top + (int)size + 1) >= stack->capacity) {
+   resize(stack,stack->top + (int)size + 1);
 }
 
 unsigned int i;
 for (i=0;i<size;i++) {
-   stack->stack[++(stack->stack_pointer)]=*(array+i);
+   stack->buffer[++(stack->top)]=*(array+i);
 }
+}
+
+void push_array(struct stack_unichar* stack, const char* array, unsigned int size) {
+  if (stack==NULL) {
+    fatal_error("NULL error in push_array\n");
+  }
+  if ((stack->top + (int)size + 1) >= stack->capacity) {
+    resize(stack,stack->top + (int)size + 1);
+  }
+  for (unsigned int i=0; i<size; ++i) {
+    stack->buffer[++(stack->top)] = (unichar) *(array+i);
+  }
 }
 
 
@@ -133,7 +175,7 @@ unichar pop(struct stack_unichar* stack) {
 if (is_empty(stack)) {
    fatal_error("Cannot pop an empty stack\n");
 }
-return stack->stack[(stack->stack_pointer)--];
+return stack->buffer[(stack->top)--];
 }
 
 } // namespace unitex

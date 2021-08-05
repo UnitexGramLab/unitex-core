@@ -768,7 +768,7 @@ return res;
  *
  * .N+blood=A\+:ms
  */
-void get_codes(const struct dela_entry* e,unichar* codes) {
+int get_codes(const struct dela_entry* e,unichar* codes) {
 int i,l;
 /* First, we add the grammatical and semantic code */
 codes[0]='.';
@@ -785,6 +785,8 @@ for (i=0;i<e->n_inflectional_codes;i++) {
    /* Here, the '+' char does need to be protected */
    escape(e->inflectional_codes[i],&(codes[l+1]),P_COLON_SLASH_BACKSLASH);
 }
+
+return l;
 }
 
 

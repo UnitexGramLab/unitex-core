@@ -76,7 +76,7 @@
 #define UNITEX_PP_STRING_CONCAT(a,b)      UNITEX_PP_STRING_EXPAND(a)b
 
 /**
- * @def    UNITEX_PP_TOKEN_CONCAT
+ * @def    UNITEX_PP_TOKEN_CAT
  * @brief  Token-Concatenation macro without inhibition
  *
  * e.g.

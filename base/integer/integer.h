@@ -44,6 +44,7 @@
 #define UNITEX_BASE_INTEGER_INTEGER_H_                              // NOLINT
 /* ************************************************************************** */
 #include "base/integer/literals.h"
+#include "base/integer/operations.h"
 #include "base/integer/types.h"
 #include "base/integer/wordsize.h"
 /* ************************************************************************** */
