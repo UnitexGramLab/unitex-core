@@ -134,7 +134,7 @@ typedef enum {
   U_FLAG_UPPER_EXPANDS   = 1 << 16,  ///< uppercase expands to multiple characters
   U_FLAG_LOWER_EXPANDS   = 1 << 17,  ///< lowercase expands to multiple characters
   U_FLAG_TITLE_EXPANDS   = 1 << 18,  ///< titlecase expands to multiple characters
-  U_FLAG_FOLD_EXPANDS    = 1 << 19,  ///< foldcase expands to multiple characters
+  U_FLAG_FOLD_EXPANDS    = 1 << 19   ///< foldcase expands to multiple characters
 } u_flag_t;
 
 /**
@@ -171,7 +171,7 @@ typedef enum {
   U_CATEGORY_OTHER_FORMAT,                ///< Cf: Other Format
   U_CATEGORY_OTHER_SURROGATE,             ///< Cs: Other Surrogate
   U_CATEGORY_OTHER_PRIVATE_USE,           ///< Co: Other Private Use
-  U_CATEGORY_OTHER_NOT_ASSIGNED,          ///< Cn: Other Not Assigned
+  U_CATEGORY_OTHER_NOT_ASSIGNED           ///< Cn: Other Not Assigned
 } u_category_t;
 
 /**
@@ -316,7 +316,7 @@ typedef enum {
   U_SCRIPT_MARCHEN,                 ///< Marchen
   U_SCRIPT_NEWA,                    ///< Newa
   U_SCRIPT_OSAGE,                   ///< Osage
-  U_SCRIPT_TANGUT,                  ///< Tangut
+  U_SCRIPT_TANGUT                   ///< Tangut
 } u_script_t;
 
 /**
@@ -347,7 +347,7 @@ typedef enum {
   U_BIDI_LEFT_TO_RIGHT_ISOLATE,     ///< LRI: Left To Right Isolate
   U_BIDI_RIGHT_TO_LEFT_ISOLATE,     ///< RLI: Right To Left Isolate
   U_BIDI_FIRST_STRONG_ISOLATE,      ///< FSI: First Strong Isolate
-  U_BIDI_POP_DIRECTIONAL_ISOLATE,   ///< PDI: Pop Directional Isolate
+  U_BIDI_POP_DIRECTIONAL_ISOLATE    ///< PDI: Pop Directional Isolate
 } u_bidi_t;
 
 /**
