@@ -1017,6 +1017,7 @@ U__DECLARE__ELG__FUNCTION__META_TEST__(is_space,match_meta(p, pos, 0, 0, META_SP
 /* ************************************************************************** */
 
 int tag(lua_State * L) {
+  UNITEX_DISCARD_UNUSED_PARAMETER(L);
   // get locate params
 //  struct locate_parameters* p = get_locate_params(L);
 

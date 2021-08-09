@@ -509,6 +509,7 @@ struct MsgLogFile {
 
 
   void write(const char* format,...) {
+    UNITEX_DISCARD_UNUSED_PARAMETER(format);
     //flush,message
   }
 

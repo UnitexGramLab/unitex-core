@@ -210,6 +210,8 @@ return res;
 // != 0 fail
 int ABSTRACT_CALLBACK_UNITEX locate_trace(const struct locate_trace_info* locate_info,
                                          void* private_param) {
+  UNITEX_DISCARD_UNUSED_PARAMETER(locate_info);
+  UNITEX_DISCARD_UNUSED_PARAMETER(private_param);
   return 0;
 }
 
@@ -225,6 +227,8 @@ int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name
                    int stack_max, int max_matches_at_token_pos,int max_matches_per_subgraph,int max_errors,
                    char* arabic_rules,int tilde_negation_operator,int useLocateCache,int allow_trace,char* const trace_params[],
                    vector_ptr* injected_vars,const char* elg_extensions_path,const char* enter_pos) {
+UNITEX_DISCARD_UNUSED_PARAMETER(allow_trace);
+UNITEX_DISCARD_UNUSED_PARAMETER(trace_params);
 u_printf("Initializing the Extend Local Grammars (ELG) Engine...\n");
 
 // check if the ELGs path exists and is a directory

@@ -1053,6 +1053,8 @@ class vm {
   }
 
   int unload(const char* function_name) {
+    // HACKFIX() for still unused function_name
+    UNITEX_DISCARD_UNUSED_PARAMETER(function_name);
 //    luaL_unref(L, LUA_REGISTRYINDEX, 0);
     return 1;
   }
@@ -1830,6 +1832,7 @@ class vm {
                                 int *n_matches,
                                 struct list_context* ctx,
                                 struct locate_parameters* p) {
+    UNITEX_DISCARD_UNUSED_PARAMETER(p);
     // get the global table
     // [-0, +1] > (+1)
     lua_getglobal(L,"_G");
@@ -1877,6 +1880,7 @@ class vm {
                                                  unichar* jamo,
                                                  int pos_in_jamo,
                                                  unichar* content_buffer) {
+     UNITEX_DISCARD_UNUSED_PARAMETER(p);
      // get the global table
      // [-0, +1] > (+1)
      lua_getglobal(L, "_G");

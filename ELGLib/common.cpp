@@ -52,6 +52,9 @@ void* operator new(size_t size, lua_State* L, const char* metatableName) {
 // from the placement new, placement delete functions are defined as no-operations
 // by the Standard C++ library.
 void operator delete(void* pMem, lua_State* L, const char* metatableName) {
+  UNITEX_DISCARD_UNUSED_PARAMETER(pMem);
+  UNITEX_DISCARD_UNUSED_PARAMETER(L);
+  UNITEX_DISCARD_UNUSED_PARAMETER(metatableName);
   // do nothing as lua is supposed to handle this.
   fatal_error("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 }

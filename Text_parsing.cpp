@@ -442,6 +442,8 @@ int extended_locate(unichar* output,
                     struct locate_n_matches* n_matches,
                     struct list_context* ctx,
                     struct locate_parameters* p) {
+  UNITEX_DISCARD_UNUSED_PARAMETER(pos);
+
   if (p->output_policy == MERGE_OUTPUTS && append_space_on_merge_mode) {
       push_input_char(p->literal_output, ' ', p->protect_dic_chars);
   }
