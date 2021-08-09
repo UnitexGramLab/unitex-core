@@ -84,7 +84,7 @@ static const struct elg_Event elgMainEvents [] = {
   {"unload_event",    0, 0 }, /* (unload_event) =         */
   {"slide_event",     1, 1 }, /* (index)        = index   */
   {"token_event",     1, 1 }, /* (index)        = index   */
-  {NULL, 0}                   /* sentinel                 */
+  {NULL, 0, 0}                /* sentinel                 */
 };
 /* ************************************************************************** */
 #define ELG_MAIN_EVENTS_COUNT              4
