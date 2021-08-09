@@ -200,7 +200,7 @@ VIRTOPTIMIZATION_OBJECT=export_unitex_virtualwork.o FileTools.o MiniMutexPosix.o
                         PersistenceInterfaceForVirt.o VirtAllocator.o VirtDela.o VirtFileSystem.o \
                         VirtFst2.o VirtualSpaceManager.o VirtualTimeoutCancel.o 
 
-VIRTOPTIMIZATION_OPTIONS=-I../VirtOptimizations -I../logger -DUNITEX_PREVENT_EXPOSE_MINI_PERSISTANCE_IN_INTERFACE
+VIRTOPTIMIZATION_OPTIONS=-I../VirtOptimizations -I../logger
 
 
 OBJ_DIR = build/
@@ -952,7 +952,7 @@ CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Copyright.o Af_stdio.o Activi
 
 DICO      = Dico
 DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o whereami.o File.o Alphabet.o String_hash.o Text_tokens.o \
-            List_ustring.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o CompoundWordHashTable.o Fst2.o AbstractDelaLoad.o AbstractFst2Load.o \
+            List_ustring.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o CompoundWordHashTable.o Fst2.o AbstractDelaLoad.o PackInf.o AbstractFst2Load.o PackFst2.o \
             IOBuffer.o Copyright.o Error.o CompoundWordTree.o \
             Pattern.o ParsingInfo.o LocatePattern.o LocateTrace.o LocateMatches.o Match.o OptimizedFst2.o \
             Text_parsing.o UserCancelling.o MorphologicalLocate.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o Locate.o \
@@ -2296,6 +2296,41 @@ SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
+export_unitex_virtualwork.o: ../VirtOptimizations/export_unitex_virtualwork.cpp
+	$(CC) -c ../VirtOptimizations/export_unitex_virtualwork.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+FileTools.o: ../VirtOptimizations/FileTools.cpp
+	$(CC) -c ../VirtOptimizations/FileTools.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+MiniMutexDummy.o: ../VirtOptimizations/MiniMutexDummy.cpp
+	$(CC) -c ../VirtOptimizations/MiniMutexDummy.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+MiniMutexPosix.o: ../VirtOptimizations/MiniMutexPosix.cpp
+	$(CC) -c ../VirtOptimizations/MiniMutexPosix.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+MiniMutexWin.o: ../VirtOptimizations/MiniMutexWin.cpp
+	$(CC) -c ../VirtOptimizations/MiniMutexWin.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+PersistenceInterfaceForVirt.o: ../VirtOptimizations/PersistenceInterfaceForVirt.cpp
+	$(CC) -c ../VirtOptimizations/PersistenceInterfaceForVirt.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtAllocator.o: ../VirtOptimizations/VirtAllocator.cpp
+	$(CC) -c ../VirtOptimizations/VirtAllocator.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtDela.o: ../VirtOptimizations/VirtDela.cpp
+	$(CC) -c ../VirtOptimizations/VirtDela.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtFileSystem.o: ../VirtOptimizations/VirtFileSystem.cpp
+	$(CC) -c ../VirtOptimizations/VirtFileSystem.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtFst2.o: ../VirtOptimizations/VirtFst2.cpp
+	$(CC) -c ../VirtOptimizations/VirtFst2.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtualSpaceManager.o: ../VirtOptimizations/VirtualSpaceManager.cpp
+	$(CC) -c ../VirtOptimizations/VirtualSpaceManager.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtualTimeoutCancel.o: ../VirtOptimizations/VirtualTimeoutCancel.cpp
+	$(CC) -c ../VirtOptimizations/VirtualTimeoutCancel.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
 
 # compilation option for yaml	
 api.o: $(YAML_SRC) yaml-0.1.6/src/api.c
