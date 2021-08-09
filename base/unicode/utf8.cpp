@@ -315,8 +315,8 @@ int u_strcmp(const unichar* s1, const unichar* s2) {
   // compare the two non-null strings
   U__STRCMP__(unichar, s1, unichar, s2, 0,);
   // return a signed integral indicating the relation between the strings
-  return (c1 == '\0') ? -(const unsigned int)c2 :
-                        ((const unsigned int)c1 - (const unsigned int)c2);
+  return (c1 == '\0') ? -(unsigned int)c2 :
+                        ((unsigned int)c1 - (unsigned int)c2);
 }
 
 /**
@@ -345,8 +345,8 @@ int u_strncmp(const unichar* UNITEX_RESTRICT s1, const unichar* UNITEX_RESTRICT 
   // find the first character that is different inside the detected block
   U__STRCMP__(unichar, s1, unichar, s2, block * elements_per_block, pos < n);
   // return a signed integral indicating the relation between the strings
-  return (c1 == '\0') ? -(const unsigned int)c2 :
-                        ((const unsigned int)c1 - (const unsigned int)c2);
+  return (c1 == '\0') ? -(unsigned int)c2 :
+                        ((unsigned int)c1 - (unsigned int)c2);
 }
 
 /**
