@@ -125,7 +125,7 @@ script:
   # https://github.com/travis-ci/travis-ci/issues/4682
   # https://github.com/travis-ci/docs-travis-ci-com/commit/fbca7ce4
   - test -n $CC && unset CC
-  - mkdir -p bin && cd build && make ADDITIONAL_CFLAG+=-DUNITEX_CORE_VERSION_GIT_COMMIT_HASH=${UNITEX_CORE_VERSION_GIT_COMMIT_HASH} ADDITIONAL_CFLAG+="-Wextra -std=c99 -pedantic -DNO_C99_VARIABLE_LENGTH_ARRAY" ADDITIONAL_YAML_OPTIONS+="-w" DEBUG=yes UNITEXTOOLLOGGERONLY=yes && cd ..
+  - mkdir -p bin && cd build && make ADDITIONAL_CFLAG+=-DUNITEX_CORE_VERSION_GIT_COMMIT_HASH=${UNITEX_CORE_VERSION_GIT_COMMIT_HASH} ADDITIONAL_CFLAG+="-Wextra -pedantic -DNO_C99_VARIABLE_LENGTH_ARRAY" ADDITIONAL_YAML_OPTIONS+="-w" DEBUG=yes UNITEXTOOLLOGGERONLY=yes && cd ..
   - export UNITEX_BIN="$PWD/bin/UnitexToolLogger" && echo ${UNITEX_BIN}
   - cd unitex-core-tests
   - "./unitex-core-test.sh -w80 -p1"
