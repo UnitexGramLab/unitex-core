@@ -45,8 +45,9 @@
  */
 #if     UNITEX_COMPILER_AT_LEAST(GCC,4,7)
 #define UNITEX_ASSUME_ALIGNED(p, a)   __builtin_assume_aligned(p, a)
-#elif   UNITEX_COMPILER_IS(CLANG) &&  __has_builtin(__builtin_assume_aligned)
-#define UNITEX_ASSUME_ALIGNED(p, a)   __builtin_assume_aligned(p, a)
+// HOTFIX() error: missing binary operator before token "("
+//#elif   UNITEX_COMPILER_IS(CLANG) &&  __has_builtin(__builtin_assume_aligned)
+//#define UNITEX_ASSUME_ALIGNED(p, a)   __builtin_assume_aligned(p, a)
 #else   // no support for __builtin_assume_aligned
 #define UNITEX_ASSUME_ALIGNED(p, a)   p
 #endif  // defined(unreachable)
