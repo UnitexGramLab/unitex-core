@@ -69,7 +69,7 @@ enum param_type_t {
   PARAM_TFUNCTION       =  6,
   PARAM_TUSERDATA       =  7,
   PARAM_TTHREAD         =  8,
-  PARAM_TLIGHTUSTRING   =  9,
+  PARAM_TLIGHTUSTRING   =  9
 };
 /* ************************************************************************** */
 typedef struct elg_Event {
