@@ -43,6 +43,7 @@
 /* ************************************************************************** */
 // Unitex headers
 #include "base/integer/integer.h"    // uint32_t, uint64_t, UINT32_C, UINT64_C
+#include "base/compiler/keyword/constexpr.h"  // UNITEX_CONSTEXPR
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -53,7 +54,7 @@ namespace helper {  // helper
  */
 template <typename T>
 struct is_bitshiftable {
-  static const bool value = (T) 1.5 == 1;
+  static UNITEX_CONSTEXPR bool value = (T) 1.5 == 1;
 };
 
 /**
