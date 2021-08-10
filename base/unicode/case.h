@@ -53,7 +53,7 @@ void u_to##_name##_first(unichar* s) UNITEX_PARAMS_NON_NULL;                \
                                                                             \
 UNITEX_FORCE_INLINE                                                         \
 void u_to##_name##_first(unichar* s) {                                      \
-  register unichar* it = s;                                                 \
+  unichar* it = s;                                                          \
   const u_info_t* info =  u_info(*it);                                      \
   if (*it != '\0') { _true; ++it; } else { return; }                        \
   while (*it != '\0') {                                                     \
@@ -73,7 +73,7 @@ void _name(unichar* s) UNITEX_PARAMS_NON_NULL;                              \
                                                                             \
 UNITEX_FORCE_INLINE                                                         \
 void _name(unichar* s) {                                                    \
-  register unichar* it = s;                                                 \
+  unichar* it = s;                                                          \
   while (*it != '\0') {                                                     \
     *it = _name(*it);                                                       \
     ++it;                                                                   \
@@ -84,7 +84,7 @@ size_t _name(const unichar* s, unichar* d) UNITEX_PARAMS_NON_NULL;          \
                                                                             \
 UNITEX_FORCE_INLINE                                                         \
 size_t _name(const unichar* s, unichar* d) {                                \
-  const register unichar* it = s;                                           \
+  const unichar* it = s;                                                    \
   while (*it != '\0') {                                                     \
     *d++ = _name(*it);                                                      \
     ++it;                                                                   \
@@ -98,7 +98,7 @@ void _name##_n(unichar* s, size_t n) UNITEX_PARAMS_NON_NULL;                \
                                                                             \
 UNITEX_FORCE_INLINE                                                         \
 void _name##_n(unichar* s, size_t n) {                                      \
-  register unichar* it = s;                                                 \
+  unichar* it = s;                                                          \
   while(n) {                                                                \
     if (*it == '\0') {                                                      \
       break;                                                                \
