@@ -110,8 +110,7 @@ notifications:
     secure: Czf+dd6CyKvEvRTYi3E70lrsDoDZHXdyXSI7+PyQdJpjErU9LeTA0BXNlH5RYBaM7GOXftxQZuvkh0nXTF8e0xqz5qhO3bUdT7iJqivfmzLVuA5LPaKUg8vIv796RsG2RE9TH4SaOhQjJXfzWT5RgwQZeOldGL8scWzNtsnmgkv5QTdScwEU2m9qyo/WZXY6hnh6uKe2gtDgeeG0csRCk/n8SkPHY3AwBLrcLT9XhgQN7GbHOigfkSqF0OF6K8MCl2TxGGuO85cNZx1MXAYI8800F63+zGEz3AlNUZIS61/POaHIYD5fCjheyUDxtC7+GDIcOy8n6eN3nXB9ewIh0okg/Bg4yEfIfdBeKprEvTjKw4qcYOKoVsSoQ8C0pRyMQRdcSisivweaatvr0s/hAQwsrzyZvbfTqUsYaJD3gShe29UULfMWalc5tK9PQtNYtia5Dxn1776kIcGJ+z/lgFLboWsE6uluenMKwVVPc27ArknZZ6YcgC4C8rdMxc2yvZFNMQjmuwqUswq9Iuv3GB80/1YJO/mihjP6nXn6CZ1jk/eUuKrZDXqe3kruKn3atMOsXsLl15MhX0QAdz/ASbLu/GqHhOwUgsOwLQMaajWAn1L/8+GnMjODM75hlr06qrm8MIXvb+ERP5zAujeMTUWCpkYBdi3F1W1ahOrUTcE=
 
 before_install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ];   then brew update &&  brew install cmake; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ];   then export PATH=/usr/bin:/bin:/usr/sbin:/sbin; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ];   then export PATH=$PATH:/usr/bin:/bin:/usr/sbin:/sbin; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -y libluajit-5.1-2; fi
   - cmake  --version
   - ${CC}  --version
