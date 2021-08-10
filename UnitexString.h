@@ -1235,7 +1235,7 @@ class UnitexString {
    * @return *this
    */
   UnitexString& append(const Ustring* string, size_type n) {
-    return this->append(string, n);
+    return this->append(string->str, n);
   }
 
   /**
