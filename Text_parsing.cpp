@@ -1849,7 +1849,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
  * Looks for 'a' in the given array. Returns its position or -1 if not found.
  */
 static int binary_search(int a, int* t, int n) {
-    register int start, middle;
+    int start, middle;
     if (n == 0 || t == NULL)
         return -1;
     if (a < t[0])

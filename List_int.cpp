@@ -83,7 +83,7 @@ free_list_int(head,STANDARD_ALLOCATOR);
  */
 struct list_int* sorted_insert(int value,struct list_int* l,Abstract_allocator prv_alloc) {
 
-register struct list_int* tmp;
+struct list_int* tmp;
 struct list_int* tmp2;
 struct list_int* last = NULL;
 

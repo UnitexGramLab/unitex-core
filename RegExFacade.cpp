@@ -89,7 +89,7 @@ namespace unitex {
  */
 unichar_regex* regex_facade_strcpy(unichar_regex* dest,const unichar* src) {
 unichar_regex *s = dest; // backup pointer to start of destination string
-register unichar c;
+unichar c;
 do {
    c=*src++;
    *dest++=(unichar_regex)c;
@@ -102,7 +102,7 @@ return s;
  * Copies a unichar* string into a unichar_regex* one.
  */
 unichar_regex* regex_facade_strncpy(unichar_regex *dest,const unichar *src,unsigned int n) {
-register unichar c;
+unichar c;
 unichar_regex *s = dest; // backup pointer to start of destination string
 do {
    c = *src++;

@@ -456,8 +456,8 @@ return state;
  * 'end_of_line' is setted to 0.
  */
 int read_int(U_FILE* f,int *end_of_line) {
-register unichar c;
-register int value;
+unichar c;
+int value;
 int negative_number;
 /* We ignore spaces */
 do {

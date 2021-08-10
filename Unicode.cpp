@@ -3312,7 +3312,7 @@ while (s[i]!='\0') {
  */
 #if !UNITEX_USE(BASE_UNICODE)
 unsigned int u_strlen(const unichar* s) {
-register int i=0;
+int i=0;
 while (s[i++]) {}
 return (i-1);
 }
@@ -3342,7 +3342,7 @@ unsigned int u_strlenWithConvLFtoCRLF(const unichar* s, int convLFtoCRLF) {
 /*
 unichar* u_strcpy(unichar* dest,const unichar* src) {
 unichar *s = dest; // backup pointer to start of destination string
-register unichar c;
+unichar c;
 do {
    c=*src++;
    *dest++=c;
@@ -3417,7 +3417,7 @@ unichar* u_strcpy(unichar *dest,const unichar c) {
  * TODO(xxx) fails with n==0
  */
 unichar* u_strncpy(unichar *dest,const unichar *src,unsigned int n) {
-register unichar c;
+unichar c;
 unichar *s = dest; // backup pointer to start of destination string
 do {
    c = *src++;
@@ -3437,7 +3437,7 @@ return s;
  * TODO(xxx) fails with n==0
  */
 unichar* u_strncpy(unichar *dest,const char *src,unsigned int n) {
-register unichar c;
+unichar c;
 unichar *s = dest; // backup pointer to start of destination string
 do {
    c = (unsigned char) *src++;
@@ -3465,7 +3465,7 @@ return s;
 unichar* u_strcpy_sized(unichar *dest,size_t n,const unichar *src) {
 if (n==0)
   return dest;
-register unichar c;
+unichar c;
 unichar *s = dest; // backup pointer to start of destination string
 do {
    n--;
@@ -3489,7 +3489,7 @@ return s;
 unichar* u_strcpy_sized(unichar *dest,size_t n,const char *src) {
 if (n==0)
   return dest;
-register unichar c;
+unichar c;
 unichar *s = dest; // backup pointer to start of destination string
 do {
    n--;
@@ -3510,7 +3510,7 @@ return s;
  */
 unichar* u_strcpy(unichar* dest,const char* src) {
 unichar *s = dest; // backup pointer to start of destination string
-register unichar c;
+unichar c;
 do {
    c = (unsigned char) *src++;
    *dest++=c;
@@ -3537,7 +3537,7 @@ char* u_strcpy(char* dest, const char c) {
 unichar* u_strcat(unichar* dest,const unichar* src) {
 unichar *s1=dest;
 const unichar *s2=src;
-register unichar c;
+unichar c;
 /* First we go at the end of the destination string */
 do {
     c=*s1++;
@@ -4543,7 +4543,7 @@ int u_substr(const unichar *str, const unichar *target) {
 void u_to_char(char *dest,unichar *src) {
   // C-style reinterpret cast, @see http://stackoverflow.com/a/5042335/2042871
   unsigned char* dest_unsigned_char = (unsigned char*) dest;
-  register unichar c;
+  unichar c;
   do {
     c = *src++;
     if (c <= 0xFF) *(dest_unsigned_char++) = (unsigned char) c;
@@ -4561,7 +4561,7 @@ void u_to_char_n(char* dest, const unichar* src, unsigned int n) {
         dest[0] = '\0';
         return;
     }
-    register unichar c;
+    unichar c;
     do {
         c = *src++;
         if (c<=0xFF) *(dest_unsigned_char++) = (unsigned char)c;
