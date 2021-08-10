@@ -1857,7 +1857,7 @@ const char* const BUILD_ID       = "BUILD_ID";
     {"/etc/mageia-release",       "mageia"                },
     {"/etc/mandriva-release",     "mandriva"              },
     {"/etc/meego-release",        "meego"                 },
-    {"/etc/yellowdog-release"     "yellowdog"             },
+    {"/etc/yellowdog-release",    "yellowdog"             },
     {"/etc/UnitedLinux-release",  "unitedlinux"           },
     {"/etc/annvix-release",       "annvix"                },
     {"/etc/arklinux-release",     "arklinux"              },
