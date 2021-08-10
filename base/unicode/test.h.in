@@ -88,7 +88,7 @@ int _name(const u_info_t* u_info U__PARAMS(__VA_ARGS__)) {                      
                                                                                  \
 UNITEX_FORCE_INLINE                                                              \
 int _name(const unichar* s U__PARAMS(__VA_ARGS__))  {                            \
-  register const unichar* it = s;                                                \
+  const unichar* it = s;                                                         \
   while (*it != '\0') {                                                          \
     if (!_name(*it UNITEX_PP_IF(UNITEX_PP_VA_NARGS(__VA_ARGS__))(                \
                 UNITEX_PP_COMMA() UNITEX_PP_EXPAND(__VA_ARGS__),                 \

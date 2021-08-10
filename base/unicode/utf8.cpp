@@ -117,7 +117,7 @@ const uint8_t kUTF8ReplacementChar[] = {0xEF, 0xBF, 0xBD};
 /* ************************************************************************** */
 int u_encode_utf8(const unichar* source, char* destination) {
   const unichar* it = source;
-  register int pos = 0;
+  int pos = 0;
 
   // loop till the end of string
   while (*it != '\0') {
@@ -166,7 +166,7 @@ int u_encode_utf8(const unichar* source, char* destination) {
 
 size_t u_decode_utf8(const char* source, unichar* destination) {
   const char* it = source;
-  register int pos = 0;
+  int pos = 0;
 
   // loop till the end of string
   while (*it != '\0') {
@@ -207,7 +207,7 @@ size_t u_decode_utf8(const char* source, unichar* destination) {
 
 size_t u_decode_utf8_n(const char* source, unichar* destination, size_t n) {
   const char* it = source;
-  register int pos = 0;
+  int pos = 0;
 
   // loop till the end of string
   while (*it != '\0' && n--) {
@@ -250,7 +250,7 @@ size_t u_decode_utf8_n(const char* source, unichar* destination, size_t n) {
  * @brief  Returns the length of the string s
  */
 size_t u_strlen(const unichar* s) {
-  register const unichar *it;
+  const unichar *it;
   for (it = s; *it; ++it) {}
   return (it - s);
 }
