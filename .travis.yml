@@ -111,7 +111,6 @@ notifications:
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ];   then export PATH=$PATH:/usr/bin:/bin:/usr/sbin:/sbin; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install -y libluajit-5.1-2; fi
   - cmake  --version
   - ${CC}  --version
   - ${CXX} --version
