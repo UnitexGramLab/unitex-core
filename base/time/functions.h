@@ -124,8 +124,10 @@ class MachClockService {
     UNITEX_DISALLOW_COPY_AND_ASSIGN(MachClockService);
 };
 
-uint32_t MachClockService::count_ = 0;
-clock_serv_t MachClockService::clock_service_ = 0;
+// FIXME() use for now the inline keyword to avoid duplicate symbols while compiling
+// both non-const static data members above must be better initialized out of line
+inline uint32_t MachClockService::count_ = 0;
+inline clock_serv_t MachClockService::clock_service_ = 0;
 /* ************************************************************************** */
 }  // namespace unitex::helper                                      // NOLINT
 /* ************************************************************************** */
