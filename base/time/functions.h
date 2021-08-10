@@ -241,7 +241,8 @@ int time_now(struct timeval* tv, void* tz /* (unused) */) {
   // Note that for UNIX the use of the timezone struct is obsolete
 
   // TODO(martinec) add -lrt to the list of libraries we link
-# if UNITEX_HAVE(CLOCK_GETTIME)
+# if UNITEX_HAVE(CLOCK_GETTIME) &&\
+    !defined(UNITEX_UNIX_FEATURE_MACH_CLOCK_GETTIME)
    // using clock_gettime function
    static bool use_clock_gettime = true;
    if(use_clock_gettime) {
