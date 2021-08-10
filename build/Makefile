@@ -146,6 +146,11 @@ endif
 endif
 endif
 
+ifeq ($(TARGET_OSX),yes)
+ifndef MACOSX_DEPLOYMENT_TARGET
+MACOSX_DEPLOYMENT_TARGET = 11.0
+endif
+endif
 
 ifneq ($(TARGET_OSX),yes)
 ifneq ($(64BITS),yes)
@@ -194,7 +199,15 @@ TRE_CONFIGURE_OPTION='--host=i386-apple-darwinXX'
 endif
 endif
 
-
+# LUA_PATH_DEFAULT is the default path that Lua uses to look for Lua libraries
+# LUA_CPATH_DEFAULT is the default path that Lua uses to look for C libraries
+ifeq ($(SYSTEM),linux-like)
+export LUA_PATH_DEFAULT="./?.lua;!/../../?.lua;!/../../?/init.lua;./?.upp;!/../../?.upp;!/../../?/init.upp"
+export LUA_CPATH_DEFAULT="./?.so;!/lib/?.so"
+else
+export LUA_PATH_DEFAULT=".\\\\?.lua;!\\\\..\\\\..\\\\?.lua;!\\\\..\\\\..\\\\?\\\\init.lua;.\\\\?.upp;!\\\\..\\\\..\\\\?.upp;!\\\\..\\\\..\\\\?\\\\init.upp"
+export LUA_CPATH_DEFAULT=".\\\\?.dll;!\\\\lib\\\\?.dll"
+endif
 
 VIRTOPTIMIZATION_OBJECT=export_unitex_virtualwork.o FileTools.o MiniMutexPosix.o MiniMutexWin.o \
                         PersistenceInterfaceForVirt.o VirtAllocator.o VirtDela.o VirtFileSystem.o \
@@ -231,6 +244,9 @@ BUILD   = $(NAME)-$(VERSION)
 
 TAR_COMMAND = tar
 TAR_PARAM = xzf
+CAT_COMMAND = cat
+PATCH_COMMAND = patch
+PATCH_PARAMS = -N -p0
 
 INSTALL_COMMAND = make install
 TRE_SRC = tre-0.8.0
@@ -241,7 +257,7 @@ YAML_TGZ = ../vendor/yaml-0.1.6.tar.gz
 YAML_TEMP = $(YAML_SRC)/TEMP
 LUAJIT_SRC = luajit-2.3.0
 LUAJIT_TGZ = ../vendor/luajit-2.3.0.tar.gz
-LUAJIT_TEMP = $(LUAJIT_SRC)/TEMP
+LUAJIT_PATCHES = ../vendor/patches/$(LUAJIT_SRC)/*.patch
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LINK_LIB =
@@ -252,8 +268,15 @@ endif
 ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
 LUAJIT_LINK_LIB =
 else
+# LUAJIT_LDFLAGS
+ifeq ($(TARGET_OSX),yes)
+LUAJIT_LDFLAGS += -rdynamic
+LUAJIT_COMPILE_LDFLAGS +=
+else
+LUAJIT_LDFLAGS += -Wl,-E
+LUAJIT_COMPILE_LDFLAGS += -pthread -s -static-libgcc -Wl,--disable-new-dtags -Wl,-rpath,'\$\$ORIGIN'
+endif
 # @see Embedding LuaJIT on https://luajit.org/install.html
-DEFFLAGS += -Wl,-E
 LUAJIT_LINK_LIB = -lluajit-5.1 -lm -ldl
 endif
 
@@ -282,13 +305,23 @@ else
 YAML_GCC_OPTIONS = -DHAVE_CONFIG_H=1 $(CFLAGS)
 endif
 
-
+ifeq ($(TARGET_OSX),yes)
+CFLAGS   = -Wall #-pedantic
+else
 CFLAGS   = -Wall -D_POSIX_SOURCE #-pedantic
+endif
+
 ifeq ($(DEBUG), yes)
+ifeq ($(TARGET_OSX),yes)
+CFLAGS += -g3 -O0 -DDEBUG=1
+else
 CFLAGS += -g3 -O0 -DDEBUG=1 -fuse-ld=gold -Wl,--disable-new-dtags
+endif
 UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 # FOR LuaJIT
+ifeq ($(DEBUG_ELG), yes)
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
+endif
 else
 CFLAGS += -O3
 endif
@@ -353,15 +386,18 @@ ifeq ($(UNITEX_EXPERIMENTAL_MSGLOGGER),yes)
 DEFFLAGS += -DUNITEX_EXPERIMENTAL_MSGLOGGER
 endif
 
-override CFLAGS   += $(DEFFLAGS) -Wl,-E -I"../include_tre" -Ilibtre/include -I".." -Ilibluajit/include/luajit-2.1  -I"../" -Llibtre/lib -Llibluajit/lib
+override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".." -Ilibluajit/include/luajit-2.1  -I"../"
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
 LIBLUAJIT = .libluajit-done
 CLEAN-LIBLUAJIT   = clean-libluajit
-LIBS   = -Llibtre/lib $(TRE_LINK_LIB) $(LUAJIT_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread
 
-OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
-EXTENSION =
+EXTRA_LIBS = $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread
+TRE_LIBS = -Llibtre/lib $(TRE_LINK_LIB)
+LUAJIT_LIBS = $(LUAJIT_LDFLAGS) -Llibluajit/lib $(LUAJIT_LINK_LIB)
+LIBS = $(TRE_LIBS) $(LUAJIT_LIBS) $(EXTRA_LIBS)
+
+OPTIONS = $(CFLAGS) $(LDFLAGS)
 
 ifneq ($(strip $(ADDITIONAL_OPTIONS)),)
 OPTIONS += $(ADDITIONAL_OPTIONS)
@@ -399,6 +435,9 @@ RMR     = rm -rf
 INSTALL = cp
 TAR_COMMAND = tar
 TAR_PARAM = xzf
+CAT_COMMAND = cat
+PATCH_COMMAND = patch
+PATCH_PARAMS = -N -p0
 
 NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
@@ -407,7 +446,10 @@ BUILD   = $(NAME)-$(VERSION)
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
-LUAJIT_OPTIONS = $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
+LUAJIT_BUILDMODE=BUILDMODE="static"
+LUAJIT_OPTIONS = $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -439,7 +481,9 @@ CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
 # FOR LuaJIT
+ifeq ($(DEBUG_ELG), yes)
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
+endif
 else
 CFLAGS += -O3
 endif
@@ -476,6 +520,7 @@ endif
 ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
 LIBLUAJIT   = .libluajit-done
 else
+LUAJIT_COMPILE_LDFLAGS += -static-libgcc
 LIBLUAJIT   = libluajit-5.1.a
 endif
 
@@ -525,7 +570,7 @@ SYSLIBDIRIO = UnitexLibDirWin.o
 
 APPDIR = ../../../App
 
-OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
+OPTIONS = $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
 
 
@@ -561,6 +606,9 @@ RMR     = rm -rf
 INSTALL = cp
 TAR_COMMAND = tar
 TAR_PARAM = xzf
+CAT_COMMAND = cat
+PATCH_COMMAND = patch
+PATCH_PARAMS = -N -p0
 
 NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
@@ -569,7 +617,10 @@ BUILD   = $(NAME)-$(VERSION)
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
-LUAJIT_OPTIONS = $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
+LUAJIT_BUILDMODE=BUILDMODE="static"
+LUAJIT_OPTIONS = $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -601,7 +652,9 @@ CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
 # FOR LuaJIT
+ifeq ($(DEBUG_ELG), yes)
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
+endif
 else
 CFLAGS += -O3
 endif
@@ -686,7 +739,7 @@ SYSLIBDIRIO = UnitexLibDirPosix.o
 
 APPDIR = ../../../App
 
-OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
+OPTIONS = $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
 
 #####################
@@ -715,6 +768,9 @@ endif
 
 TAR_COMMAND = untgz.exe
 TAR_PARAM =
+CAT_COMMAND = cat
+PATCH_COMMAND = patch
+PATCH_PARAMS = -N -p0
 
 SYSLIBSYNCTOOL = SyncToolWin.o
 SYSLIBLOGGER = SyncLoggerWin.o
@@ -732,7 +788,10 @@ endif
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
-LUAJIT_OPTIONS = $(XCFLAGS) TARGET_SYS=Windows
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
+LUAJIT_BUILDMODE=BUILDMODE="static"
+LUAJIT_OPTIONS = $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -753,7 +812,7 @@ LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
 #
 # USING TRE STATIC LIBRARY
 #
-LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." $(TRE	_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 INCS =  -I"$(DEVCPP_PATH)/include" -I"../include_tre" -I".."
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../include_tre" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
@@ -762,7 +821,9 @@ CFLAGS = $(INCS)  -Wall
 ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0
 # FOR LuaJIT
+ifeq ($(DEBUG_ELG), yes)
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
+endif
 else
 CFLAGS += -O3
 endif
@@ -837,7 +898,7 @@ ifneq ($(SVN_REVISION),)
 CFLAGS += -DSVN_REVISION=$(SVN_REVISION)
 endif
 
-OPTIONS = $(LIBS) $(CFLAGS) $(LDFLAGS)
+OPTIONS = $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
 
 ###################
@@ -1612,7 +1673,10 @@ endif
 YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
-LUAJIT_OPTIONS = $(LUAJIT_XCFLAGS) TARGET_SYS=Linux
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
+LUAJIT_BUILDMODE=BUILDMODE="static"
+LUAJIT_OPTIONS = $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS)
 
 ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
 	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
@@ -1653,6 +1717,8 @@ $(YAML_SRC): $(YAML_TGZ)
 $(LUAJIT_SRC): $(LUAJIT_TGZ)
 	@echo "unpacking LuaJIT library ..."
 	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
+	@echo "Patching LuaJIT library..."
+	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
 
 ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
 # TODO()
@@ -1794,18 +1860,23 @@ YAML_SRC = yaml-0.1.6
 YAML_TGZ = ../vendor/yaml-0.1.6.tar.gz
 LUAJIT_SRC = luajit-2.3.0
 LUAJIT_TGZ = ../vendor/luajit-2.3.0.tar.gz
+LUAJIT_PATCHES = ../vendor/patches/$(LUAJIT_SRC)/*.patch
 
 ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
 LUAJIT_LIB =
 .libluajit-done: $(LUAJIT_SRC)
-	@echo "unpacking LuaJIT library ......"
+	@echo "Unpacking LuaJIT library..."
 	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
+	@echo "Patching LuaJIT library..."
+	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
 	@echo > .libluajit-done
 else
 LUAJIT_LIB = libluajit-5.1.a
 $(LUAJIT_LIB): $(LUAJIT_TGZ)
-	@echo "unpacking LuaJIT library......"
+	@echo "Unpacking LuaJIT library..."
 	$(LUAJIT_COMMAND) $(LUAJIT_PARAM) $(LUAJIT_TGZ)
+	@echo "Patching LuaJIT library..."
+	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
 endif
 
 
@@ -1996,11 +2067,11 @@ $(YAML_SRC): $(YAML_TGZ)
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
-LUAJIT_TEMP = $(LUAJIT_SRC)/TEMP
-
 $(LUAJIT_SRC): $(LUAJIT_TGZ)
-	@echo "Unpacking LUAJIT library...."
+	@echo "Unpacking LUAJIT library..."
 	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
+	@echo "Patching LuaJIT library..."
+	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
 
 LIBLUAJIT: $(LUAJIT_SRC) $(LUAJIT_LIB)
 	@echo "Making LuaJIT library..."
@@ -2192,7 +2263,7 @@ $(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNITEXTOOL_LOGGER)$(EXTENSION): $(UNITEXTOOL_LOGGER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+	$(CC) -o $@ $+ $(OPTIONS) $(LIBS)
 #
 # Compilation instructions for base
 #
