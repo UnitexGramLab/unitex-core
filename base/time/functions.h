@@ -276,7 +276,7 @@ int time_now(struct timeval* tv, void* tz /* (unused) */) {
   */
    static bool use_clock_get_time = true;
    if(use_clock_get_time) {
-     static detail::helper::MachClockService clock_service;
+     static helper::MachClockService clock_service;
 
      if(clock_service.initialized()){
        mach_timespec_t mach_current_time;
