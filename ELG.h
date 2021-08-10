@@ -816,7 +816,7 @@ class vm {
     // [-0, +1] > (+3)
     lua_pushnil(L);
     elg_stack_dump(L);
-    const char* extension_env_name = {};
+    const char* extension_env_name;
     // [-1, +(2|0)] > (+(4|2))
     while (lua_next(L, -2)) {
         elg_stack_dump(L);
