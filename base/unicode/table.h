@@ -410,7 +410,7 @@ extern const unichar kUSpecialVariants[];
 /**
  * Test if the code point is invalid
  */
-#define u_is_invalid(c) UNITEX_UNLIKELY(c >= 0xD800 && c  <= 0xDFFF )
+#define u_is_invalid(c) UNITEX_UNLIKELY(c >= 0xD800 && (c  <= 0xDFFF || c > U_MAX_VALUE))
 
 /**
  * If the code point is invalid replace it by U_REPLACEMENT_CHAR
