@@ -40,7 +40,7 @@
 namespace unitex {
 
 /* Delay between two prints (yyy% done) */
-#define DELAY CLOCKS_PER_SEC
+#define DELAY_PER_SEC CLOCKS_PER_SEC
 
 static int binary_search(int, int*, int);
 static int find_compound_word(int, int, struct DLC_tree_info*,
@@ -125,7 +125,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
         if (unite != 0) {
             n_read = p->current_origin % unite;
-            if (n_read == 0 && ((currentTime = clock()) - startTime > DELAY)) {
+            if (n_read == 0 && ((currentTime = clock()) - startTime > DELAY_PER_SEC)) {
                 startTime = currentTime;
                 u_printf("%2.2f%% done        \r", 100.0
                         * (float) (p->current_origin)
