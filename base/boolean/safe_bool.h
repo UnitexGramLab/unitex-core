@@ -132,9 +132,9 @@ struct Bool {
    * Valid input : {0, 1}
    */
   Bool& operator =(int state_number) {
-    state_ = (state_number != 0 || state_number != 1 ) ?
-              constant::invalid_ :
-              static_cast<constant::state>(state_number);
+    state_ = (state_number == 0 || state_number == 1 ) ?
+              static_cast<constant::state>(state_number):
+              constant::invalid_ ;
 
     return *this;
   }
