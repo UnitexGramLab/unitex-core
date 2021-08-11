@@ -275,9 +275,6 @@ else
 TRE_LINK_LIB = -ltre
 endif
 
-ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
-LUAJIT_LINK_LIB =
-else
 # LUAJIT_LDFLAGS
 ifeq ($(TARGET_OSX),yes)
 LUAJIT_LDFLAGS += -rdynamic
@@ -288,7 +285,6 @@ LUAJIT_COMPILE_LDFLAGS += -pthread -s -static-libgcc -Wl,--disable-new-dtags -Wl
 endif
 # @see Embedding LuaJIT on https://luajit.org/install.html
 LUAJIT_LINK_LIB = -lluajit-5.1 -lm -ldl
-endif
 
 INSTALL_COMMAND = make install
 
@@ -527,12 +523,7 @@ else
 LIBTRE   = libtre.a
 endif
 
-ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
-LIBLUAJIT   = .libluajit-done
-else
-LUAJIT_COMPILE_LDFLAGS += -static-libgcc
 LIBLUAJIT   = libluajit-5.1.a
-endif
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -696,12 +687,7 @@ else
 LIBTRE   = libtre.a
 endif
 
-ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
-LIBLUAJIT   = .libluajit-done
-else
 LIBLUAJIT   = libluajit-5.1.a
-endif
-
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -864,11 +850,7 @@ else
 LIBTRE   = libtre.a
 endif
 
-ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
-LIBLUAJIT   = .libluajit-done
-else
 LIBLUAJIT   = libluajit-5.1.a
-endif
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -1730,16 +1712,12 @@ $(LUAJIT_SRC): $(LUAJIT_TGZ)
 	@echo "Patching LuaJIT library..."
 	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
 
-ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
-# TODO()
-else
 .libluajit-done: $(LUAJIT_SRC)
 	@echo "Making LuaJIT library using LuaJIT makefile ..."
 	$(MAKE) $(LUAJIT_OPTIONS) -C $(LUAJIT_SRC)
 	mkdir -p libluajit
 	$(MAKE) install PREFIX= DESTDIR=$(mkfile_dir)libluajit -C $(LUAJIT_SRC)
 	touch .libluajit-done
-endif
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 .libtre-done: $(TRE_SRC)
@@ -1872,23 +1850,12 @@ LUAJIT_SRC = luajit-2.3.0
 LUAJIT_TGZ = ../vendor/luajit-2.3.0.tar.gz
 LUAJIT_PATCHES = ../vendor/patches/$(LUAJIT_SRC)/*.patch
 
-ifeq ($(LUAJIT_DIRECT_COMPILE), yes)
-LUAJIT_LIB =
-.libluajit-done: $(LUAJIT_SRC)
-	@echo "Unpacking LuaJIT library..."
-	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
-	@echo "Patching LuaJIT library..."
-	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
-	@echo > .libluajit-done
-else
 LUAJIT_LIB = libluajit-5.1.a
 $(LUAJIT_LIB): $(LUAJIT_TGZ)
 	@echo "Unpacking LuaJIT library..."
 	$(LUAJIT_COMMAND) $(LUAJIT_PARAM) $(LUAJIT_TGZ)
 	@echo "Patching LuaJIT library..."
 	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
-endif
-
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LIB =
