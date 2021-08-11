@@ -278,10 +278,8 @@ endif
 # LUAJIT_LDFLAGS
 ifeq ($(TARGET_OSX),yes)
 LUAJIT_LDFLAGS += -rdynamic
-LUAJIT_COMPILE_LDFLAGS +=
 else
 LUAJIT_LDFLAGS += -Wl,-E
-LUAJIT_COMPILE_LDFLAGS += -pthread -s -static-libgcc -Wl,--disable-new-dtags -Wl,-rpath,'\$\$ORIGIN'
 endif
 # @see Embedding LuaJIT on https://luajit.org/install.html
 LUAJIT_LINK_LIB = -lluajit-5.1 -lm -ldl
@@ -455,7 +453,13 @@ LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
 LUAJIT_BUILDMODE=BUILDMODE="static"
-LUAJIT_OPTIONS = $(LUAJIT_32_HOST_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
+LUAJIT_CROSS=CROSS=$(COMMANDPREFIX)
+LUAJIT_COMPILE_LDFLAGS+=LDFLAGS+="-static-libgcc"
+LUAJIT_OPTIONS = $(LUAJIT_COMPILE_LDFLAGS) $(LUAJIT_CROSS) $(LUAJIT_32_HOST_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
+
+LUAJIT_LDFLAGS  =
+LUAJIT_LINK_LIB = -lluajit-5.1 -lm -ldl
+
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -478,11 +482,19 @@ LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
 #
 INSTALL_COMMAND = make install
 
-LIBS =  -L "." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
-INCS =  -I".." -I"../include_tre"
+EXTRA_LIBS = $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+TRE_LIBS = -L "." $(TRE_LINK_LIB)
+LUAJIT_LIBS = $(LUAJIT_LDFLAGS) -Llibluajit/lib $(LUAJIT_LINK_LIB)
+LIBS = $(TRE_LIBS) $(LUAJIT_LIBS) $(EXTRA_LIBS)
+
+INCS =  -I".." -I"../include_tre" -I"libluajit/include/luajit-2.1"
 CXXINCS =  -I".."
 CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
 CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
+
+CXXFLAGS += -DUNITEX_USE_WIN32_THREADS=1
+CFLAGS += -DUNITEX_USE_WIN32_THREADS=1
+
 
 ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
@@ -523,7 +535,8 @@ else
 LIBTRE   = libtre.a
 endif
 
-LIBLUAJIT   = libluajit-5.1.a
+LIBLUAJIT = .libluajit-done
+CLEAN-LIBLUAJIT   = clean-libluajit
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -644,7 +657,11 @@ LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
 #
 INSTALL_COMMAND = make install
 
-LIBS =  -L "." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+EXTRA_LIBS = $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+TRE_LIBS = -L "." $(TRE_LINK_LIB)
+LUAJIT_LIBS = $(LUAJIT_LDFLAGS) -Llibluajit/lib $(LUAJIT_LINK_LIB)
+LIBS = $(TRE_LIBS) $(LUAJIT_LIBS) $(EXTRA_LIBS)
+
 INCS =  -I".." -I"../include_tre"
 CXXINCS =  -I".."
 CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
@@ -687,7 +704,8 @@ else
 LIBTRE   = libtre.a
 endif
 
-LIBLUAJIT   = libluajit-5.1.a
+LIBLUAJIT = .libluajit-done
+CLEAN-LIBLUAJIT   = clean-libluajit
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -850,7 +868,8 @@ else
 LIBTRE   = libtre.a
 endif
 
-LIBLUAJIT   = libluajit-5.1.a
+LIBLUAJIT = .libluajit-done
+CLEAN-LIBLUAJIT   = clean-libluajit
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -1668,7 +1687,15 @@ LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
 LUAJIT_BUILDMODE=BUILDMODE="static"
-LUAJIT_OPTIONS = $(LUAJIT_32_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS)
+
+# LUAJIT_COMPILE_LDFLAGS
+ifeq ($(TARGET_OSX),yes)
+LUAJIT_COMPILE_LDFLAGS+=
+else
+LUAJIT_COMPILE_LDFLAGS+=LDFLAGS+="-pthread -s -static-libgcc -Wl,--disable-new-dtags -Wl,-rpath,$$ORIGIN"
+endif
+
+LUAJIT_OPTIONS = $(LUAJIT_COMPILE_LDFLAGS) $(LUAJIT_32_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS)
 
 ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
 	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
@@ -1850,12 +1877,21 @@ LUAJIT_SRC = luajit-2.3.0
 LUAJIT_TGZ = ../vendor/luajit-2.3.0.tar.gz
 LUAJIT_PATCHES = ../vendor/patches/$(LUAJIT_SRC)/*.patch
 
-LUAJIT_LIB = libluajit-5.1.a
-$(LUAJIT_LIB): $(LUAJIT_TGZ)
-	@echo "Unpacking LuaJIT library..."
-	$(LUAJIT_COMMAND) $(LUAJIT_PARAM) $(LUAJIT_TGZ)
-	@echo "Patching LuaJIT library..."
-	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
+#LUAJIT_LIB = libluajit-5.1.a
+#$(LUAJIT_LIB): $(LUAJIT_TGZ)
+#	@echo "Unpacking LuaJIT library..."
+#	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
+#	@echo "Patching LuaJIT library..."
+#	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
+
+LUAJIT_FILES_INC= lua.h lualib.h lauxlib.h luaconf.h lua.hpp luajit.h
+.libluajit-done: $(LUAJIT_SRC)
+	@echo "Making LuaJIT library using LuaJIT makefile ..."
+	$(MAKE) $(LUAJIT_OPTIONS) -C $(LUAJIT_SRC)
+	mkdir -p libluajit && mkdir -p libluajit/lib && mkdir -p libluajit/include/luajit-2.1
+	cp -r $(LUAJIT_SRC)/src/*.{a,dll} libluajit/lib 2>/dev/null || :
+	cd $(LUAJIT_SRC)/src && cp $(LUAJIT_FILES_INC) ../../libluajit/include/luajit-2.1
+	touch .libluajit-done
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LIB =
@@ -2001,7 +2037,7 @@ LIBLUAJIT: $(LUAJIT_SRC) $(LUAJIT_LIB)
 CLEAN-LIBLUAJIT   =
 LIBS   = -L"." $(LUAJIT_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
-%.o: ../%.cpp
+%.o: ../%.cpp ../*.h ../ELGLib/*.h ../ELGLib/uString/*.h
 	$(CC) -c $(CFLAGS) $<
 
 clean-all-but-tre:
@@ -2059,7 +2095,7 @@ LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 CLEAN-LIBLUAJIT   =
 LIBS   = -L"." $(LUAJIT_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
-%.o: ../%.cpp
+%.o: ../%.cpp ../*.h ../ELGLib/*.h ../ELGLib/uString/*.h
 	$(CC) -c $(CFLAGS) $<
 
 clean-all-but-tre:
