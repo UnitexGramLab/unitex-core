@@ -199,6 +199,16 @@ TRE_CONFIGURE_OPTION='--host=i386-apple-darwinXX'
 endif
 endif
 
+ifeq ($(64BITS),no)
+LUAJIT_32_CC=CC="gcc -m32"
+LUAJIT_32_HOST_CC=HOST_CC="gcc -m32"
+TRE_32_FLAGS=CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32
+else
+LUAJIT_32_CC=
+LUAJIT_32_HOST_CC=
+TRE_32_FLAGS=
+endif
+
 # LUA_PATH_DEFAULT is the default path that Lua uses to look for Lua libraries
 # LUA_CPATH_DEFAULT is the default path that Lua uses to look for C libraries
 ifeq ($(SYSTEM),linux-like)
@@ -449,7 +459,7 @@ LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
 LUAJIT_BUILDMODE=BUILDMODE="static"
-LUAJIT_OPTIONS = $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
+LUAJIT_OPTIONS = $(LUAJIT_32_HOST_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -620,7 +630,7 @@ LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
 LUAJIT_BUILDMODE=BUILDMODE="static"
-LUAJIT_OPTIONS = $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
+LUAJIT_OPTIONS = $(LUAJIT_32_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -791,7 +801,7 @@ LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
 LUAJIT_BUILDMODE=BUILDMODE="static"
-LUAJIT_OPTIONS = $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
+LUAJIT_OPTIONS = $(LUAJIT_32_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -1676,7 +1686,7 @@ LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
 LUAJIT_BUILDMODE=BUILDMODE="static"
-LUAJIT_OPTIONS = $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS)
+LUAJIT_OPTIONS = $(LUAJIT_32_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS)
 
 ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
 	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
@@ -1735,7 +1745,7 @@ ifeq ($(TRE_DIRECT_COMPILE), yes)
 .libtre-done: $(TRE_SRC)
 	@echo "Configure TRE for direct build..."
 	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_CONFIGURE_OPTION)
+	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_32_FLAGS) $(TRE_CONFIGURE_OPTION)
 	touch .libtre-done
 else
 
@@ -1758,7 +1768,7 @@ endif
 .libtre-done: $(TRE_SRC)
 	@echo "Making TRE library ..."
 	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_CONFIGURE_OPTION)
+	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_32_FLAGS) $(TRE_CONFIGURE_OPTION)
 	mkdir -p libtre/lib libtre/include libtre/obj
 	$(CC_GCC) -c $(TRE_SRC)/lib/tre-stack.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-stack.o
 	$(CC_GCC) -c $(TRE_SRC)/lib/tre-parse.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-parse.o
@@ -1778,7 +1788,7 @@ else
 .libtre-done: $(TRE_SRC)
 	@echo "Making TRE library using TRE makefile ..."
 	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_CONFIGURE_OPTION) && make
+	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_32_FLAGS) $(TRE_CONFIGURE_OPTION) && make
 	mkdir -p libtre/lib libtre/include
 	cd $(TRE_SRC)/lib && $(AR) rcs libtre.a *.o
 	cp $(TRE_SRC)/lib/libtre.a  libtre/lib/libtre.a
