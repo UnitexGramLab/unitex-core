@@ -458,7 +458,7 @@ LUAJIT_COMPILE_LDFLAGS+=LDFLAGS+="-static-libgcc"
 LUAJIT_OPTIONS = $(LUAJIT_COMPILE_LDFLAGS) $(LUAJIT_CROSS) $(LUAJIT_32_HOST_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 LUAJIT_LDFLAGS  =
-LUAJIT_LINK_LIB = -lluajit-5.1 -lm -ldl
+LUAJIT_LINK_LIB = -lluajit -lm
 
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
@@ -482,19 +482,13 @@ LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
 #
 INSTALL_COMMAND = make install
 
-EXTRA_LIBS = $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
-TRE_LIBS = -L "." $(TRE_LINK_LIB)
-LUAJIT_LIBS = $(LUAJIT_LDFLAGS) -Llibluajit/lib $(LUAJIT_LINK_LIB)
-LIBS = $(TRE_LIBS) $(LUAJIT_LIBS) $(EXTRA_LIBS)
-
 INCS =  -I".." -I"../include_tre" -I"libluajit/include/luajit-2.1"
 CXXINCS =  -I".."
 CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
 CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 
-CXXFLAGS += -DUNITEX_USE_WIN32_THREADS=1
-CFLAGS += -DUNITEX_USE_WIN32_THREADS=1
-
+#CXXFLAGS += -DUNITEX_USE_POSIX_THREADS=1
+#CFLAGS += -DUNITEX_USE_POSIX_THREADS=1
 
 ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
@@ -526,8 +520,6 @@ endif
 ifneq ($(strip $(ADDITIONAL_DEFFLAGS)),)
 DEFFLAGS += $(ADDITIONAL_DEFFLAGS)
 endif
-
-
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 LIBTRE   = .libtre-done
@@ -826,7 +818,7 @@ LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
 #
 # USING TRE STATIC LIBRARY
 #
-LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." $(TRE	_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 INCS =  -I"$(DEVCPP_PATH)/include" -I"../include_tre" -I".."
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../include_tre" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
@@ -1819,6 +1811,9 @@ install: bin
 clean: $(CLEAN-LIBTRE) $(CLEAN-LIBLUAJIT)
 	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
 
+clean-all: $(CLEAN-LIBTRE) $(CLEAN-LIBLUAJIT)
+	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o *.o *.a
+
 clean-all-but-tre:
 	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
 
@@ -1877,19 +1872,12 @@ LUAJIT_SRC = luajit-2.3.0
 LUAJIT_TGZ = ../vendor/luajit-2.3.0.tar.gz
 LUAJIT_PATCHES = ../vendor/patches/$(LUAJIT_SRC)/*.patch
 
-#LUAJIT_LIB = libluajit-5.1.a
-#$(LUAJIT_LIB): $(LUAJIT_TGZ)
-#	@echo "Unpacking LuaJIT library..."
-#	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
-#	@echo "Patching LuaJIT library..."
-#	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
-
 LUAJIT_FILES_INC= lua.h lualib.h lauxlib.h luaconf.h lua.hpp luajit.h
 .libluajit-done: $(LUAJIT_SRC)
 	@echo "Making LuaJIT library using LuaJIT makefile ..."
 	$(MAKE) $(LUAJIT_OPTIONS) -C $(LUAJIT_SRC)
-	mkdir -p libluajit && mkdir -p libluajit/lib && mkdir -p libluajit/include/luajit-2.1
-	cp -r $(LUAJIT_SRC)/src/*.{a,dll} libluajit/lib 2>/dev/null || :
+	mkdir -p libluajit/include/luajit-2.1
+	cp -r $(LUAJIT_SRC)/src/*.a .
 	cd $(LUAJIT_SRC)/src && cp $(LUAJIT_FILES_INC) ../../libluajit/include/luajit-2.1
 	touch .libluajit-done
 
@@ -1902,7 +1890,7 @@ TRE_LIB =
 
 else
 
-
+LUAJIT_LIB = libluajit.a
 TRE_LIB = libtre.a
 
 ifeq ($(LIBRARY),OOOfdsjnfezqez)
@@ -2028,14 +2016,22 @@ $(YAML_SRC): $(YAML_TGZ)
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
-CLEAN-LIBTRE   =
-LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
 LIBLUAJIT: $(LUAJIT_SRC) $(LUAJIT_LIB)
 	@echo "Making LuaJIT library..."
 
-CLEAN-LIBLUAJIT   =
-LIBS   = -L"." $(LUAJIT_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+CLEAN-LIBTRE    =
+CLEAN-LIBLUAJIT =
+
+EXTRA_LIBS = $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+
+# add -lpthread if needed
+ifeq ($(findstring UNITEX_USE_POSIX_THREADS,$(ADDITIONAL_CFLAG)),UNITEX_USE_POSIX_THREADS)
+# Found
+EXTRA_LIBS += -lpthread
+endif
+
+LIBS   = -L"." $(TRE_LINK_LIB) $(LUAJIT_LINK_LIB) $(EXTRA_LIBS)
 
 %.o: ../%.cpp ../*.h ../ELGLib/*.h ../ELGLib/uString/*.h
 	$(CC) -c $(CFLAGS) $<
@@ -2089,11 +2085,19 @@ $(LUAJIT_SRC): $(LUAJIT_TGZ)
 LIBLUAJIT: $(LUAJIT_SRC) $(LUAJIT_LIB)
 	@echo "Making LuaJIT library..."
 
-CLEAN-LIBTRE   =
-LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+CLEAN-LIBTE    =
+CLEAN-LIBLUAJIT =
 
-CLEAN-LIBLUAJIT   =
-LIBS   = -L"." $(LUAJIT_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+EXTRA_LIBS = $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+
+# add -lpthread if needed
+ifeq ($(findstring UNITEX_USE_POSIX_THREADS,$(ADDITIONAL_CFLAG)),UNITEX_USE_POSIX_THREADS)
+# Found
+EXTRA_LIBS += -lpthread
+endif
+
+LIBS   = -L"." $(TRE_LINK_LIB) $(LUAJIT_LINK_LIB) $(EXTRA_LIBS)
+
 
 %.o: ../%.cpp ../*.h ../ELGLib/*.h ../ELGLib/uString/*.h
 	$(CC) -c $(CFLAGS) $<
