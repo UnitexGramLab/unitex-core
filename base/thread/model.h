@@ -73,11 +73,7 @@
 #       error "[Co] UNITEX_USE_BOOST_THREADS without HAVE_BOOST_THREAD"
 #  endif  // UNITEX_HAVE(BOOST_THREAD)
 # elif UNITEX_USE(POSIX_THREADS)                    // POSIX_THREADS
-#  if  UNITEX_OS_IS(UNIX)
 #       include <pthread.h>
-#  else     //UNITEX_OS_IS(UNIX)
-#       error "[Co] UNITEX_USE_POSIX_THREADS without UNITEX_OS_IS_UNIX"
-#  endif  // UNITEX_OS_IS(UNIX)
 # elif UNITEX_USE(WIN32_THREADS)                    // WIN32_THREADS
 #  if  UNITEX_OS_IS(WINDOWS)
 #   include <windows.h>
