@@ -24,6 +24,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
+#include "base/macro/helper/test.h"  // UNITEX_HAVE, UNITEX_USE
+#include "base/os/os.h"              // UNITEX_OS_IS
+
+#if !UNITEX_USE(WIN32_THREADS)
+
 #include <pthread.h>
 #include <stdlib.h>
 #include "MiniMutex.h"
@@ -81,3 +86,4 @@ ULB_VFFUNC void ULIB_CALL DeleteMiniMutex(MINIMUTEX_OBJECT* pMut)
         free(pMoi);
     }
 }
+#endif

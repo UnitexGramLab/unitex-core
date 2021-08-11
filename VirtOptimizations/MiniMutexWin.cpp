@@ -24,7 +24,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-#if (((defined(_WIN32)) || defined(WIN32)))
+#include "base/macro/helper/test.h"  // UNITEX_HAVE, UNITEX_USE
+#include "base/os/os.h"              // UNITEX_OS_IS
+
+#if UNITEX_OS_IS(WINDOWS) && !UNITEX_USE(POSIX_THREADS)
 
 #include <windows.h>
 #include "MiniMutex.h"
