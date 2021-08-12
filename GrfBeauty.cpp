@@ -1061,10 +1061,11 @@ free_list_int(l);
 return n;
 }
 
-
+#ifndef max
 static int max(int a,int b) {
 return (a>b)?a:b;
 }
+#endif
 
 
 /**
