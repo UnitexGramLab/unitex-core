@@ -36,7 +36,7 @@
     #ifndef OBJC_BOOL_DEFINED
 
       /// Type to represent a boolean value.
-      #if !defined(OBJC_HIDE_64) && TARGET_OS_IPHONE && __LP64__
+      #if !defined(OBJC_HIDE_64) && defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE && __LP64__
         typedef bool BOOL; // introduced only for iOS 64 bits
       #else
         typedef signed char BOOL; // for Apple 32 bits and MacOsx 64 bits...
