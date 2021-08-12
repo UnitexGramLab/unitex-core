@@ -119,22 +119,24 @@ unichar u_to##_name(unichar c, const u_info_t* u_info);                     \
                                                                             \
 UNITEX_FORCE_INLINE                                                         \
 unichar u_to##_name(unichar c, const u_info_t* u_info) {                    \
-  int index = u_info->variant[_u_variant_t];                                \
+  u_variants_int_t index = u_info->variant[_u_variant_t];                   \
   if (UNITEX_LIKELY(!u_has_flag_##_name##_expands(u_info))) {               \
-    return c + index;                                                       \
+    return static_cast<unichar>(c + index);                                 \
   }                                                                         \
-  return kUSpecialVariants[index + kUSpecialVariants[index] + 1];           \
-}                                                                           \
+  return static_cast<unichar>(                                              \
+                  kUSpecialVariants[index + kUSpecialVariants[index] + 1]); \
+  }                                                                         \
                                                                             \
 UNITEX_FORCE_INLINE                                                         \
 unichar u_to##_name(unichar c) {                                            \
   const u_info_t* u_info = u_info(c);                                       \
-  int index = u_info->variant[_u_variant_t];                                \
+  u_variants_int_t index = u_info->variant[_u_variant_t];                   \
   if (UNITEX_LIKELY(!u_has_flag_##_name##_expands(u_info))) {               \
-    return c + index;                                                       \
+    return static_cast<unichar>(c + index);                                 \
   }                                                                         \
-  return kUSpecialVariants[index + kUSpecialVariants[index] + 1];           \
-}                                                                           \
+  return static_cast<unichar>(                                              \
+                  kUSpecialVariants[index + kUSpecialVariants[index] + 1]); \
+  }                                                                         \
 U__DECLARE__FUNCTION__CASE__ITERATE__ALL__(u_to##_name)                     \
 U__DECLARE__FUNCTION__CASE__ITERATE__N__(u_to##_name)
 /* ************************************************************************** */
@@ -149,7 +151,7 @@ U__DECLARE__FUNCTION__CASE__ITERATE__FIRST__(title,
 /* ************************************************************************** */
 UNITEX_FORCE_INLINE
 unichar u_deaccentuate(unichar c) {
-  unichar unnacent = u_info(c)->variant[U_CHAR_UNACCENT];
+  unichar unnacent = static_cast<unichar>(u_info(c)->variant[U_CHAR_UNACCENT]);
   return UNITEX_UNLIKELY(unnacent>0) ? unnacent : c;
 }
 /* ************************************************************************** */
