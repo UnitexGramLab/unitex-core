@@ -88,18 +88,18 @@
 // Visual Studio 2008 and later
 # elif UNITEX_COMPILER_AT_LEAST(MSVC,15,0)
 #  define unitex_builtin_popcount_8(n)                                  \
-          __popcnt16(static_cast<__uint16>(n & 0xFF))
+          __popcnt16(static_cast<uint16_t>(n & 0xFF))
 #  define unitex_builtin_popcount_16(n)                                 \
-          __popcnt16(static_cast<__uint16>(n))
+          __popcnt16(static_cast<uint16_t>(n))
 #  define unitex_builtin_popcount_32(n)                                 \
-          __popcnt  (static_cast<__uint32>(n))
+          __popcnt(static_cast<uint32_t>(n))
 #  if   UNITEX_WORDSIZE_IS(32)
 #       define unitex_builtin_popcount_64(n)                            \
                unitex_builtin_popcount_32(n) +                          \
                unitex_builtin_popcount_32(n >> 32)
 #  elif UNITEX_WORDSIZE_IS(64)
 #       define unitex_builtin_popcount_64(n)                            \
-               __popcnt64(static_cast<__uint64>(n))
+               __popcnt64(static_cast<uint64_t>(n))
 #  endif  // UNITEX_WORDSIZE_IS(32)
 #  define UNITEX_HAS_BUILTIN_POPCOUNT                 1
 #  define UNITEX_COMPILER_BUILTIN_POPCOUNT            64
