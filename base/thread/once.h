@@ -125,6 +125,7 @@ bool one_time_initialization(once_flag_t& once_control,
         void (*init_routine)(void);
     };
 
+    UNITEX_FORCE_INLINE
     BOOL UNITEX_WIN32_CALLBACK call_once(PINIT_ONCE InitOnce,
                                           PVOID Parameter,
                                           PVOID *Context) {
