@@ -29,7 +29,9 @@
  */
 
 
-
+#include "base/macro/helper/test.h"  // UNITEX_HAVE, UNITEX_USE
+#include "base/os/os.h"              // UNITEX_OS_IS
+#if UNITEX_USE(POSIX_THREADS)
 
 #include "Unicode.h"
 #include "AbstractCallbackFuncModifier.h"
@@ -196,3 +198,4 @@ UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread()
 
 } // namespace logger
 } // namespace unitex
+#endif
