@@ -30,8 +30,8 @@
 
 
 #include "base/macro/helper/test.h"  // UNITEX_HAVE, UNITEX_USE
-#include "base/os/os.h"              // UNITEX_OS_IS
-#if UNITEX_USE(POSIX_THREADS)
+#include "base/thread/model.h"       // SINGLE_THREADED, WIN32_THREADS
+#if !UNITEX_USE(SINGLE_THREADED) && !UNITEX_USE(WIN32_THREADS)
 
 #include "Unicode.h"
 #include "AbstractCallbackFuncModifier.h"
