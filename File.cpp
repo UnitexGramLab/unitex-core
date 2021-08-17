@@ -242,6 +242,8 @@ UnitexFileType get_file_type(const char* filename) {
   else if  (S_ISFIFO(info.st_mode)) file_type = FILE_FIFO;
 # endif  // _NOT_UNDER_WINDOWS
 #else  // under a non-POSIX system
+  #include <winnt.h>
+  #include <fileapi.h>
   wchar_t w_filename[FILENAME_MAX + 1] = {0};
 
   // get the required size, in characters, for the wide string buffer output
@@ -277,8 +279,9 @@ UnitexFileType get_file_type(const char* filename) {
     else                                          return FUNC_ERROR;
   }  // if (status < 0)
 
-       if ((dwAttribute &  FILE_ATTRIBUTE_DIRECTORY) != 0) file_type = FILE_DIR;
-  else if ((dwAttribute &  FILE_ATTRIBUTE_ARCHIVE)   != 0) file_type = FILE_REG;
+       if ((dwAttribute & FILE_ATTRIBUTE_DIRECTORY)  != 0)    file_type = FILE_DIR;
+ else if (((dwAttribute & FILE_ATTRIBUTE_NORMAL)     != 0) ||
+           (dwAttribute & FILE_ATTRIBUTE_ARCHIVE)    != 0)    file_type = FILE_REG;
 #endif  // _MSC_VER
 
   // return main file type
