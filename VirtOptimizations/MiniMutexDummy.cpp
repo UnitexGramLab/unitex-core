@@ -24,9 +24,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
+#include "base/macro/helper/test.h"  // UNITEX_HAVE, UNITEX_USE
+#include "base/thread/model.h"       // SINGLE_THREADED
+/* ************************************************************************** */
+#if UNITEX_USE(SINGLE_THREADED)
 #include <stdlib.h>
 #include "MiniMutex.h"
-
 /* for monothread app, no mutex needed */
 
 ULB_VFFUNC MINIMUTEX_OBJECT* ULIB_CALL BuildMutex()
@@ -45,3 +48,4 @@ ULB_VFFUNC void ULIB_CALL ReleaseMiniMutex(MINIMUTEX_OBJECT*)
 ULB_VFFUNC void ULIB_CALL DeleteMiniMutex(MINIMUTEX_OBJECT*)
 {
 }
+#endif

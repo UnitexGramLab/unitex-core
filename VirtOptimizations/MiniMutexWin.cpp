@@ -26,10 +26,12 @@
  */
 #include "base/macro/helper/test.h"  // UNITEX_HAVE, UNITEX_USE
 #include "base/os/os.h"              // UNITEX_OS_IS
+#include "base/thread/model.h"       // POSIX_THREADS
 
 #if UNITEX_OS_IS(WINDOWS) && !UNITEX_USE(POSIX_THREADS)
 
 #include <windows.h>
+#include <stdlib.h>
 #include "MiniMutex.h"
 
 /* Mutex implementation for Win32 API */
