@@ -93,12 +93,12 @@ int _name(const unichar* s U__PARAMS(__VA_ARGS__))  {                           
     if (!_name(*it UNITEX_PP_IF(UNITEX_PP_VA_NARGS(__VA_ARGS__))(                \
                 UNITEX_PP_COMMA() UNITEX_PP_EXPAND(__VA_ARGS__),                 \
                 UNITEX_PP_EMPTY())))  {                                          \
-      return -(it - s);                                                          \
+      return  static_cast<int>(-(it - s));                                       \
     }                                                                            \
     ++it;                                                                        \
   }                                                                              \
-  return (it - s);                                                               \
-}
+  return static_cast<int>(it - s);                                               \
+  }
 /* ************************************************************************** */
 U__DECLARE__FUNCTION__TEST__(u_test_flag,,
                             ((u_info->flags & flags) != 0),
