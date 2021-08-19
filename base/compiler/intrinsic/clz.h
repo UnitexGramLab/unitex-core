@@ -49,6 +49,9 @@
  * @def    unitex_builtin_clz_32
  * @brief  Count the number of leading 0-bits on a 32-bits data type
  */
+#if UNITEX_COMPILER_AT_LEAST(MSVC,14,0)
+#pragma intrinsic(_BitScanReverse)
+#endif  // UNITEX_COMPILER_AT_LEAST(MSVC,14,0)
 UNITEX_FORCE_INLINE
 uint32_t unitex_builtin_clz_32(uint32_t n) {
 // GNU C/C++ compiler
@@ -61,12 +64,15 @@ uint32_t unitex_builtin_clz_32(uint32_t n) {
 #elif UNITEX_COMPILER_AT_LEAST(MSVC,14,0)
 #  define UNITEX_HAS_BUILTIN_CLZ                   1
    uint32_t count = 32;
-   if (UNITEX_LIKELY(n)) _BitScanForward((DWORD *)&count, n);
+   if (UNITEX_LIKELY(n)) {
+     _BitScanReverse((DWORD*)&count, n);
+     count ^= 31;
+   }
    return count;
 // Intel Compiler
 #elif UNITEX_COMPILER_IS(INTEL)
 #  define UNITEX_HAS_BUILTIN_CLZ                   1
-   return UNITEX_LIKELY(n) ? _bit_scan_forward(static_cast<uint32_t>(n))  : 32;
+   return UNITEX_LIKELY(n) ? _bit_scan_reverse(static_cast<uint32_t>(n)) ^ 31 : 32;
 #else
 #  define UNITEX_HAS_BUILTIN_CLZ                   0
 //  Bit Twiddling Hacks
@@ -92,6 +98,9 @@ uint32_t unitex_builtin_clz_32(uint32_t n) {
  * @def    unitex_builtin_clz_64
  * @brief  Count the number of leading 0-bits on a 64-bits data type
  */
+#if UNITEX_COMPILER_AT_LEAST(MSVC,14,0)
+#pragma intrinsic(_BitScanReverse64)
+#endif  // UNITEX_COMPILER_AT_LEAST(MSVC,14,0)
 UNITEX_FORCE_INLINE
 uint32_t unitex_builtin_clz_64(uint64_t n) {
 // GNU C/C++ compiler
@@ -107,11 +116,16 @@ uint32_t unitex_builtin_clz_64(uint64_t n) {
    uint32_t count = 64;
    if (UNITEX_LIKELY(n)) {
 #  if UNITEX_CPU_IS(X64)
-      _BitScanForward64((DWORD *)&count, n);
+      _BitScanReverse64((DWORD *)&count, n);
+      count ^= 63;
 #  else
-     if (!(_BitScanForward((DWORD *)&count, static_cast<uint32_t>(n))))
-     if (  _BitScanForward((DWORD *)&count, static_cast<uint32_t>(n >> 32)))
-     count += 32;
+     if (_BitScanReverse((DWORD*)&count, static_cast<uint32_t>(n >> 32))) {
+       count += 32;
+       count ^= 63;
+     }
+     else if (_BitScanReverse((DWORD*)&count, static_cast<uint32_t>(n))) {
+       count ^= 63;
+     }
 #  endif
   }
   return count;
@@ -122,11 +136,15 @@ uint32_t unitex_builtin_clz_64(uint64_t n) {
  uint32_t count = 64;
  if (UNITEX_LIKELY(n)) {
 #  if UNITEX_WORDSIZE_IS(64)
-   _BitScanForward64(&count, n);
+   _BitScanReverse64(&count, n);
+   count ^= 63;
 #  else
-   if (!(_bit_scan_forward(&count, static_cast<uint32_t>(n))))
-   if (  _bit_scan_forward(&count, static_cast<uint32_t>(n >> 32)))
-   count += 32;
+   if (_bit_scan_reverse(&count, static_cast<uint32_t>(n >> 32))) {
+     count += 32;
+     count ^= 63;
+   } else if (_bit_scan_reverse(&count, static_cast<uint32_t>(n))) {
+     count ^= 63;
+   }
 #  endif
 }
    return count;
