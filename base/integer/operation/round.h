@@ -40,6 +40,7 @@
 #include "base/compiler/intrinsics.h"    // UNITEX_HAS_BUILTIN
 #include "base/integer/types.h"          // uint32_t, uint64_t
 #include "base/bits/size.h"              // size_in_bits
+#include "base/compiler/intrinsic/clz.h"  // unitex_builtin_clz_*
 /* ************************************************************************** */
 # if UNITEX_HAS_BUILTIN(CLZ)
 # define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, FIT)               \
