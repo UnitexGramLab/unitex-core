@@ -27,7 +27,7 @@
 #include "SyncTool.h"
 #include "VirtualFiles.h"
 
-#define UNITEX_LIBRARY
+//#define UNITEX_LIBRARY
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
