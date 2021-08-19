@@ -49,10 +49,10 @@ namespace unitex {
 
 /* This line is used to prevent people from using printf and scanf. We do
  * that because we want to parametrize I/O operations with encodings. */
-#define printf DONT_USE_PRINTF_BUT_U_PRINTF
-#define scanf DONT_USE_SCANF_BUT_U_SCANF
+#define printf() DONT_USE_PRINTF_BUT_U_PRINTF
+#define scanf() DONT_USE_SCANF_BUT_U_SCANF
 
-#define fopen DONT_USE_FOPEN_BUT_U_FOPEN
+#define fopen() DONT_USE_FOPEN_BUT_U_FOPEN
 
 /**
  * This library provides basic I/O unicode operations. For internal data
