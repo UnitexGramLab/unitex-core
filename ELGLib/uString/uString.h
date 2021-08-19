@@ -23,6 +23,11 @@
 #ifndef USTRING_H_
 #define USTRING_H_
 /* ************************************************************************** */
+#if UNITEX_COMPILER_AT_LEAST(MSVC,15,0)
+#pragma warning(push)
+#pragma warning(disable:4291)    // no matching operator delete found
+#endif  // UNITEX_COMPILER_AT_LEAST(MSVC,15,0)
+/* ************************************************************************** */
 // .h source file
 
 /* ************************************************************************** */
@@ -41,7 +46,6 @@
 #include "UnitexString.h"
 #include "Unicode.h"
 #include "base/integer/operation/round.h"
-
 /* ************************************************************************** */
 #define EXTENSION_NAME_USTRING        EXTENSION_NAME_2(ELG, USTRING)
 #define FUNCTION_PREFIX_USTRING       FUNCTION_PREFIX_2(ELG, USTRING)
@@ -586,5 +590,9 @@ int luaopen_ustring(lua_State *L) {
 }  // namespace unitex::elg
 /* ************************************************************************** */
 }  // namespace unitex
+/* ************************************************************************** */
+#if UNITEX_COMPILER_AT_LEAST(MSVC,15,0)
+#pragma warning(pop)
+#endif  // UNITEX_COMPILER_AT_LEAST(MSVC,15,0)
 /* ************************************************************************** */
 #endif // USTRING_H_
