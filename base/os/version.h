@@ -319,6 +319,7 @@
 # ifndef WIN32_LEAN_AND_MEAN
 #  define WIN32_LEAN_AND_MEAN
 # endif  // !defined(WIN32_LEAN_AND_MEAN)
+# include <windows.h>    // Windows-specific header
 # include <sdkddkver.h>  // NTDDI_VERSION
 #endif  //  defined(_WIN32) || defined(WIN32) || defined (__WIN32__)
 /* ************************************************************************** */
