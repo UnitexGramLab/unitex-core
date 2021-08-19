@@ -109,9 +109,6 @@
 /* ************************************************************************** */
 #undef  UNITEX_EXPERIMENTAL_MSGLOGGER
 #define UNITEX_EXPERIMENTAL_MSGLOGGER
-
-#undef DEBUG
-#define DEBUG 1
 /* ************************************************************************** */
 #if defined(UNITEX_EXPERIMENTAL_MSGLOGGER)
 /* ************************************************************************** */
