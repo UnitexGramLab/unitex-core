@@ -40,7 +40,6 @@
 #if (defined(_WIN32)) || defined(WIN32)
 #include <windows.h>
 #include <stdlib.h>
-#include <malloc.h>
 #endif
 
 #if defined(WINAPI_FAMILY_PARTITION) && (!(defined(UNITEX_USING_WINRT_API)))
