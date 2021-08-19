@@ -1407,6 +1407,8 @@ class vm {
       elg_stack_dump(state);
       lua_pop(state,1);
       elg_stack_dump(state);
+      // TODO() Visual Studio raises an unhandled exception here
+      // @see Exception handling model and /EHsc
       luaL_error(state,"ELG error: %s\n", e);
     }
     return retval;
