@@ -130,8 +130,7 @@
  * Test if certain standard language proposal is enabled
  */
 #define UNITEX_CXX_PROPOSAL(Proposal)               \
-        (defined(UNITEX_CXX_PROPOSAL_##Proposal)  &&\
-                 UNITEX_CXX_PROPOSAL_##Proposal)
+        (UNITEX_CXX_PROPOSAL_##Proposal == 1)
 /* ************************************************************************** */
 // include compiler specific headers
 // Attention, do not change declaration order

@@ -75,8 +75,7 @@
  * @see    UNITEX_HAS_CPU_EXTENSION_AES
  */
 #define UNITEX_HAS_CPU_EXTENSION(ExtensionName)\
-        (defined(UNITEX_HAS_CPU_EXTENSION_##ExtensionName) &&\
-                 UNITEX_HAS_CPU_EXTENSION_##ExtensionName)
+        (UNITEX_HAS_CPU_EXTENSION_##ExtensionName == 1)
 
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_CPU_EXTENSIONS_H_                            // NOLINT

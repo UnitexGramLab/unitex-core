@@ -71,7 +71,6 @@
  * @endcode
  */
 #define UNITEX_BUILD_MODE(BuildMode)   \
-        (defined(UNITEX_BUILD_MODE_##BuildMode) &&\
-                 UNITEX_BUILD_MODE_##BuildMode)
+        (UNITEX_BUILD_MODE_##BuildMode == 1)
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_BUILD_MODE_H_                                // NOLINT

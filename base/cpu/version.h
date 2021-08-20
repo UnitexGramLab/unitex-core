@@ -182,8 +182,7 @@
  * @endcode
  */
 # define UNITEX_CPU_IS(CpuName)           \
-        (defined(UNITEX_CPU_##CpuName) && \
-                 UNITEX_CPU_##CpuName)
+        (UNITEX_CPU_##CpuName == 1)
 /* ************************************************************************** */
 /**
  * @brief  Test for an ARM CPU version at compile-time
@@ -199,8 +198,7 @@
  * @note   ARM Versions lower than 5 are neither identified nor supported
  */
 #define UNITEX_CPU_VERSION_AT_LEAST_ARM(VersionName) \
-  defined(UNITEX_CPU_VERSION_AT_LEAST_ARM_##VersionName) &&\
-          UNITEX_CPU_VERSION_AT_LEAST_ARM_##VersionName
+       (UNITEX_CPU_VERSION_AT_LEAST_ARM_##VersionName == 1)
 /* ************************************************************************** */
 /**
  * @brief  Test for a CPU version at compile-time

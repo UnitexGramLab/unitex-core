@@ -109,8 +109,7 @@
  */
 // UNITEX_COMPILER_AT_LEAST_MINGW(version, release, patch)
 # define UNITEX_COMPILER_AT_LEAST_MINGW_(v, r, p) \
-         (defined(UNITEX_COMPILER_MINGW) &&\
-             UNITEX_COMPILER_MINGW >= (v * 10000000 + r * 100000 + p))
+         (UNITEX_COMPILER_MINGW >= (v * 10000000 + r * 100000 + p))
 /**
  * @brief  Test MinGW version in the format (version, release)
  * @return true if MinGW version is at least (version, release, 0)
@@ -160,8 +159,7 @@
  */
 // UNITEX_COMPILER_AT_LEAST_CLANG_(version, release, patch)
 # define UNITEX_COMPILER_AT_LEAST_CLANG_(v, r, p) \
-         (defined(UNITEX_COMPILER_CLANG) &&\
-                  UNITEX_COMPILER_CLANG >= (v * 10000000 + r * 100000 + p))
+         (UNITEX_COMPILER_CLANG >= (v * 10000000 + r * 100000 + p))
 /**
  * @brief  Test Clang version in the format (version, release)
  * @return true if Clang version is at least (version, release, 0)
@@ -217,8 +215,7 @@
  */
 // UNITEX_COMPILER_AT_LEAST_GCC_(version, release, patch)
 # define UNITEX_COMPILER_AT_LEAST_GCC_(v, r, p) \
-         (defined(UNITEX_COMPILER_GCC) &&\
-                  UNITEX_COMPILER_GCC >= (v * 10000000 + r * 100000 + p))
+         (UNITEX_COMPILER_GCC >= (v * 10000000 + r * 100000 + p))
 /**
  * @brief  Test GNU C/C++ version in the format (version, release)
  * @return true if the GNU C/C++ version is at least (version, release, 0)
@@ -288,8 +285,7 @@
  */
 // UNITEX_COMPILER_AT_LEAST_MSVC_(version, release, patch)
 # define UNITEX_COMPILER_AT_LEAST_MSVC_(v, r, p) \
-         (defined(UNITEX_COMPILER_MSVC) &&\
-                  UNITEX_COMPILER_MSVC  >= (v * 10000000 + r * 100000 + p))
+         (UNITEX_COMPILER_MSVC  >= (v * 10000000 + r * 100000 + p))
 /**
  * @brief  Test MSVC version in the format (version, release)
  * @return true if the MSVC version is at least (version, release, 0)
@@ -336,9 +332,8 @@
  */
 // UNITEX_COMPILER_AT_LEAST_MSVC_VISUAL_STUDIO(CommercialVersion)
 # define UNITEX_COMPILER_AT_LEAST_MSVC_VISUAL_STUDIO(CommercialVersion)    \
-        (defined(UNITEX_COMPILER_MSVC_VISUAL_STUDIO_##CommercialVersion) &&\
-                 UNITEX_COMPILER_MSVC  >= \
-                 UNITEX_COMPILER_MSVC_VISUAL_STUDIO_##CommercialVersion)
+        (UNITEX_COMPILER_MSVC  >= \
+         UNITEX_COMPILER_MSVC_VISUAL_STUDIO_##CommercialVersion)
 /* ************************************************************************** */
 /**
  * @def      UNITEX_COMPILER_INTEL
@@ -367,8 +362,7 @@
  */
 // UNITEX_COMPILER_AT_LEAST_INTEL_(version, release, patch)
 # define UNITEX_COMPILER_AT_LEAST_INTEL_(v, r, p) \
-         (defined(UNITEX_COMPILER_INTEL) &&\
-             UNITEX_COMPILER_INTEL >= (v * 10000000 + r * 100000 + p))
+         (UNITEX_COMPILER_INTEL >= (v * 10000000 + r * 100000 + p))
 /**
  * @brief  Test Intel C/C++ version in the format (version, release)
  * @return true if the Intel C/C++ version is at least (version, release, 0)
@@ -421,8 +415,7 @@
  */
 // UNITEX_COMPILER_AT_LEAST_ZOSXL_(version, release, patch)
 # define UNITEX_COMPILER_AT_LEAST_ZOSXL_(v, r, p) \
-         (defined(UNITEX_COMPILER_ZOSXL) &&\
-                  UNITEX_COMPILER_ZOSXL >= (v * 10000000 + r * 100000 + p))
+         (UNITEX_COMPILER_ZOSXL >= (v * 10000000 + r * 100000 + p))
 /**
  * @brief  Test IBM z/OS XL C/C++ version in the format (version, release)
  * @return true if the IBM z/OS XL C/C++ version is at least (version, release, 0)
@@ -454,8 +447,7 @@
  * @see    UNITEX_COMPILER_ZOSXL
  */
 #define UNITEX_COMPILER_IS(CompilerName)              \
-        (defined(UNITEX_COMPILER_IS_##CompilerName) &&\
-                 UNITEX_COMPILER_IS_##CompilerName)
+        (UNITEX_COMPILER_IS_##CompilerName == 1)
 /* ************************************************************************** */
 /**
  * @brief  Test for a compiler type at compile-time  (NOT)

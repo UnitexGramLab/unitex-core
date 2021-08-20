@@ -85,8 +85,7 @@
  * @endcode
  */
 #define UNITEX_WORDSIZE_IS(Size)              \
-        (defined(UNITEX_WORDSIZE_IS_##Size) &&\
-                 UNITEX_WORDSIZE_IS_##Size)
+        (UNITEX_WORDSIZE_IS_##Size == 1)
 /* ************************************************************************** */
 /**
  * @brief  Test if the target system wordsize is at least of n bits
@@ -97,7 +96,6 @@
  * @endcode
  */
 #define UNITEX_WORDSIZE_IS_AT_LEAST(n)        \
-        (defined(UNITEX_WORDSIZE)           &&\
-                 UNITEX_WORDSIZE >= n)
+        (UNITEX_WORDSIZE >= n)
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_INTEGER_WORDSIZE_H_                          // NOLINT

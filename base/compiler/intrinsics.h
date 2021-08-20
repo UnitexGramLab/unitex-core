@@ -60,7 +60,6 @@
  * @see   UNITEX_COMPILER_BUILTIN_POPCOUNT
  */
 # define UNITEX_HAS_BUILTIN(BuiltinName)                                  \
-                     (defined(UNITEX_HAS_BUILTIN_##BuiltinName)         &&\
-                              UNITEX_HAS_BUILTIN_##BuiltinName)
+                     (UNITEX_HAS_BUILTIN_##BuiltinName == 1)
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_COMPILER_INTRINSICS_H_                       // NOLINT

@@ -40,13 +40,13 @@
 /* ************************************************************************** */
 /**
  * @def    ELG_BUILD_MODE_DEBUG
- * @brief  true if DEBUG is defined and true
+ * @brief  true if ELG_DEBUG is defined and true
  * @see    ELG_BUILD_MODE_STRING
  */
 /**
  * @def    ELG_BUILD_MODE_STRING
- * @return "debug"     if  DEBUG
- * @return "release"   if !DEBUG
+ * @return "ELG Engine Debug"     if  ELG_DEBUG
+ * @return "ELG Engine Release"   if !ELG_DEBUG
  * @see    ELG_BUILD_MODE_DEBUG
  */
 #if defined(ELG_DEBUG) && ELG_DEBUG
@@ -66,7 +66,6 @@
  * @endcode
  */
 #define ELG_BUILD_MODE(BuildMode)   \
-        (defined(ELG_BUILD_MODE_##BuildMode) &&\
-                 ELG_BUILD_MODE_##BuildMode)
+        (ELG_BUILD_MODE_##BuildMode == 1)
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_ELG_BUILD_MODE_H_                            // NOLINT
