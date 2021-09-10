@@ -53,6 +53,8 @@ void push_input_substring(struct stack_unichar* stack,unichar* s,int length,int)
 void push_output_char(struct stack_unichar*,unichar);
 void push_output_string(struct stack_unichar*,unichar*);
 int deal_with_output(unichar*,struct locate_parameters*,int*);
+int process_output(unichar* s,struct locate_parameters* p,struct stack_unichar* stack,
+int capture_in_debug_mode, OutputVariables *input_variables);
 
 } // namespace unitex
 

@@ -236,6 +236,8 @@ int get_graph_compatibility_mode_by_file(const VersatileEncodingConfig*,int *p_t
 
 Fst2* new_Fst2_clone(Fst2* fst2org,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
+Fst2Tag new_Fst2Tag_clone(Fst2Tag Fst2TagSrc,Abstract_allocator prv_alloc);
+
 /* Functions for writing grammars */
 void write_graph(U_FILE*,Fst2*,int);
 void write_fst2_tags(U_FILE*,Fst2*);
