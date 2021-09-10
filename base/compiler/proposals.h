@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -130,8 +130,7 @@
  * Test if certain standard language proposal is enabled
  */
 #define UNITEX_CXX_PROPOSAL(Proposal)               \
-        (defined(UNITEX_CXX_PROPOSAL_##Proposal)  &&\
-                 UNITEX_CXX_PROPOSAL_##Proposal)
+        (UNITEX_CXX_PROPOSAL_##Proposal == 1)
 /* ************************************************************************** */
 // include compiler specific headers
 // Attention, do not change declaration order

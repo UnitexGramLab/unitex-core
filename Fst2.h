@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -250,6 +250,10 @@ int load_persistent_fst2(const char* filename);
 void free_persistent_fst2(const char* filename);
 
 int get_graph_index(Fst2* fst2,int n_state);
+
+void fst2_output_dot(Fst2 * A);
+
+Fst2Tag create_tag(Fst2* fst2,unichar* line,Abstract_allocator prv_alloc);
 
 } // namespace unitex
 

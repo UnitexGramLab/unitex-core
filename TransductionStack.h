@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "LocatePattern.h"
 #include "Stack_unichar.h"
+#include "UnitexString.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -33,10 +34,14 @@
 namespace unitex {
 
 extern const int TRANSDUCTION_STACK_SIZE;
+//extern const int EXTENDED_OUTPUT_STACK_SIZE;
+//extern const int EXTENDED_FUNCTIONS_PER_TRANSDUCTION;
 //#define TRANSDUCTION_STACK_SIZE 10000
 
-
+// replaced by u_is_identifier
+#if !UNITEX_USE(BASE_UNICODE)
 int is_variable_char(unichar);
+#endif
 
 /* Every character or string that comes from the input text must be
  * pushed with the following functions, because some characters like dots
@@ -51,8 +56,12 @@ void push_input_string(struct stack_unichar*,unichar*,int);
 void push_input_substring(struct stack_unichar* stack,unichar* s,int length,int);
 
 void push_output_char(struct stack_unichar*,unichar);
+void push_output_string(struct stack_unichar*, const char*);
 void push_output_string(struct stack_unichar*,unichar*);
-int deal_with_output(unichar*,struct locate_parameters*,int*);
+
+
+void append_literal_output(struct stack_unichar*, struct locate_parameters*, int*);
+int deal_with_extended_output(unichar*, struct locate_parameters*, struct extended_output_render*);
 
 } // namespace unitex
 

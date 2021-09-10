@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,6 +48,7 @@
 #include "base/compiler/attribute/inline.h"
 #include "base/compiler/attribute/nonnull.h"
 #include "base/compiler/attribute/noreturn.h"
+#include "base/compiler/attribute/malloc.h"
 #include "base/compiler/attribute/printf_format.h"
 #include "base/compiler/attribute/pure.h"
 #include "base/compiler/attribute/sentinel.h"

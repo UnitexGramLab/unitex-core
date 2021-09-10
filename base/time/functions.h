@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -123,9 +123,6 @@ class MachClockService {
      */
     UNITEX_DISALLOW_COPY_AND_ASSIGN(MachClockService);
 };
-
-uint32_t MachClockService::count_ = 0;
-clock_serv_t MachClockService::clock_service_ = 0;
 /* ************************************************************************** */
 }  // namespace unitex::helper                                      // NOLINT
 /* ************************************************************************** */
@@ -244,7 +241,8 @@ int time_now(struct timeval* tv, void* tz /* (unused) */) {
   // Note that for UNIX the use of the timezone struct is obsolete
 
   // TODO(martinec) add -lrt to the list of libraries we link
-# if UNITEX_HAVE(CLOCK_GETTIME)
+# if UNITEX_HAVE(CLOCK_GETTIME) &&\
+    !defined(UNITEX_UNIX_FEATURE_MACH_CLOCK_GETTIME)
    // using clock_gettime function
    static bool use_clock_gettime = true;
    if(use_clock_gettime) {
@@ -276,7 +274,7 @@ int time_now(struct timeval* tv, void* tz /* (unused) */) {
   */
    static bool use_clock_get_time = true;
    if(use_clock_get_time) {
-     static detail::helper::MachClockService clock_service;
+     static helper::MachClockService clock_service;
 
      if(clock_service.initialized()){
        mach_timespec_t mach_current_time;

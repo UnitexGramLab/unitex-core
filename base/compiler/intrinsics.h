@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,8 +41,12 @@
 #ifndef UNITEX_BASE_COMPILER_INTRINSICS_H_                          // NOLINT
 #define UNITEX_BASE_COMPILER_INTRINSICS_H_                          // NOLINT
 /* ************************************************************************** */
+#include "base/compiler/intrinsic/assume_aligned.h"
+#include "base/compiler/intrinsic/clz.h"
+#include "base/compiler/intrinsic/likely.h"
 #include "base/compiler/intrinsic/support.h"
 #include "base/compiler/intrinsic/popcount.h"
+#include "base/compiler/intrinsic/unreachable.h"
 /* ************************************************************************** */
 /**
  * @brief  Query if a compiler builtin is avalaible
@@ -56,7 +60,6 @@
  * @see   UNITEX_COMPILER_BUILTIN_POPCOUNT
  */
 # define UNITEX_HAS_BUILTIN(BuiltinName)                                  \
-                     (defined(UNITEX_HAS_BUILTIN_##BuiltinName)         &&\
-                              UNITEX_HAS_BUILTIN_##BuiltinName)
+                     (UNITEX_HAS_BUILTIN_##BuiltinName == 1)
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_COMPILER_INTRINSICS_H_                       // NOLINT

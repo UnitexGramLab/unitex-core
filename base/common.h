@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -59,5 +59,6 @@
 #include "thread/thread.h"              // Portable thread types and functions
 #include "time/time.h"                  // Portable time-related functions
 #include "unilog/unilog.h"              // Unicode-aware message logging
+#include "unicode/unicode.h"            // Unicode code points handling
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_COMMON_H_                                    // NOLINT

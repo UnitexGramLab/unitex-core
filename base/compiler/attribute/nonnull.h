@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -49,16 +49,18 @@
 /* ************************************************************************** */
 /**
  * @def    UNITEX_PARAMS_NON_NULL
- * @brief  Tells the compiler that some function parameters should be non-null
- *         pointers
+ * @brief  Tells the compiler that all or some function parameters should be
+ *         non-null pointers
  */
 // UNITEX_PARAMS_NON_NULL
 // specific to GCC >= 4.0, Clang >= 1,0
 #if UNITEX_COMPILER_AT_LEAST(GCC,4,0)   ||\
     UNITEX_COMPILER_AT_LEAST(CLANG,1,0)
-#define UNITEX_PARAMS_NON_NULL __attribute__ ((nonnull))
+#define UNITEX_PARAMS_NON_NULL       __attribute__ ((nonnull))
+#define UNITEX_PARAMS_NON_NULL_(...) __attribute__ ((nonnull (__VA_ARGS__)))
 #else
-#define UNITEX_PARAMS_NON_NULL /* nothing */
+#define UNITEX_PARAMS_NON_NULL        /* nothing */
+#define UNITEX_PARAMS_NON_NULL_(...)  /* nothing */
 #endif  // defined(UNITEX_COMPILER_GCC)
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_COMPILER_ATTRIBUTE_NONNULL_H_                // NOLINT

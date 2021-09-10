@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,7 @@ namespace unitex {
 void* get_persistent_structure(const char* filename);
 void set_persistent_structure(const char* filename,void* ptr);
 int is_persistent_structure(void* ptr);
+int is_persistent_filename(const char* filename);
 
 } // namespace unitex
 

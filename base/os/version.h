@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -319,6 +319,7 @@
 # ifndef WIN32_LEAN_AND_MEAN
 #  define WIN32_LEAN_AND_MEAN
 # endif  // !defined(WIN32_LEAN_AND_MEAN)
+# include <windows.h>    // Windows-specific header
 # include <sdkddkver.h>  // NTDDI_VERSION
 #endif  //  defined(_WIN32) || defined(WIN32) || defined (__WIN32__)
 /* ************************************************************************** */
@@ -337,8 +338,7 @@
  * @see    UNITEX_OS_WINDOWS
  */
 #define UNITEX_OS_IS(OSName)            \
-        (defined(UNITEX_OS_##OSName) && \
-                 UNITEX_OS_##OSName)
+        (UNITEX_OS_##OSName == 1)
 /* ************************************************************************** */
 /**
  * @brief  Test for an OS name at compile-time (NOT)
@@ -385,8 +385,7 @@
  * @see    UNITEX_OS_UNIX
  */
 # define UNITEX_OS_UNIX_IS(UnixName)           \
-        (defined(UNITEX_OS_UNIX_##UnixName) && \
-                 UNITEX_OS_UNIX_##UnixName)
+        (UNITEX_OS_UNIX_##UnixName == 1)
 /* ************************************************************************** */
 /**
  * @brief  Test for a Unix-like system at compile-time (NOT)
@@ -409,8 +408,7 @@
  * @see    UNITEX_OS_UNIX_APPLE_IOS_MODE_SIMULATOR
  */
 # define UNITEX_OS_UNIX_APPLE_IOS_MODE(ModeName)\
-        (defined(UNITEX_OS_UNIX_APPLE_IOS_MODE_##ModeName) && \
-                 UNITEX_OS_UNIX_APPLE_IOS_MODE_##ModeName)
+        (UNITEX_OS_UNIX_APPLE_IOS_MODE_##ModeName == 1)
 /* ************************************************************************** */
 /**
  * @brief  Test Cygwin's target API type at compile-time
@@ -426,8 +424,7 @@
  */
 #if UNITEX_OS_IS(CYGWIN)
 #define UNITEX_OS_CYGWIN_API_IS(ApiName)
-        (defined(UNITEX_OS_CYGWIN_API_##ApiName) && \
-                 UNITEX_OS_CYGWIN_API_##ApiName)
+        (UNITEX_OS_CYGWIN_API_##ApiName == 1)
 #else     // Expression syntax error in non-Windows target systems
 #define UNITEX_OS_CYGWIN_API_IS(ApiName)             /* nothing */
 #endif  //  UNITEX_OS_IS(CYGWIN)
@@ -448,8 +445,7 @@
  * @note   Tests are not mutually exclusive
  */
 #define UNITEX_OS_UNIX_ENVIRONMENT_IS(EnvironmentName)            \
-        (defined(UNITEX_OS_UNIX_ENVIRONMENT_##EnvironmentName) && \
-                 UNITEX_OS_UNIX_ENVIRONMENT_##EnvironmentName)
+        (UNITEX_OS_UNIX_ENVIRONMENT_##EnvironmentName == 1)
 /* ************************************************************************** */
 /**
  * @brief  Test for a Unix-like environment at compile-time
@@ -511,11 +507,9 @@
  */
 #if UNITEX_OS_IS(WINDOWS)
 #define UNITEX_OS_WINDOWS_API_IS(VersionName) \
-     (defined(_WIN32_WINNT) && \
-     _WIN32_WINNT == (UNITEX_OS_WINDOWS_API_##VersionName))
+     (_WIN32_WINNT == (UNITEX_OS_WINDOWS_API_##VersionName))
 #else     // Expression syntax error in non-Windows target systems
 #define UNITEX_OS_WINDOWS_API_IS(VersionName)        /* nothing */
-
 #endif  // UNITEX_OS_IS(WINDOWS)
 /* ************************************************************************** */
 /**
@@ -530,8 +524,7 @@
  */
 #if UNITEX_OS_IS(WINDOWS)
 #define UNITEX_OS_WINDOWS_API_VERSION_IS(VersionName, ServicePackNumber) \
-(defined(NTDDI_VERSION) && \
-  NTDDI_VERSION == ((UNITEX_OS_WINDOWS_API_##VersionName * 0x00010000)\
+(NTDDI_VERSION == ((UNITEX_OS_WINDOWS_API_##VersionName * 0x00010000)\
                  + (0x##ServicePackNumber * 0x100)))
 #else     // Expression syntax error in non-Windows target systems
 #define UNITEX_OS_WINDOWS_API_VERSION_IS(VersionName, \
@@ -566,8 +559,7 @@
  */
 #if UNITEX_OS_IS(WINDOWS)
 #define UNITEX_OS_WINDOWS_API_AT_LEAST(VersionName) \
-     (defined(_WIN32_WINNT) && \
-     _WIN32_WINNT >= (UNITEX_OS_WINDOWS_API_##VersionName))
+     (_WIN32_WINNT >= (UNITEX_OS_WINDOWS_API_##VersionName))
 #else     // Expression syntax error in non-Windows target systems
 # define UNITEX_OS_WINDOWS_API_AT_LEAST(VersionName) /* nothing */
 #endif  // UNITEX_OS_IS(WINDOWS)
@@ -585,8 +577,7 @@
 #if UNITEX_OS_IS(WINDOWS)
 # define UNITEX_OS_WINDOWS_API_VERSION_AT_LEAST(VersionName, \
                                                    ServicePackNumber) \
-(defined(NTDDI_VERSION) && \
-  NTDDI_VERSION >= ((UNITEX_OS_WINDOWS_API_##VersionName * 0x00010000)\
+(NTDDI_VERSION >= ((UNITEX_OS_WINDOWS_API_##VersionName * 0x00010000)\
                  + (0x##ServicePackNumber * 0x100)))
 #else     // Expression syntax error in non-Windows target systems
 # define UNITEX_OS_WINDOWS_API_VERSION_AT_LEAST(VersionName, \

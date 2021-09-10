@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -399,7 +399,7 @@ int current_global_position_in_chars=0;
 u_fprintf(tfst,"0000000000\n");
 u_printf("Constructing text automaton...\n");
 Ustring* text=new_Ustring(2048);
-struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)((EQUAL_UNICHAR_FUNCTION)u_equal),
         (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
 while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER,tokens->SPACE)) {

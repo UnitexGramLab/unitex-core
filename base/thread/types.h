@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,6 +45,7 @@
 // Unitex headers
 #include "base/thread/model.h"       // UNITEX_USE_*_THREADS
 #include "base/macro/helpers.h"      // UNITEX_DISALLOW_COPY_AND_ASSIGN
+#include "base/unicode/unicode.h"    // unichar
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */

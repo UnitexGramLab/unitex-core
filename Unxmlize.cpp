@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@
 #include "Xml.h"
 #include "Copyright.h"
 #include "Offsets.h"
+#include "Ustring.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -48,6 +49,8 @@ const char* usage_Unxmlize =
          "  --output_offsets=XXX: specifies the offset file to be produced\n"
          "  --PRLG=XXX: extracts to file XXX special information used in the\n"
          "              PRLG project on ancient Greek (requires --output_offsets)\n"
+         "  --selxpath=XXX: specifies the xml selection path\n"
+         "  --selxpath_file=XXX: specifies a file which contain the xml selection path\n"
          "\n"
          "  -t/--html: consider the file as html file (disregard extension)\n"
          "  -x/--xml: consider the file as xml file (disregard extension)\n"
@@ -74,7 +77,7 @@ static void usage() {
 }
 
 
-const char* optstring_Unxmlize=":o:Vh:k:q:txlp:c:s:n:@:$:";
+const char* optstring_Unxmlize=":o:Vh:k:q:txa:f:lp:c:s:n:@:$:";
 const struct option_TS lopts_Unxmlize[]={
   {"output", required_argument_TS, NULL, 'o'},
   {"input_offsets",required_argument_TS,NULL,'$'},
@@ -88,11 +91,38 @@ const struct option_TS lopts_Unxmlize[]={
   {"tolerate", no_argument_TS, NULL, 'l'},
   {"html", no_argument_TS, NULL, 't'},
   {"xml", no_argument_TS, NULL, 'x'},
+  {"selxpath", required_argument_TS, NULL, 'a'},
+  {"selxpath_file", required_argument_TS, NULL, 'f'},
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
   {"help", no_argument_TS, NULL, 'h'},
   {NULL, no_argument_TS, NULL, 0}
 };
 
+
+
+
+
+
+
+Ustring* load_xpath_file(const VersatileEncodingConfig* vec,const char* filename) {
+U_FILE* f;
+f=u_fopen(vec,filename,U_READ);
+if (f==NULL) {
+   return NULL;
+}
+int c;
+Ustring* ustr = new_Ustring();
+while ((c = u_fgetc(f)) != EOF) {
+    unichar uc2[2];
+    uc2[0] = (unichar)c;
+    uc2[1] = (unichar)'\0';
+    if ((uc2[0] == (unichar)'\r') || (uc2[0] == (unichar)'\n'))
+        continue;
+    u_strcat(ustr, uc2);
+}
+u_fclose(f);
+return ustr;
+}
 
 int main_Unxmlize(int argc,char* const argv[]) {
 if (argc==1) {
@@ -103,7 +133,9 @@ if (argc==1) {
 char output[FILENAME_MAX]="";
 char input_offsets[FILENAME_MAX]="";
 char output_offsets[FILENAME_MAX] = "";
-char output_PRLG[FILENAME_MAX]="";
+char output_PRLG[FILENAME_MAX]    = "";
+char selxPath_filename[FILENAME_MAX]    = "";
+Ustring* selPath = NULL;
 char comments=-1;
 char scripts=-1;
 char normal_tags=-1;
@@ -119,27 +151,47 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
    switch(val) {
    case 'o': if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a non empty output file name\n");
+                free_Ustring(selPath);
                 return USAGE_ERROR_CODE;
              }
              strcpy(output,options.vars()->optarg);
              break;
    case '$': if (options.vars()->optarg[0]=='\0') {
                    error("You must specify a non empty input offset file name\n");
+                   free_Ustring(selPath);
                    return USAGE_ERROR_CODE;
                 }
                 strcpy(input_offsets,options.vars()->optarg);
                 break;
    case '@': if (options.vars()->optarg[0]=='\0') {
                    error("You must specify a non empty offset file name\n");
+                   free_Ustring(selPath);
                    return USAGE_ERROR_CODE;
                 }
                 strcpy(output_offsets,options.vars()->optarg);
                 break;
    case 'p': if (options.vars()->optarg[0]=='\0') {
                    error("You must specify a non empty PRLG file name\n");
+                   free_Ustring(selPath);
                    return USAGE_ERROR_CODE;
                 }
                 strcpy(output_PRLG,options.vars()->optarg);
+                break;
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty xml selection path\n");
+                   free_Ustring(selPath);
+                   return USAGE_ERROR_CODE;
+                }
+                free_Ustring(selPath);
+                selPath = new_Ustring();
+                u_strcpy(selPath, options.vars()->optarg);
+                break;
+   case 'f': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty xml selection path filename\n");
+                   free_Ustring(selPath);
+                   return USAGE_ERROR_CODE;
+                }
+                strcpy(selxPath_filename,options.vars()->optarg);
                 break;
    case 'c': {
        if (!strcmp(options.vars()->optarg,"IGNORE")) {
@@ -148,6 +200,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
            comments=UNXMLIZE_REPLACE_BY_SPACE;
        } else {
            error("Invalid argument for option --comments\n");
+       free_Ustring(selPath);
        return USAGE_ERROR_CODE;
        }
        break;
@@ -159,6 +212,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
            scripts=UNXMLIZE_REPLACE_BY_SPACE;
        } else {
            error("Invalid argument for option --scripts\n");
+       free_Ustring(selPath);
        return USAGE_ERROR_CODE;
        }
        break;
@@ -170,18 +224,21 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
            normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
        } else {
            error("Invalid argument for option --normal_tags\n");
+       free_Ustring(selPath);
        return USAGE_ERROR_CODE;
        }
        break;
    }
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
+                free_Ustring(selPath);
                 return USAGE_ERROR_CODE;
              }
              decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
    case 'q': if (options.vars()->optarg[0]=='\0') {
                 error("Empty output_encoding argument\n");
+                free_Ustring(selPath);
                 return USAGE_ERROR_CODE;
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
@@ -192,12 +249,15 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
    case 'V': only_verify_arguments = true;
              break;
    case 'h': usage();
+             free_Ustring(selPath);
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Unxmlize[index].name);
+             free_Ustring(selPath);
              return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
+             free_Ustring(selPath);
              return USAGE_ERROR_CODE;
    }
    index=-1;
@@ -205,11 +265,13 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
 
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
+   free_Ustring(selPath);
    return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
   // freeing all allocated memory
+  free_Ustring(selPath);
   return SUCCESS_RETURN_CODE;
 }
 
@@ -224,9 +286,20 @@ if (output[0]=='\0') {
     strcat(output,".txt");
 }
 
+if (selxPath_filename[0] != '\0') {
+    free_Ustring(selPath);
+    selPath = load_xpath_file(&vec, selxPath_filename);
+    if (selPath == NULL) {
+        error("Cannot open xpath file %s\n", selxPath_filename);
+        free_Ustring(selPath);
+        return DEFAULT_ERROR_CODE;
+    }
+}
+
 f_input=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (f_input==NULL) {
     error("Cannot open file %s\n",argv[options.vars()->optind]);
+    free_Ustring(selPath);
     return DEFAULT_ERROR_CODE;
 }
 
@@ -265,6 +338,7 @@ f_output = u_fopen(&vec,output,U_WRITE);
 if (f_output==NULL) {
    error("Cannot create text file %s\n",output);
    u_fclose(f_input);
+   free_Ustring(selPath);
    return DEFAULT_ERROR_CODE;
 }
 
@@ -278,6 +352,7 @@ if (output_offsets[0]!='\0') {
     free_vector_offset(v_input_offsets);
     u_fclose(f_output);
     u_fclose(f_input);
+    free_Ustring(selPath);
     return DEFAULT_ERROR_CODE;
     }
     offsets=new_vector_offset();
@@ -292,6 +367,7 @@ if (output_PRLG[0]!='\0') {
     free_vector_offset(v_input_offsets);
     u_fclose(f_output);
     u_fclose(f_input);
+    free_Ustring(selPath);
     return DEFAULT_ERROR_CODE;
     }
     PRLG=PRLG_ptrs;
@@ -303,10 +379,12 @@ if (output_PRLG[0]!='\0') {
     free_vector_offset(v_input_offsets);
     u_fclose(f_output);
     u_fclose(f_input);
+    free_Ustring(selPath);
     return DEFAULT_ERROR_CODE;
     }
 }
-if (!unxmlize(f_input,f_output,offsets,&opts,PRLG,f_PRLG,tolerate_markup_malformation)) {
+if (!unxmlize(f_input,f_output,offsets,&opts,PRLG,f_PRLG,tolerate_markup_malformation,
+              (selPath!=NULL) ? selPath->str : NULL)) {
     error("The input file was not a valid xml one. Operation aborted.\n");
 
   for (int i=0;i<10;i++) {
@@ -326,6 +404,7 @@ if (!unxmlize(f_input,f_output,offsets,&opts,PRLG,f_PRLG,tolerate_markup_malform
   free_vector_offset(v_input_offsets);
   u_fclose(f_output);
   u_fclose(f_input);
+  free_Ustring(selPath);
   return DEFAULT_ERROR_CODE;
 }
 
@@ -346,6 +425,7 @@ free_vector_offset(v_input_offsets);
 u_fclose(f_output);
 u_fclose(f_input);
 u_printf("\nDone.\n");
+free_Ustring(selPath);
 return SUCCESS_RETURN_CODE;
 }
 

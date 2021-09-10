@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,8 +43,8 @@
  * please contact unitex-ws@amabis.fr
  */
 /* ************************************************************************** */
-#ifndef UNITEX_BASE_INTEGER_TYPES_H_                                // NOLINT
-#define UNITEX_BASE_INTEGER_TYPES_H_                                // NOLINT
+#ifndef UNITEX_BASE_INTEGER_LITERALS_H_                             // NOLINT
+#define UNITEX_BASE_INTEGER_LITERALS_H_                             // NOLINT
 /* ************************************************************************** */
 // Unitex headers
 #include "base/integer/types.h"    // portable integer types
@@ -69,4 +69,4 @@
 # endif  // UINT64_C
 #endif  // UNITEX_WORDSIZE_IS(64)
 /* ************************************************************************** */
-#endif  // UNITEX_BASE_INTEGER_TYPES_H_                             // NOLINT
+#endif  // UNITEX_BASE_INTEGER_LITERALS_H_                          // NOLINT

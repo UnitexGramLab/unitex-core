@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,6 +37,8 @@
 #endif
 
 namespace unitex {
+
+#define MAX_TOKEN_LENGTH 4096
 
 struct list_ustring* tokenize(const unichar*,TokenizationPolicy,const Alphabet*);
 struct list_ustring* tokenize_char_by_char(const unichar*);

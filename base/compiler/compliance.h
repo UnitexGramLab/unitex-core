@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -84,8 +84,7 @@
  * @see    UNITEX_COMPILER_MODE_CXX
  */
 #define UNITEX_COMPILER_MODE(Mode)\
-        (defined(UNITEX_COMPILER_MODE_##Mode) &&\
-                 UNITEX_COMPILER_MODE_##Mode)
+        (UNITEX_COMPILER_MODE_##Mode == 1)
 /* ************************************************************************** */
 /**
  * @def    UNITEX_COMPILER_COMPLIANT_C89
@@ -221,8 +220,7 @@
  * @see    UNITEX_COMPILER_COMPLIANT_CXX14
  */
 #define UNITEX_COMPILER_COMPLIANT(VersionName)\
-        (defined(UNITEX_COMPILER_COMPLIANT_##VersionName) &&\
-                 UNITEX_COMPILER_COMPLIANT_##VersionName)
+        (UNITEX_COMPILER_COMPLIANT_##VersionName == 1)
 /* ************************************************************************** */
 /**
  * @def    UNITEX_COMPILER_STRING_STANDARD_C

@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@
 #include "SyncTool.h"
 #include "VirtualFiles.h"
 
-
+//#define UNITEX_LIBRARY
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -154,7 +154,12 @@ SyncReleaseMutex(Persistence_Mutex);
 return res;
 }
 
-
-
+/**
+ * Returns 1 if the given file name has a persistent pointer associated to it;
+ * 0 otherwise.
+ */
+int is_persistent_filename(const char* filename) {
+	return (get_persistent_structure(filename) != NULL);
+}
 
 } // namespace unitex

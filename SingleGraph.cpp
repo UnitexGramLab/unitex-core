@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1479,5 +1479,34 @@ for (int i=0;i<g->number_of_states;i++) {
     g->states[i]->outgoing_transitions=reverse_list(g->states[i]->outgoing_transitions);
 }
 }
+
+//void fst2_output_dot(SingleGraph A) {
+//  u_printf("# FST2 output\n\n");
+//
+//  int base = get_initial_state(A);
+//
+//  u_printf(
+//    "digraph G%d {\n"
+//    "  graph [ center = true, orientation = landscape, rankdir = LR ];\n"
+//    "  node  [ shape  = circle ];\n\n", 0);
+//
+//  for (int q = 0; q < A->number_of_states; q++) {
+//
+//    int qq = base + q;
+//
+//    u_printf( "\n  %d [ label=\"%d\" ", q, q);
+//    if (is_final_state(A->states[qq])) { u_printf("shape=\"doublecircle\" "); }
+//    u_printf( "];\n");
+//
+//    for (Transition* trans = A->states[qq]->outgoing_transitions; trans; trans = trans->next) {
+//      if(A->tags[trans->tag_number]->output) {
+//        u_printf( "  %d -> %d [ label=\"%S:%S\" ];\n", q, trans->state_number - base, A->tags[trans->tag_number]->input,A->tags[trans->tag_number]->output);
+//      } else {
+//        u_printf( "  %d -> %d [ label=\"%S\" ];\n", q, trans->state_number - base, A->tags[trans->tag_number]->input);
+//      }
+//    }
+//  }
+//  u_printf( "}\n\n");
+//}
 
 } // namespace unitex

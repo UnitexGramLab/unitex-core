@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -49,6 +49,11 @@ typedef enum {
    ALL_MATCHES
 } MatchPolicy;
 
+/* Loop stop policy for extended functions with multiple outputs */
+typedef enum {
+  CUT_AFTER_EXHAUSTIVELY_CHECK = 0,
+  CUT_AFTER_N_MATCHES = 1
+} CutAfterPolicy;
 
 /* Here are the different output policies for the Locate program */
 typedef enum {
@@ -70,6 +75,13 @@ typedef enum {
    DONT_START_WITH_SPACE
 } SpacePolicy;
 
+/* Locate Mode */
+typedef enum {
+  /* The character is the minimal unit of analysis */
+  MORPHOLOGICAL_MODE,
+  /* The token is the minimal unit of analysis */
+  TOKENIZED_MODE,
+} LocateMode;
 
 /* Tokenization policy */
 typedef enum {

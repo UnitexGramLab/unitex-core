@@ -90,9 +90,12 @@
 #   make 64BITS=yes JNILIBRARY=yes TRE_DIRECT_COMPILE=yes ADDITIONAL_INCLUDE=/usr/lib/jvm/java-7-openjdk-amd64/include/
 #
 # you can add parameters to ./configure when build TRE with
-# TRE_CONFIGURE_OPTION (by example for cross compiling) 
+# TRE_CONFIGURE_OPTION (by example for cross compiling)
 
-
+# this is from @see https://stackoverflow.com/a/18137056
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+mkfile_dir  := $(dir $(mkfile_path))
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
 ################################
 ##  COMPILATION INSTRUCTIONS  ##
@@ -103,8 +106,12 @@
 # default value for SYSTEM is linux-like
 SYSTEM = linux-like
 
+# compile and link LuaJIT directly from vendor sources
+LUAJIT_DIRECT_LINK = yes
+
 ifeq ($(SYSTEM),linux)
 LINUX_LIKE = yes
+#LDFLAGS += -lstdc++
 endif
 
 ifeq ($(SYSTEM),linux-like)
@@ -139,6 +146,11 @@ endif
 endif
 endif
 
+ifeq ($(TARGET_OSX),yes)
+ifndef MACOSX_DEPLOYMENT_TARGET
+MACOSX_DEPLOYMENT_TARGET=10.8
+endif
+endif
 
 ifneq ($(TARGET_OSX),yes)
 ifneq ($(64BITS),yes)
@@ -156,16 +168,17 @@ LDFLAGS += -lstdc++
 
 COMPILER_DEFINED = yes
 
-
 ifeq ($(64BITS),yes)
 ifeq ($(COMMANDPREFIXDEFINED),yes)
-CC     = $(COMMANDPREFIX)o64-clang++
-CXX    = $(COMMANDPREFIX)o64-clang++
-CC_GCC = $(COMMANDPREFIX)o64-clang
+CROSS  = $(COMMANDPREFIX)
+CC     = $(CROSS)c++
+CXX    = $(CROSS)c++
+CC_GCC = $(CROSS)cc
 else
-CC     = o64-clang++
-CXX    = o64-clang++
-CC_GCC = o64-clang
+CROSS  = x86_64-apple-darwin12-
+CC     = $(CROSS)c++
+CXX    = $(CROSS)c++
+CC_GCC = $(CROSS)cc
 endif
 
 TRE_CONFIGURE_OPTION='--host=x86_64-apple-darwinXX'
@@ -173,13 +186,15 @@ TRE_CONFIGURE_OPTION='--host=x86_64-apple-darwinXX'
 else
 
 ifeq ($(COMMANDPREFIXDEFINED),yes)
-CC     = $(COMMANDPREFIX)o32-clang++
-CXX    = $(COMMANDPREFIX)o32-clang++
-CC_GCC = $(COMMANDPREFIX)o32-clang
+CROSS  = $(COMMANDPREFIX)
+CC     = $(CROSS)c++
+CXX    = $(CROSS)c++
+CC_GCC = $(CROSS)cc
 else
-CC     = o32-clang++
-CXX    = o32-clang++
-CC_GCC = o32-clang
+CROSS  = i386-apple-darwin12-
+CC     = $(CROSS)c++
+CXX    = $(CROSS)c++
+CC_GCC = $(CROSS)cc
 endif
 
 TRE_CONFIGURE_OPTION='--host=i386-apple-darwinXX'
@@ -187,9 +202,31 @@ TRE_CONFIGURE_OPTION='--host=i386-apple-darwinXX'
 endif
 endif
 
+ifeq ($(64BITS),no)
+LUAJIT_32_CC=CC="gcc -m32"
+LUAJIT_32_HOST_CC=HOST_CC="gcc -m32"
+TRE_32_FLAGS=CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32
+else
+LUAJIT_32_CC=
+LUAJIT_32_HOST_CC=
+TRE_32_FLAGS=
+endif
 
+# LUA_PATH_DEFAULT is the default path that Lua uses to look for Lua libraries
+# LUA_CPATH_DEFAULT is the default path that Lua uses to look for C libraries
+ifeq ($(SYSTEM),linux-like)
+export LUA_PATH_DEFAULT="./?.lua;!/../../?.lua;!/../../?/init.lua;./?.upp;!/../../?.upp;!/../../?/init.upp"
+export LUA_CPATH_DEFAULT="./?.so;!/lib/?.so"
+else
+export LUA_PATH_DEFAULT=".\\\\?.lua;!\\\\..\\\\..\\\\?.lua;!\\\\..\\\\..\\\\?\\\\init.lua;.\\\\?.upp;!\\\\..\\\\..\\\\?.upp;!\\\\..\\\\..\\\\?\\\\init.upp"
+export LUA_CPATH_DEFAULT=".\\\\?.dll;!\\\\lib\\\\?.dll"
+endif
 
+VIRTOPTIMIZATION_OBJECT=export_unitex_virtualwork.o FileTools.o MiniMutexPosix.o MiniMutexWin.o \
+                        PersistenceInterfaceForVirt.o VirtAllocator.o VirtDela.o VirtFileSystem.o \
+                        VirtFst2.o VirtualSpaceManager.o VirtualTimeoutCancel.o 
 
+VIRTOPTIMIZATION_OPTIONS=-I../VirtOptimizations -I../logger
 
 
 OBJ_DIR = build/
@@ -220,6 +257,9 @@ BUILD   = $(NAME)-$(VERSION)
 
 TAR_COMMAND = tar
 TAR_PARAM = xzf
+CAT_COMMAND = cat
+PATCH_COMMAND = patch
+PATCH_PARAMS = -N -p0
 
 INSTALL_COMMAND = make install
 TRE_SRC = tre-0.8.0
@@ -228,6 +268,9 @@ TRE_TEMP = $(TRE_SRC)/TEMP
 YAML_SRC = yaml-0.1.6
 YAML_TGZ = ../vendor/yaml-0.1.6.tar.gz
 YAML_TEMP = $(YAML_SRC)/TEMP
+LUAJIT_SRC = luajit-2.3.0
+LUAJIT_TGZ = ../vendor/luajit-2.3.0.tar.gz
+LUAJIT_PATCHES = ../vendor/patches/$(LUAJIT_SRC)/*.patch
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LINK_LIB =
@@ -235,7 +278,14 @@ else
 TRE_LINK_LIB = -ltre
 endif
 
-
+# LUAJIT_LDFLAGS
+ifeq ($(TARGET_OSX),yes)
+LUAJIT_LDFLAGS += -rdynamic
+else
+LUAJIT_LDFLAGS += -Wl,-E
+endif
+# @see Embedding LuaJIT on https://luajit.org/install.html
+LUAJIT_LINK_LIB = -lluajit-5.1 -lm -ldl
 
 INSTALL_COMMAND = make install
 
@@ -262,11 +312,23 @@ else
 YAML_GCC_OPTIONS = -DHAVE_CONFIG_H=1 $(CFLAGS)
 endif
 
+ifeq ($(TARGET_OSX),yes)
+CFLAGS   = -Wall #-pedantic
+else
+CFLAGS   = -Wall -D_POSIX_SOURCE #-pedantic
+endif
 
-CFLAGS   = -Wall
 ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0
+ifeq ($(TARGET_OSX),yes)
+CFLAGS += -g3 -O0 -DDEBUG=1
+else
+CFLAGS += -g3 -O0 -DDEBUG=1 -fuse-ld=gold -Wl,--disable-new-dtags
+endif
 UNITEX_RELEASE_MEMORY_AT_EXIT=yes
+# FOR LuaJIT
+ifeq ($(DEBUG_ELG), yes)
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
+endif
 else
 CFLAGS += -O3
 endif
@@ -327,15 +389,22 @@ ifeq ($(UNITEX_RELEASE_MEMORY_AT_EXIT),yes)
 DEFFLAGS += -DUNITEX_RELEASE_MEMORY_AT_EXIT
 endif
 
+ifeq ($(UNITEX_EXPERIMENTAL_MSGLOGGER),yes)
+DEFFLAGS += -DUNITEX_EXPERIMENTAL_MSGLOGGER
+endif
 
-override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".."
+override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".." -Ilibluajit/include/luajit-2.1  -I"../"
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread
+LIBLUAJIT = .libluajit-done
+CLEAN-LIBLUAJIT   = clean-libluajit
 
+EXTRA_LIBS = $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread
+TRE_LIBS = -Llibtre/lib $(TRE_LINK_LIB)
+LUAJIT_LIBS = $(LUAJIT_LDFLAGS) -Llibluajit/lib $(LUAJIT_LINK_LIB)
+LIBS = $(TRE_LIBS) $(LUAJIT_LIBS) $(EXTRA_LIBS)
 
-OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
-EXTENSION =
+OPTIONS = $(CFLAGS) $(LDFLAGS)
 
 ifneq ($(strip $(ADDITIONAL_OPTIONS)),)
 OPTIONS += $(ADDITIONAL_OPTIONS)
@@ -373,6 +442,9 @@ RMR     = rm -rf
 INSTALL = cp
 TAR_COMMAND = tar
 TAR_PARAM = xzf
+CAT_COMMAND = cat
+PATCH_COMMAND = patch
+PATCH_PARAMS = -N -p0
 
 NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
@@ -380,6 +452,17 @@ BUILD   = $(NAME)-$(VERSION)
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
+LUAJIT_BUILDMODE=BUILDMODE="static"
+LUAJIT_CROSS=CROSS=$(COMMANDPREFIX)
+LUAJIT_COMPILE_LDFLAGS+=LDFLAGS+="-static-libgcc"
+LUAJIT_OPTIONS = $(LUAJIT_COMPILE_LDFLAGS) $(LUAJIT_CROSS) $(LUAJIT_32_HOST_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
+
+LUAJIT_LDFLAGS  =
+LUAJIT_LINK_LIB = -lluajit -lm
+
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -391,19 +474,31 @@ endif
 
 YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
+ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
+	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
+endif
+
+LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
+
 #
 # Compiling instructions for the TRE library
 #
 INSTALL_COMMAND = make install
 
-LIBS =  -L "." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
-INCS =  -I".." -I"../include_tre"
+INCS =  -I".." -I"../include_tre" -I"libluajit/include/luajit-2.1"
 CXXINCS =  -I".."
 CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
 CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 
+#CXXFLAGS += -DUNITEX_USE_POSIX_THREADS=1
+#CFLAGS += -DUNITEX_USE_POSIX_THREADS=1
+
 ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0 -Wl,--add-stdcall-alias
+CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
+# FOR LuaJIT
+ifeq ($(DEBUG_ELG), yes)
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
+endif
 else
 CFLAGS += -O3
 endif
@@ -429,13 +524,14 @@ ifneq ($(strip $(ADDITIONAL_DEFFLAGS)),)
 DEFFLAGS += $(ADDITIONAL_DEFFLAGS)
 endif
 
-
-
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 LIBTRE   = .libtre-done
 else
 LIBTRE   = libtre.a
 endif
+
+LIBLUAJIT = .libluajit-done
+CLEAN-LIBLUAJIT   = clean-libluajit
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -465,6 +561,13 @@ CFLAGS += -DUNITEX_LIBRARY
 CFLAGS += -DUNITEXTOOL_TOOL_FROM_LOGGER
 endif
 
+ifeq ($(UNITEX_MINIMAL_WIN_SYSTEM),XP)
+DEFFLAGS += -D_WIN32_WINNT=0x0501
+endif
+
+ifeq ($(UNITEX_MINIMAL_WIN_SYSTEM),VISTA)
+DEFFLAGS += -D_WIN32_WINNT=0x0600
+endif
 ifneq ($(SVN_REVISION),)
 CFLAGS += -DSVN_REVISION=$(SVN_REVISION)
 endif
@@ -476,7 +579,7 @@ SYSLIBDIRIO = UnitexLibDirWin.o
 
 APPDIR = ../../../App
 
-OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
+OPTIONS = $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
 
 
@@ -512,6 +615,9 @@ RMR     = rm -rf
 INSTALL = cp
 TAR_COMMAND = tar
 TAR_PARAM = xzf
+CAT_COMMAND = cat
+PATCH_COMMAND = patch
+PATCH_PARAMS = -N -p0
 
 NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
@@ -519,6 +625,11 @@ BUILD   = $(NAME)-$(VERSION)
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
+LUAJIT_BUILDMODE=BUILDMODE="static"
+LUAJIT_OPTIONS = $(LUAJIT_32_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -530,19 +641,33 @@ endif
 
 YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
+ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
+	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
+endif
+
+LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
+
 #
 # Compiling instructions for the TRE library
 #
 INSTALL_COMMAND = make install
 
-LIBS =  -L "." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+EXTRA_LIBS = $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+TRE_LIBS = -L "." $(TRE_LINK_LIB)
+LUAJIT_LIBS = $(LUAJIT_LDFLAGS) -Llibluajit/lib $(LUAJIT_LINK_LIB)
+LIBS = $(TRE_LIBS) $(LUAJIT_LIBS) $(EXTRA_LIBS)
+
 INCS =  -I".." -I"../include_tre"
 CXXINCS =  -I".."
 CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
 CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0 -Wl,--add-stdcall-alias
+CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
+# FOR LuaJIT
+ifeq ($(DEBUG_ELG), yes)
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
+endif
 else
 CFLAGS += -O3
 endif
@@ -574,6 +699,8 @@ else
 LIBTRE   = libtre.a
 endif
 
+LIBLUAJIT = .libluajit-done
+CLEAN-LIBLUAJIT   = clean-libluajit
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -603,6 +730,13 @@ CFLAGS += -DUNITEX_LIBRARY
 CFLAGS += -DUNITEXTOOL_TOOL_FROM_LOGGER
 endif
 
+ifeq ($(UNITEX_MINIMAL_WIN_SYSTEM),XP)
+DEFFLAGS += -D_WIN32_WINNT=0x0501
+endif
+
+ifeq ($(UNITEX_MINIMAL_WIN_SYSTEM),VISTA)
+DEFFLAGS += -D_WIN32_WINNT=0x0600
+endif
 ifneq ($(SVN_REVISION),)
 CFLAGS += -DSVN_REVISION=$(SVN_REVISION)
 endif
@@ -614,7 +748,7 @@ SYSLIBDIRIO = UnitexLibDirPosix.o
 
 APPDIR = ../../../App
 
-OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
+OPTIONS = $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
 
 #####################
@@ -643,6 +777,9 @@ endif
 
 TAR_COMMAND = untgz.exe
 TAR_PARAM =
+CAT_COMMAND = cat
+PATCH_COMMAND = patch
+PATCH_PARAMS = -N -p0
 
 SYSLIBSYNCTOOL = SyncToolWin.o
 SYSLIBLOGGER = SyncLoggerWin.o
@@ -659,6 +796,11 @@ endif
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
+LUAJIT_BUILDMODE=BUILDMODE="static"
+LUAJIT_OPTIONS = $(LUAJIT_32_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) TARGET_SYS=Windows
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
@@ -670,6 +812,12 @@ endif
 
 YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
+ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
+	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
+endif
+
+LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
+
 #
 # USING TRE STATIC LIBRARY
 #
@@ -680,7 +828,11 @@ CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0
+CFLAGS += -g3 -O0
+# FOR LuaJIT
+ifeq ($(DEBUG_ELG), yes)
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
+endif
 else
 CFLAGS += -O3
 endif
@@ -711,6 +863,8 @@ else
 LIBTRE   = libtre.a
 endif
 
+LIBLUAJIT = .libluajit-done
+CLEAN-LIBLUAJIT   = clean-libluajit
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -739,11 +893,18 @@ CFLAGS += -DUNITEX_LIBRARY
 CFLAGS += -DUNITEXTOOL_TOOL_FROM_LOGGER
 endif
 
+ifeq ($(UNITEX_MINIMAL_WIN_SYSTEM),XP)
+DEFFLAGS += -D_WIN32_WINNT=0x0501
+endif
+
+ifeq ($(UNITEX_MINIMAL_WIN_SYSTEM),VISTA)
+DEFFLAGS += -D_WIN32_WINNT=0x0600
+endif
 ifneq ($(SVN_REVISION),)
 CFLAGS += -DSVN_REVISION=$(SVN_REVISION)
 endif
 
-OPTIONS = $(LIBS) $(CFLAGS) $(LDFLAGS)
+OPTIONS = $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
 
 ###################
@@ -784,19 +945,19 @@ endif
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                     Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o \
+                     common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o AbstractAllocator.o Error.o UnitexGetOpt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o \
                      Alphabet.o List_ustring.o Korean.o AbstractFst2Load.o PackFst2.o Fst2.o \
                      Pattern.o List_int.o Transitions.o Symbol.o LanguageDefinition.o Tagset.o \
-                     Ustring.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o File.o \
+                     Ustring.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o whereami.o File.o \
                      BitArray.o HashTable.o FIFO.o BitMasks.o Fst2Check_lib.o ProgramInvoker.o \
                      MF_SU_morpho.o MF_LangMorpho.o MF_Util.o MF_FormMorpho.o MF_Global.o \
                      MF_Operators_Util.o MF_DicoMorpho.o Arabic.o AbstractDelaLoad.o PackInf.o List_pointer.o \
                      CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                     $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                     $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CASSYS      = Cassys
-CASSYS_OBJS = Main_Cassys.o $(CASSYS_FILE_OBJS) IOBuffer.o Copyright.o Error.o UnitexGetOpt.o Unicode.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o \
-            FIFO.o Concord.o Locate.o Concordance.o Snt.o Text_tokens.o File.o Buffer.o LocateMatches.o LocatePattern.o LocateTrace.o Thai.o NewLineShifts.o \
+CASSYS_OBJS = Main_Cassys.o $(CASSYS_FILE_OBJS) IOBuffer.o Copyright.o Error.o UnitexGetOpt.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o \
+            FIFO.o Concord.o Locate.o Concordance.o Snt.o Text_tokens.o whereami.o File.o Buffer.o LocateMatches.o LocatePattern.o LocateTrace.o Thai.o NewLineShifts.o \
             String_hash.o SortTxt.o StringParsing.o DELA.o List_int.o Alphabet.o BitMasks.o Tokenization.o LemmaTree.o PatternTree.o \
             BitArray.o List_pointer.o CompoundWordTree.o AbstractDelaLoad.o PackInf.o Korean.o UserCancelling.o Stack_unichar.o AbstractFst2Load.o PackFst2.o \
             Fst2.o MorphologicalFilters.o LocateFst2Tags.o TransductionVariables.o OptimizedFst2.o Text_parsing.o List_ustring.o ParsingInfo.o \
@@ -804,25 +965,25 @@ CASSYS_OBJS = Main_Cassys.o $(CASSYS_FILE_OBJS) IOBuffer.o Copyright.o Error.o U
             Tagset.o Tokenize.o HashTable.o OutputTransductionVariables.o LocateCache.o \
             Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o Grf_lib.o Fst2Check_lib.o \
             Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o RegExFacade.o $(TRE_LINK_OBJS) \
-            DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+            DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 
 CHECKDIC      = CheckDic
-CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o DELA.o Alphabet.o String_hash.o \
+CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o AbstractAllocator.o whereami.o File.o DELA.o Alphabet.o String_hash.o \
                 List_ustring.o Error.o StringParsing.o UnitexGetOpt.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
-                LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 COMPRESS      = Compress
-COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o \
+COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o \
                 AbstractAllocator.o DELA.o DictionaryTree.o Alphabet.o \
-                String_hash.o AutomatonDictionary2Bin.o File.o List_int.o \
+                String_hash.o AutomatonDictionary2Bin.o whereami.o File.o List_int.o \
                 List_ustring.o Error.o StringParsing.o UnitexGetOpt.o ProgramInvoker.o \
                 BitArray.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o Ustring.o \
-                VirtualFiles.o Persistence.o UnitexRevisionInfo.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                VirtualFiles.o Persistence.o UnitexRevisionInfo.o $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CONCORD      = Concord
-CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Text_tokens.o String_hash.o \
-                List_int.o Alphabet.o LocateMatches.o Match.o Concordance.o File.o \
+CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o AbstractAllocator.o Text_tokens.o String_hash.o \
+                List_int.o Alphabet.o LocateMatches.o Match.o Concordance.o whereami.o File.o \
                 Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o LocateTrace.o \
                 TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o \
                 CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o \
@@ -834,11 +995,11 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Copyright.o Af_stdio.o Activi
                 ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
                 Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
                 LoadInf.o Offsets.o Overlap.o RegExFacade.o DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o \
-                $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CONCORDIFF      = ConcorDiff
-CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Copyright.o Diff.o Concord.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Text_tokens.o String_hash.o List_int.o \
-                Alphabet.o LocateMatches.o Match.o Concordance.o File.o \
+CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Copyright.o Diff.o Concord.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o case.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o AbstractAllocator.o Text_tokens.o String_hash.o List_int.o \
+                Alphabet.o LocateMatches.o Match.o Concordance.o whereami.o File.o \
                 Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o LocateTrace.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o \
                 CompoundWordTree.o MorphologicalFilters.o \
                 DELA.o List_ustring.o Fst2.o AbstractDelaLoad.o PackInf.o AbstractFst2Load.o PackFst2.o Pattern.o LocateFst2Tags.o \
@@ -849,16 +1010,16 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Copyright.o Diff.o C
                 ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
                 Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
                 LoadInf.o Offsets.o Overlap.o RegExFacade.o DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o \
-                $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CONVERT      = Convert
-CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o CodePages.o Error.o \
+CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o whereami.o File.o CodePages.o Error.o \
                 HTMLCharacters.o AsciiSearchTree.o UnitexGetOpt.o Arabic.o String_hash.o StringParsing.o \
-                Ustring.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                Ustring.o $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 DICO      = Dico
-DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
-            List_ustring.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o CompoundWordHashTable.o Fst2.o AbstractDelaLoad.o PackInf.o AbstractFst2Load.o PackFst2.o \
+DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o whereami.o File.o Alphabet.o String_hash.o Text_tokens.o \
+            List_ustring.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o CompoundWordHashTable.o Fst2.o AbstractDelaLoad.o PackInf.o AbstractFst2Load.o PackFst2.o \
             IOBuffer.o Copyright.o Error.o CompoundWordTree.o \
             Pattern.o ParsingInfo.o LocatePattern.o LocateTrace.o LocateMatches.o Match.o OptimizedFst2.o \
             Text_parsing.o UserCancelling.o MorphologicalLocate.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o Locate.o \
@@ -870,56 +1031,56 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
             DebugMode.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o BuildTextAutomaton.o Tfst.o SingleGraph.o \
             FIFO.o TfstStats.o RegExFacade.o \
-            $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+            $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 DUMPOFFSETS      = DumpOffsets
-DUMPOFFSETS_OBJS = Main_DumpOffsets.o DumpOffsets.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o \
-                AbstractAllocator.o File.o List_ustring.o String_hash.o \
+DUMPOFFSETS_OBJS = Main_DumpOffsets.o DumpOffsets.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o \
+                AbstractAllocator.o whereami.o File.o List_ustring.o String_hash.o \
                 Error.o StringParsing.o Buffer.o UnitexGetOpt.o Ustring.o \
                 Offsets.o Overlap.o VirtualFiles.o \
-                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 ELAG      = Elag
-ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
+ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
             AutMinimization.o AutConcat.o Fst2Automaton.o \
             Symbol.o String_hash.o Tagset.o Ustring.o \
             ElagStateSet.o SymbolAlphabet.o Symbol_op.o Error.o LanguageDefinition.o \
             AutIntersection.o Alphabet.o StringParsing.o DELA.o List_ustring.o \
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o \
-            BitMasks.o FIFO.o Transitions.o ElagDebug.o File.o UnitexGetOpt.o Tfst.o \
+            BitMasks.o FIFO.o Transitions.o ElagDebug.o whereami.o File.o UnitexGetOpt.o Tfst.o \
             TfstStats.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-            $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+            $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 ELAGCOMP      = ElagComp
-ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o ElagRulesCompilation.o Fst2Automaton.o \
+ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o ElagRulesCompilation.o Fst2Automaton.o \
                 ElagFstFilesIO.o String_hash.o \
                 Symbol.o Ustring.o AutDeterminization.o AutIntersection.o \
                 ElagStateSet.o Symbol_op.o LanguageDefinition.o Tagset.o \
                 AutMinimization.o SymbolAlphabet.o AutConcat.o AutComplementation.o \
                 Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o \
-                SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o \
+                SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o whereami.o File.o \
                 Transitions.o ElagDebug.o UnitexGetOpt.o Tfst.o TfstStats.o AbstractDelaLoad.o PackInf.o \
                 CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 EVAMB      = Evamb
-EVAMB_OBJS = Main_Evamb.o Evamb.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o \
+EVAMB_OBJS = Main_Evamb.o Evamb.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o \
              AbstractAllocator.o String_hash.o \
              Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o \
              List_int.o BitMasks.o DELA.o List_pointer.o SingleGraph.o \
              BitArray.o HashTable.o FIFO.o Transitions.o \
              Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
-             Tfst.o TfstStats.o File.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
+             Tfst.o TfstStats.o whereami.o File.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
              LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-             $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+             $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 EXTRACT      = Extract
 EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o Copyright.o LocatePattern.o LocateTrace.o \
                Text_parsing.o UserCancelling.o MorphologicalLocate.o TransductionStack.o \
                OptimizedFst2.o TransductionVariables.o \
                ParsingInfo.o CompoundWordTree.o List_int.o Concordance.o Offsets.o \
-               DELA.o List_ustring.o Fst2.o Pattern.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o AbstractDelaLoad.o PackInf.o AbstractFst2Load.o PackFst2.o \
-               Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o LocateMatches.o Match.o \
+               DELA.o List_ustring.o Fst2.o Pattern.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o PackInf.o AbstractDelaLoad.o PackFst2.o AbstractFst2Load.o \
+               Text_tokens.o whereami.o File.o ExtractUnits.o Alphabet.o String_hash.o LocateMatches.o Match.o \
                MorphologicalFilters.o Error.o Buffer.o SortTxt.o StringParsing.o BitArray.o \
                LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o \
                Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o \
@@ -927,79 +1088,79 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o Copyright.o LocatePattern.o L
                ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
                Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o $(TRE_LINK_OBJS) \
                DebugMode.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Copyright.o Alphabet.o Af_stdio.o ActivityLogger.o \
-               Unicode.o AbstractAllocator.o Fst2.o Grf2Fst2_lib.o \
-               AbstractFst2Load.o PackFst2.o FlattenFst2.o List_int.o Error.o File.o SingleGraph.o \
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o Grf2Fst2_lib.o \
+               AbstractFst2Load.o PackFst2.o FlattenFst2.o List_int.o Error.o whereami.o File.o SingleGraph.o \
                BitMasks.o BitArray.o HashTable.o FIFO.o Pattern.o List_ustring.o \
                String_hash.o StringParsing.o Transitions.o DELA.o \
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
                UnitexGetOpt.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o \
                DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 FST2CHECK      = Fst2Check
 FST2CHECK_OBJS = Main_Fst2Check.o Fst2Check.o Fst2Check_lib.o IOBuffer.o Copyright.o Af_stdio.o \
-                ActivityLogger.o Unicode.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o Alphabet.o \
-                File.o String_hash.o Error.o TransductionVariables.o ProgramInvoker.o UnitexGetOpt.o \
+                ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o Alphabet.o \
+                whereami.o File.o String_hash.o Error.o TransductionVariables.o ProgramInvoker.o UnitexGetOpt.o \
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o \
                 Transitions.o DELA.o Symbol.o Symbol_op.o LanguageDefinition.o \
                 Ustring.o Tagset.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o \
                 VirtualFiles.o Persistence.o UnitexRevisionInfo.o SingleGraph.o BitArray.o FIFO.o HashTable.o List_pointer.o \
-                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                Unicode.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o Alphabet.o \
-                File.o String_hash.o Error.o TransductionVariables.o \
+                common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o Alphabet.o \
+                whereami.o File.o String_hash.o Error.o TransductionVariables.o \
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o \
                 Transitions.o DELA.o Symbol.o Symbol_op.o LanguageDefinition.o \
                 Ustring.o Tagset.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o \
                 VirtualFiles.o Persistence.o UnitexRevisionInfo.o UnitexGetOpt.o \
-                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 FST2TXT      = Fst2Txt
 FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-               Unicode.o AbstractAllocator.o Fst2.o SingleGraph.o FIFO.o \
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o SingleGraph.o FIFO.o \
                AbstractFst2Load.o PackFst2.o Alphabet.o ParsingInfo.o \
                TransductionVariables.o String_hash.o Error.o StringParsing.o \
                Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o \
-               Fst2Txt_TokenTree.o Buffer.o Transitions.o File.o \
+               Fst2Txt_TokenTree.o Buffer.o Transitions.o whereami.o File.o \
                Fst2TxtAsRoutine.o DELA.o DicVariables.o TransductionStack.o \
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o Stack_unichar.o \
                Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o \
                Offsets.o Overlap.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o List_pointer.o \
                VirtualFiles.o Persistence.o UnitexRevisionInfo.o Fst2Check_lib.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 GRF2FST2      = Grf2Fst2
 GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Copyright.o Alphabet.o Af_stdio.o ActivityLogger.o \
-                Unicode.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o \
-                Fst2Check_lib.o Grf2Fst2_lib.o Error.o File.o SingleGraph.o \
+                common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o \
+                Fst2Check_lib.o Grf2Fst2_lib.o Error.o whereami.o File.o SingleGraph.o \
                 BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o Pattern.o \
                 List_ustring.o String_hash.o StringParsing.o Transitions.o DELA.o \
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                 ProgramInvoker.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o List_pointer.o \
                 DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 GRFDIFF      = GrfDiff
-GRFDIFF_OBJS = Main_GrfDiff.o GrfDiff.o Unicode.o Error.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
+GRFDIFF_OBJS = Main_GrfDiff.o GrfDiff.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o Error.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
             GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o String_hash.o \
             StringParsing.o AbstractAllocator.o \
-            $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+            $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 GRFDIFF3      = GrfDiff3
-GRFDIFF3_OBJS = Main_GrfDiff3.o GrfDiff3.o Unicode.o Error.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
+GRFDIFF3_OBJS = Main_GrfDiff3.o GrfDiff3.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o Error.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
             GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o String_hash.o \
             StringParsing.o AbstractAllocator.o \
-            $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+            $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 GRFTEST      = GrfTest
-GRFTEST_OBJS = Main_GrfTest.o GrfTest.o Unicode.o Error.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-            GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o Normalize.o Offsets.o File.o \
+GRFTEST_OBJS = Main_GrfTest.o GrfTest.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o Error.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
+            GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o Normalize.o Offsets.o whereami.o File.o \
             Overlap.o NormalizeAsRoutine.o String_hash.o StringParsing.o AbstractAllocator.o \
             DELA.o Alphabet.o CompressedDic.o LoadInf.o List_ustring.o \
             AbstractDelaLoad.o PackInf.o ProgramInvoker.o Fst2Txt.o Fst2TxtAsRoutine.o \
@@ -1019,46 +1180,46 @@ GRFTEST_OBJS = Main_GrfTest.o GrfTest.o Unicode.o Error.o IOBuffer.o Copyright.o
             CompoundWordTree.o LemmaTree.o OptimizedFst2.o GrfTest_lib.o Grf2Fst2.o \
             Grf2Fst2_lib.o Fst2Check_lib.o Concord.o Concordance.o \
             NewLineShifts.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o BuildTextAutomaton.o RegExFacade.o \
-            $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+            $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 IMPLODETFST      = ImplodeTfst
 IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                   Unicode.o AbstractAllocator.o Tfst.o File.o SingleGraph.o \
+                   common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Tfst.o whereami.o File.o SingleGraph.o \
                    String_hash.o Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o \
                    List_int.o BitMasks.o DELA.o List_pointer.o Transitions.o \
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                    BitArray.o HashTable.o FIFO.o Match.o TfstStats.o AbstractDelaLoad.o PackInf.o \
                    CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                   $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                   $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 KEYWORDS      = KeyWords
-KEYWORDS_OBJS = Main_KeyWords.o KeyWords.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o \
-            AbstractAllocator.o Alphabet.o StringParsing.o DELA.o File.o UnitexGetOpt.o \
+KEYWORDS_OBJS = Main_KeyWords.o KeyWords.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o \
+            AbstractAllocator.o Alphabet.o StringParsing.o DELA.o whereami.o File.o UnitexGetOpt.o \
             VirtualFiles.o Persistence.o UnitexRevisionInfo.o Error.o String_hash.o Ustring.o List_ustring.o \
             CompressedDic.o AbstractDelaLoad.o PackInf.o LoadInf.o KeyWords_lib.o Tokenization.o \
-            $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+            $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 LOCATE      = Locate
-LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o \
+LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o \
               AbstractAllocator.o Alphabet.o DELA.o List_ustring.o String_hash.o \
               LocatePattern.o LocateTrace.o AbstractDelaLoad.o PackInf.o AbstractFst2Load.o PackFst2.o \
               Fst2.o Text_tokens.o List_int.o \
               Pattern.o CompoundWordTree.o LocateFst2Tags.o \
               OptimizedFst2.o Text_parsing.o UserCancelling.o MorphologicalLocate.o LocateMatches.o \
               Match.o TransductionVariables.o TransductionStack.o \
-              ParsingInfo.o File.o MorphologicalFilters.o Error.o StringParsing.o \
+              ParsingInfo.o whereami.o File.o MorphologicalFilters.o Error.o StringParsing.o \
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o \
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o \
               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
               ProgramInvoker.o Korean.o HashTable.o LocateCache.o Arabic.o \
               OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o $(TRE_LINK_OBJS) \
               LoadInf.o DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-              $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+              $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 LOCATETFST      = LocateTfst
 LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                  Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o LocateTfst_lib.o \
-                  Tfst.o File.o Ustring.o SingleGraph.o List_int.o BitMasks.o FIFO.o Transitions.o \
+                  common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o UnitexGetOpt.o LocateTfst_lib.o \
+                  Tfst.o whereami.o File.o Ustring.o SingleGraph.o List_int.o BitMasks.o FIFO.o Transitions.o \
                   Symbol.o LanguageDefinition.o Tagset.o String_hash.o StringParsing.o DELA.o \
                   Alphabet.o List_ustring.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o PackFst2.o Pattern.o \
                   LocateTfstMatches.o Match.o MorphologicalFilters.o Korean.o \
@@ -1066,63 +1227,63 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Copyright.o Af_stdio
                   TransductionVariables.o TransductionStackTfst.o Contexts.o \
                   OutputTransductionVariables.o DicVariables.o TfstStats.o AbstractDelaLoad.o PackInf.o \
                   CompressedDic.o LoadInf.o DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o RegExFacade.o \
-                  $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                  $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 
 MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o \
                  MF_FormMorpho.o MF_LangMorpho.o List_pointer.o \
                  MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o \
-                 Fst2.o AbstractFst2Load.o PackFst2.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o IOBuffer.o Copyright.o File.o DELA.o StringParsing.o List_ustring.o \
+                 Fst2.o AbstractFst2Load.o PackFst2.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o IOBuffer.o Copyright.o whereami.o File.o DELA.o StringParsing.o List_ustring.o \
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o \
                  Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o Fst2Check_lib.o \
                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
                  MF_Operators_Util.o UnitexGetOpt.o ProgramInvoker.o Korean.o \
                  Arabic.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o MF_Global.o \
                  DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                 $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 MZREPAIRULP      = MzRepairUlp
 MZREPAIRULP_OBJS = Main_MzRepairUlp.o MzToolsUlp.o MzRepairUlp.o UnitexGetOpt.o \
-                   Error.o Unicode.o Af_stdio.o ActivityLogger.o IOBuffer.o Copyright.o \
-                   $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBDIRIO)
+                   Error.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o Af_stdio.o ActivityLogger.o IOBuffer.o Copyright.o \
+                   $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBDIRIO)
 
 NORMALIZE      = Normalize
-NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o \
-                AbstractAllocator.o File.o DELA.o List_ustring.o String_hash.o \
+NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o \
+                AbstractAllocator.o whereami.o File.o DELA.o List_ustring.o String_hash.o \
                 Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o \
                 UnitexGetOpt.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o Ustring.o \
                 Offsets.o Overlap.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 POLYLEX      = PolyLex
 POLYLEX_OBJS = Main_PolyLex.o PolyLex.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                Unicode.o AbstractAllocator.o Alphabet.o DELA.o AbstractDelaLoad.o PackInf.o \
+                common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Alphabet.o DELA.o AbstractDelaLoad.o PackInf.o \
                 List_ustring.o String_hash.o \
-                NorwegianCompounds.o GermanCompounds.o File.o \
+                NorwegianCompounds.o GermanCompounds.o whereami.o File.o \
                 RussianCompounds.o GeneralDerivation.o Error.o StringParsing.o \
                 DutchCompounds.o UnitexGetOpt.o CompressedDic.o LoadInf.o Ustring.o \
                 VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 REBUILDTFST      = RebuildTfst
 REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                   Unicode.o AbstractAllocator.o String_hash.o AbstractFst2Load.o PackFst2.o Fst2.o \
-                   File.o Alphabet.o Error.o StringParsing.o \
+                   common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o String_hash.o AbstractFst2Load.o PackFst2.o Fst2.o \
+                   whereami.o File.o Alphabet.o Error.o StringParsing.o \
                    Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o \
                    Transitions.o DELA.o List_pointer.o \
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
                    UnitexGetOpt.o Tfst.o TfstStats.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o \
                    HashTable.o FIFO.o Fst2Check_lib.o ProgramInvoker.o AbstractDelaLoad.o PackInf.o \
                    CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                   $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                   $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingInfo.o CompoundWordTree.o \
                DELA.o AbstractDelaLoad.o PackInf.o List_ustring.o Fst2.o AbstractFst2Load.o PackFst2.o \
                IOBuffer.o Copyright.o TransductionStack.o Pattern.o \
-               Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Alphabet.o \
-               LocateMatches.o Match.o File.o NormalizationFst2.o \
+               Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Alphabet.o \
+               LocateMatches.o Match.o whereami.o File.o NormalizationFst2.o \
                PortugueseNormalization.o TransductionVariables.o \
                Text_parsing.o UserCancelling.o MorphologicalLocate.o String_hash.o \
                LocatePattern.o LocateTrace.o Text_tokens.o List_int.o \
@@ -1133,16 +1294,16 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                Tfst.o TfstStats.o SingleGraph.o FIFO.o HashTable.o Korean.o LocateCache.o \
                Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
                DebugMode.o LoadInf.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o RegExFacade.o \
-               $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-               Unicode.o AbstractAllocator.o RegularExpressions.o Error.o File.o \
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o RegularExpressions.o Error.o whereami.o File.o \
                List_int.o Stack_int.o UnitexGetOpt.o Ustring.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 SEQ2GRF      = Seq2Grf
-SEQ2GRF_OBJS = Main_Seq2Grf.o Seq2Grf.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o \
+SEQ2GRF_OBJS = Main_Seq2Grf.o Seq2Grf.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o \
                AbstractAllocator.o Error.o \
                List_ustring.o String_hash.o Sentence2Grf.o TfstTag.o Tfst.o \
                BitArray.o FIFO.o Grf2Fst2_lib.o \
@@ -1152,134 +1313,134 @@ SEQ2GRF_OBJS = Main_Seq2Grf.o Seq2Grf.o IOBuffer.o Copyright.o Af_stdio.o Activi
                Symbol.o LanguageDefinition.o Tagset.o Overlap.o \
                AbstractFst2Load.o PackFst2.o Fst2.o Pattern.o \
                DELA.o StringParsing.o CompressedDic.o LoadInf.o GrfBeauty.o \
-               File.o Alphabet.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               whereami.o File.o Alphabet.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 SORTTXT      = SortTxt
 SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-               Unicode.o AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o \
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o \
                ProgramInvoker.o DELA.o StringParsing.o Ustring.o String_hash.o Alphabet.o \
-               CompressedDic.o AbstractDelaLoad.o PackInf.o LoadInf.o List_ustring.o File.o \
+               CompressedDic.o AbstractDelaLoad.o PackInf.o LoadInf.o List_ustring.o whereami.o File.o \
                VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 SPELLCHECK      = SpellCheck
 SPELLCHECK_OBJS = Main_SpellCheck.o SpellCheck.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-               Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o \
-               ProgramInvoker.o File.o SpellChecking.o CompressedDic.o AbstractDelaLoad.o PackInf.o \
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o UnitexGetOpt.o \
+               ProgramInvoker.o whereami.o File.o SpellChecking.o CompressedDic.o AbstractDelaLoad.o PackInf.o \
                LoadInf.o List_ustring.o Ustring.o StringParsing.o DELA.o String_hash.o \
                Alphabet.o Keyboard.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 STATS      = Stats
-STATS_OBJS = Main_Stats.o Stats.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o \
+STATS_OBJS = Main_Stats.o Stats.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o \
                AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o \
-               ProgramInvoker.o HashTable.o File.o Text_tokens.o String_hash.o \
+               ProgramInvoker.o HashTable.o whereami.o File.o Text_tokens.o String_hash.o \
                LocateMatches.o Match.o DELA.o \
                Alphabet.o StringParsing.o List_int.o List_ustring.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
                LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TABLE2GRF      = Table2Grf
 TABLE2GRF_OBJS = Main_Table2Grf.o Table2Grf.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                 Unicode.o AbstractAllocator.o File.o Error.o UnitexGetOpt.o \
-                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBDIRIO)
+                 common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o whereami.o File.o Error.o UnitexGetOpt.o \
+                 $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBDIRIO)
 
 TAGGER      = Tagger
-TAGGER_OBJS = Main_Tagger.o Tagger.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o \
+TAGGER_OBJS = Main_Tagger.o Tagger.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o \
               Tfst.o TfstStats.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o UnitexGetOpt.o \
               Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o \
               String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o \
-              File.o TaggingProcess.o Match.o ElagFunctions.o AutDeterminization.o \
+              whereami.o File.o TaggingProcess.o Match.o ElagFunctions.o AutDeterminization.o \
               AutMinimization.o ElagFstFilesIO.o AutIntersection.o Fst2Automaton.o \
               SymbolAlphabet.o ElagStateSet.o Symbol_op.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
               LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-              $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+              $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TAGSETNORMTFST = TagsetNormTfst
 TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Copyright.o Af_stdio.o \
-                    ActivityLogger.o Unicode.o AbstractAllocator.o ElagFstFilesIO.o Ustring.o \
+                    ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o ElagFstFilesIO.o Ustring.o \
                     String_hash.o Symbol.o LanguageDefinition.o Tagset.o \
-                    Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o \
-                    List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o PackFst2.o Pattern.o \
+                    Error.o whereami.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o \
+                    List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o PackFst2.o  Pattern.o \
                     BitMasks.o FIFO.o Transitions.o \
                     Symbol_op.o Fst2Automaton.o UnitexGetOpt.o Tfst.o TfstStats.o \
                     Match.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                    $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                    $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TEI2TXT      = TEI2Txt
 TEI2TXT_OBJS = Main_TEI2Txt.o TEI2Txt.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-               Unicode.o AbstractAllocator.o Error.o File.o HTMLCharacters.o \
-               AsciiSearchTree.o UnitexGetOpt.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBDIRIO)
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o whereami.o File.o HTMLCharacters.o \
+               AsciiSearchTree.o UnitexGetOpt.o $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBDIRIO)
 
 TFST2GRF      = Tfst2Grf
 TFST2GRF_OBJS = Main_Tfst2Grf.o Tfst2Grf.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-               Unicode.o AbstractAllocator.o \
-               Tfst.o TfstStats.o Sentence2Grf.o File.o List_int.o Error.o StringParsing.o Pattern.o \
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o \
+               Tfst.o TfstStats.o Sentence2Grf.o whereami.o File.o List_int.o Error.o StringParsing.o Pattern.o \
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o \
                Alphabet.o Transitions.o Symbol.o Symbol_op.o LanguageDefinition.o \
                Ustring.o Tagset.o UnitexGetOpt.o SingleGraph.o HashTable.o FIFO.o \
                AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TFSTTAG      = TfstTag
 TFSTTAG_OBJS = Main_TfstTag.o TfstTag.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-               Unicode.o AbstractAllocator.o LocateMatches.o Match.o \
-               Tfst.o TfstStats.o File.o List_int.o Error.o StringParsing.o Pattern.o \
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o LocateMatches.o Match.o \
+               Tfst.o TfstStats.o whereami.o File.o List_int.o Error.o StringParsing.o Pattern.o \
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o \
                Alphabet.o Transitions.o Symbol.o Symbol_op.o LanguageDefinition.o \
                Ustring.o Tagset.o UnitexGetOpt.o SingleGraph.o HashTable.o FIFO.o \
                AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TFST2UNAMBIG      = Tfst2Unambig
 TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o TfstStats.o Error.o \
                    IOBuffer.o Copyright.o LinearAutomaton2Txt.o \
-                   Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o \
+                   Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o \
                    Pattern.o List_ustring.o StringParsing.o String_hash.o \
                    List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o \
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
-                   UnitexGetOpt.o SingleGraph.o BitArray.o HashTable.o FIFO.o File.o \
+                   UnitexGetOpt.o SingleGraph.o BitArray.o HashTable.o FIFO.o whereami.o File.o \
                    AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                   $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                   $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = Main_Tokenize.o Tokenize.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                Unicode.o AbstractAllocator.o Alphabet.o String_hash.o \
-                File.o DELA.o AbstractDelaLoad.o PackInf.o List_ustring.o HashTable.o Error.o \
+                common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Alphabet.o String_hash.o \
+                whereami.o File.o DELA.o AbstractDelaLoad.o PackInf.o List_ustring.o HashTable.o Error.o \
                 StringParsing.o UnitexGetOpt.o \
                 Offsets.o Overlap.o CompressedDic.o LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TRAININGTAGGER      = TrainingTagger
 TRAININGTAGGER_OBJS = Main_TrainingTagger.o TrainingTagger.o TrainingProcess.o IOBuffer.o Copyright.o \
-              Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o \
+              Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o \
               Tfst.o TfstStats.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o UnitexGetOpt.o \
               Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o \
               String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o \
-              File.o TaggingProcess.o Match.o Compress.o SortTxt.o ProgramInvoker.o Thai.o \
+              whereami.o File.o TaggingProcess.o Match.o Compress.o SortTxt.o ProgramInvoker.o Thai.o \
               DictionaryTree.o AutomatonDictionary2Bin.o AbstractDelaLoad.o PackInf.o CompressedDic.o \
               LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-              $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+              $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TXT2TFST      = Txt2Tfst
 TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Copyright.o Text_tokens.o Alphabet.o Af_stdio.o \
-                ActivityLogger.o Unicode.o AbstractAllocator.o DELA_tree.o \
+                ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o DELA_tree.o \
                 DELA.o List_ustring.o String_hash.o BuildTextAutomaton.o List_int.o \
-                NormalizationFst2.o Fst2.o AbstractFst2Load.o PackFst2.o File.o Error.o \
+                NormalizationFst2.o Fst2.o AbstractFst2Load.o PackFst2.o whereami.o File.o Error.o \
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o \
                 FIFO.o BitArray.o HashTable.o Transitions.o LocateMatches.o Match.o \
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                 Tfst.o TfstStats.o NewLineShifts.o Korean.o AbstractDelaLoad.o PackInf.o \
                 CompressedDic.o LoadInf.o Offsets.o Overlap.o DebugMode.o Grf_lib.o \
                 VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-               Unicode.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o Alphabet.o \
-               TransductionVariables.o String_hash.o Error.o StringParsing.o File.o \
+               common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Fst2.o AbstractFst2Load.o PackFst2.o Alphabet.o \
+               TransductionVariables.o String_hash.o Error.o StringParsing.o whereami.o File.o \
                Pattern.o List_ustring.o List_int.o BitMasks.o Fst2TxtAsRoutine.o \
                NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
                UnitexGetOpt.o DicVariables.o TransductionStack.o SingleGraph.o FIFO.o \
@@ -1287,33 +1448,33 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Copyright.o Af_stdio.o Activi
                Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o List_pointer.o \
                Overlap.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o Offsets.o BitArray.o \
                VirtualFiles.o Persistence.o UnitexRevisionInfo.o Fst2Check_lib.o \
-               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+               $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 
 UNCOMPRESS       = Uncompress
-UNCOMPRESS_OBJS  = Main_Uncompress.o Uncompress.o File.o Error.o Unicode.o \
+UNCOMPRESS_OBJS  = Main_Uncompress.o Uncompress.o whereami.o File.o Error.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o \
                    AbstractAllocator.o DELA.o AbstractDelaLoad.o PackInf.o \
                    String_hash.o StringParsing.o List_ustring.o Alphabet.o Af_stdio.o ActivityLogger.o \
                    UnitexGetOpt.o IOBuffer.o Copyright.o CompressedDic.o LoadInf.o Ustring.o \
                    VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                   $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                   $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 
 UNTOKENIZE       = Untokenize
-UNTOKENIZE_OBJS  = Main_Untokenize.o Untokenize.o File.o Error.o Unicode.o AbstractAllocator.o \
+UNTOKENIZE_OBJS  = Main_Untokenize.o Untokenize.o whereami.o File.o Error.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o \
                    DELA.o AbstractDelaLoad.o PackInf.o \
                    String_hash.o StringParsing.o List_int.o List_ustring.o Text_tokens.o \
                    Alphabet.o Af_stdio.o ActivityLogger.o \
                    UnitexGetOpt.o IOBuffer.o Copyright.o CompressedDic.o LoadInf.o Ustring.o \
                    VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                   $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                   $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 UNXMLIZE       = Unxmlize
-UNXMLIZE_OBJS  = Main_Unxmlize.o Unxmlize.o File.o Error.o Unicode.o Xml.o Af_stdio.o \
+UNXMLIZE_OBJS  = Main_Unxmlize.o Unxmlize.o whereami.o File.o Error.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o Xml.o Af_stdio.o \
                  ActivityLogger.o AbstractAllocator.o \
                  UnitexGetOpt.o IOBuffer.o Copyright.o Offsets.o Overlap.o HTMLCharacters.o \
                  AsciiSearchTree.o Alphabet.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
-                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                 $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 UNITEXTOOL   = UnitexTool
 UNITEXTOOL_OBJS = Main_UnitexTool.o \
@@ -1326,7 +1487,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   ConcorDiff.o Contexts.o Convert.o DELA.o DELA_tree.o Dico.o DictionaryTree.o \
                   DicVariables.o Diff.o DutchCompounds.o Elag.o ElagComp.o ElagDebug.o ElagFstFilesIO.o \
                   ElagFunctions.o ElagRulesCompilation.o ElagStateSet.o Error.o Evamb.o Extract.o ExtractUnits.o \
-                  FIFO.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2Check_lib.o Fst2List.o Fst2Txt.o \
+                  FIFO.o whereami.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2Check_lib.o Fst2List.o Fst2Txt.o \
                   Fst2Txt_TokenTree.o Fst2TxtAsRoutine.o GeneralDerivation.o GermanCompounds.o UnitexGetOpt.o \
                   Grf2Fst2.o Grf2Fst2_lib.o HashTable.o HTMLCharacters.o ImplodeTfst.o IOBuffer.o Copyright.o \
                   KrMwuDic.o LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
@@ -1340,7 +1501,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   Stack_int.o Stack_unichar.o Stats.o String_hash.o StringParsing.o Symbol.o Symbol_op.o \
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
-                  TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o \
+                  TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o \
                   Ustring.o VersionInfo.o XMLizer.o DuplicateFile.o DumpOffsets.o Seq2Grf.o \
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o \
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
@@ -1349,7 +1510,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o SpellChecking.o \
                   Keyboard.o VirtualFiles.o Persistence.o PersistenceInterface.o PersistResource.o TfstTag.o PRLG.o \
                   KeyWords.o KeyWords_lib.o \
-                  RegExFacade.o $(TRE_LINK_OBJS) SelectOutput.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                  RegExFacade.o $(TRE_LINK_OBJS) SelectOutput.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 
 UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
@@ -1365,7 +1526,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   ConcorDiff.o Contexts.o Convert.o DELA.o DELA_tree.o Dico.o DictionaryTree.o \
                   DicVariables.o Diff.o DutchCompounds.o Elag.o ElagComp.o ElagDebug.o ElagFstFilesIO.o \
                   ElagFunctions.o ElagRulesCompilation.o ElagStateSet.o Error.o Evamb.o Extract.o ExtractUnits.o \
-                  FIFO.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2Check_lib.o Fst2List.o Fst2Txt.o \
+                  FIFO.o whereami.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2Check_lib.o Fst2List.o Fst2Txt.o \
                   Fst2Txt_TokenTree.o Fst2TxtAsRoutine.o GeneralDerivation.o GermanCompounds.o UnitexGetOpt.o \
                   Grf2Fst2.o Grf2Fst2_lib.o HashTable.o HTMLCharacters.o ImplodeTfst.o IOBuffer.o Copyright.o \
                   KrMwuDic.o LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
@@ -1379,7 +1540,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   Stack_int.o Stack_unichar.o Stats.o String_hash.o StringParsing.o Symbol.o Symbol_op.o \
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
-                  TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o \
+                  TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o common.o ELG.o table.o utf8.o Unicode.o safe_bool.o functions.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o \
                   Ustring.o VersionInfo.o XMLizer.o DuplicateFile.o DumpOffsets.o \
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o \
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
@@ -1389,7 +1550,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   SpellChecking.o Keyboard.o VirtualFiles.o Persistence.o PersistenceInterface.o PersistResource.o \
                   TfstTag.o PRLG.o KeyWords.o KeyWords_lib.o \
                   RegExFacade.o SelectOutput.o UnitexLibIO.o $(TRE_LINK_OBJS) \
-                  $(YAML_LINK_OBJS) $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBLOGGER)
+                  $(YAML_LINK_OBJS) $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBLOGGER)
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)
@@ -1446,6 +1607,10 @@ ifeq ($(UNITEXTOOLONLY), yes)
 
 PROGS = $(UNITEXTOOL) $(UNITEXTOOL_LOGGER)
 OBJS = $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS)
+else
+ifeq ($(UNITEX_EXPERIMENTAL_MSGLOGGER), yes)
+PROGS = $(LOCATE)
+OBJS  = $(LOCATE_OBJS)
 
 else
 
@@ -1487,6 +1652,7 @@ endif
 endif
 endif
 endif
+endif
 
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 
@@ -1512,26 +1678,54 @@ endif
 
 YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
+LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
+LUAJIT_BUILDMODE=BUILDMODE="static"
+
+# LUAJIT_COMPILE_LDFLAGS and TARGET_SYS
+ifeq ($(TARGET_OSX),yes)
+LUAJIT_COMPILE_LDFLAGS+=
+LUAJIT_MACOSX_DEPLOYMENT_TARGET=MACOSX_DEPLOYMENT_TARGET=$(MACOSX_DEPLOYMENT_TARGET)
+else
+LUAJIT_COMPILE_LDFLAGS+=LDFLAGS+="-pthread -s -static-libgcc -Wl,--disable-new-dtags -Wl,-rpath,$$ORIGIN"
+MACOSX_DEPLOYMENT_TARGET=
+endif
+
+ifeq ($(SYSTEM),osxcross)
+LUAJIT_TARGET_SYS=CC="cc" CROSS="$(CROSS)" TARGET_CFLAGS+="-arch x86_64" TARGET_LDFLAGS+="-arch x86_64" TARGET_SYS=Darwin
+else
+LUAJIT_TARGET_SYS=
+endif
+
+LUAJIT_OPTIONS = $(LUAJIT_MACOSX_DEPLOYMENT_TARGET) $(LUAJIT_COMPILE_LDFLAGS) $(LUAJIT_32_CC) $(LUAJIT_BUILDMODE) $(LUAJIT_XCFLAGS) $(LUAJIT_TARGET_SYS)
+
+ifneq ($(strip $(ADDITIONAL_LUAJIT_OPTIONS)),)
+	LUAJIT_OPTIONS += $(ADDITIONAL_LUAJIT_OPTIONS)
+endif
+
+LUAJIT_OPTIONS += $(LUAJIT_GCC_OPTIONS)
+
 ifeq ($(LIBRARY),yes)
-all: $(LIBTRE) .libunitex
+all: $(LIBTRE) $(LIBLUAJIT) .libunitex
 else
 ifeq ($(JNILIBRARY),yes)
-all: $(LIBTRE) .libunitexjni
+all: $(LIBTRE) $(LIBLUAJIT) .libunitexjni
 else
 ifeq ($(STATICLIB),yes)
-all: $(LIBTRE) .libunitexstatic
+all: $(LIBTRE) $(LIBLUAJIT) .libunitexstatic
 else
 all: bin
 endif
 endif
 endif
 
-bin: $(LIBTRE) $(BINARIES)
+bin: $(LIBTRE) $(LIBLUAJIT) $(BINARIES)
 	@echo
 	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
 	@echo
 
-%.o: ../%.cpp
+%.o: ../%.cpp ../*.h ../ELGLib/*.h ../ELGLib/uString/*.h
 	$(CC) -c $(CFLAGS) $<
 
 $(TRE_SRC): $(TRE_TGZ)
@@ -1542,11 +1736,24 @@ $(YAML_SRC): $(YAML_TGZ)
 	@echo "unpacking YAML library ..."
 	$(TAR_COMMAND) $(TAR_PARAM) $(YAML_TGZ)
 
+$(LUAJIT_SRC): $(LUAJIT_TGZ)
+	@echo "unpacking LuaJIT library ..."
+	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
+	@echo "Patching LuaJIT library..."
+	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
+
+.libluajit-done: $(LUAJIT_SRC)
+	@echo "Making LuaJIT library using LuaJIT makefile ..."
+	$(MAKE) $(LUAJIT_OPTIONS) -C $(LUAJIT_SRC)
+	mkdir -p libluajit
+	$(MAKE) install PREFIX= DESTDIR=$(mkfile_dir)libluajit -C $(LUAJIT_SRC)
+	touch .libluajit-done
+
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 .libtre-done: $(TRE_SRC)
 	@echo "Configure TRE for direct build..."
 	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_CONFIGURE_OPTION)
+	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_32_FLAGS) $(TRE_CONFIGURE_OPTION)
 	touch .libtre-done
 else
 
@@ -1569,7 +1776,7 @@ endif
 .libtre-done: $(TRE_SRC)
 	@echo "Making TRE library ..."
 	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_CONFIGURE_OPTION)
+	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_32_FLAGS) $(TRE_CONFIGURE_OPTION)
 	mkdir -p libtre/lib libtre/include libtre/obj
 	$(CC_GCC) -c $(TRE_SRC)/lib/tre-stack.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-stack.o
 	$(CC_GCC) -c $(TRE_SRC)/lib/tre-parse.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-parse.o
@@ -1589,7 +1796,7 @@ else
 .libtre-done: $(TRE_SRC)
 	@echo "Making TRE library using TRE makefile ..."
 	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_CONFIGURE_OPTION) && make
+	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_32_FLAGS) $(TRE_CONFIGURE_OPTION) && make
 	mkdir -p libtre/lib libtre/include
 	cd $(TRE_SRC)/lib && $(AR) rcs libtre.a *.o
 	cp $(TRE_SRC)/lib/libtre.a  libtre/lib/libtre.a
@@ -1604,13 +1811,19 @@ clean-libtre:
 	$(RMR) $(TRE_SRC)
 	$(RM) .libtre-done
 
+clean-libluajit:
+	$(RMR) libluajit
+	$(RMR) $(LUAJIT_SRC)
+	$(RM) .libluajit-done
 
 install: bin
 	$(INSTALL) $(BINARIES) $(APPDIR)
 
-
-clean: $(CLEAN-LIBTRE)
+clean: $(CLEAN-LIBTRE) $(CLEAN-LIBLUAJIT)
 	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
+
+clean-all: $(CLEAN-LIBTRE) $(CLEAN-LIBLUAJIT)
+	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o *.o *.a
 
 clean-all-but-tre:
 	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
@@ -1647,13 +1860,13 @@ else
 ################################
 
 ifeq ($(LIBRARY),yes)
-all: $(LIBTRE) .libunitex
+all: $(LIBTRE) $(LIBLUAJIT) .libunitex
 else
 ifeq ($(JNILIBRARY),yes)
-all: $(LIBTRE) .libunitexjni
+all: $(LIBTRE) $(LIBLUAJIT) .libunitexjni
 else
 ifeq ($(STATICLIB),yes)
-all: $(LIBTRE) .libunitexstatic
+all: $(LIBTRE) $(LIBLUAJIT) .libunitexstatic
 else
 all: bin
 endif
@@ -1666,6 +1879,18 @@ TRE_SRC = tre-0.8.0
 TRE_TGZ = ../vendor/tre-0.8.0.tar.gz
 YAML_SRC = yaml-0.1.6
 YAML_TGZ = ../vendor/yaml-0.1.6.tar.gz
+LUAJIT_SRC = luajit-2.3.0
+LUAJIT_TGZ = ../vendor/luajit-2.3.0.tar.gz
+LUAJIT_PATCHES = ../vendor/patches/$(LUAJIT_SRC)/*.patch
+
+LUAJIT_FILES_INC= lua.h lualib.h lauxlib.h luaconf.h lua.hpp luajit.h
+.libluajit-done: $(LUAJIT_SRC)
+	@echo "Making LuaJIT library using LuaJIT makefile ..."
+	$(MAKE) $(LUAJIT_OPTIONS) -C $(LUAJIT_SRC)
+	mkdir -p libluajit/include/luajit-2.1
+	cp -r $(LUAJIT_SRC)/src/*.a .
+	cd $(LUAJIT_SRC)/src && cp $(LUAJIT_FILES_INC) ../../libluajit/include/luajit-2.1
+	touch .libluajit-done
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LIB =
@@ -1676,7 +1901,7 @@ TRE_LIB =
 
 else
 
-
+LUAJIT_LIB = libluajit.a
 TRE_LIB = libtre.a
 
 ifeq ($(LIBRARY),OOOfdsjnfezqez)
@@ -1784,7 +2009,7 @@ ifeq ($(SYSTEM),windows)
 #######################
 
 
-bin: $(LIBTRE) $(BINARIES)
+bin: $(LIBTRE) $(LIBLUAJIT) $(BINARIES)
 	@echo ----------------------------------------------------------------------------
 	@echo All is done. You need to move .exe programs from '$(BIN_DIR)' to '$(APPDIR)'.
 
@@ -1802,10 +2027,24 @@ $(YAML_SRC): $(YAML_TGZ)
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
-CLEAN-LIBTRE   =
-LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
-%.o: ../%.cpp
+LIBLUAJIT: $(LUAJIT_SRC) $(LUAJIT_LIB)
+	@echo "Making LuaJIT library..."
+
+CLEAN-LIBTRE    =
+CLEAN-LIBLUAJIT =
+
+EXTRA_LIBS = $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+
+# add -lpthread if needed
+ifeq ($(findstring UNITEX_USE_POSIX_THREADS,$(ADDITIONAL_CFLAG)),UNITEX_USE_POSIX_THREADS)
+# Found
+EXTRA_LIBS += -lpthread
+endif
+
+LIBS   = -L"." $(TRE_LINK_LIB) $(LUAJIT_LINK_LIB) $(EXTRA_LIBS)
+
+%.o: ../%.cpp ../*.h ../ELGLib/*.h ../ELGLib/uString/*.h
 	$(CC) -c $(CFLAGS) $<
 
 clean-all-but-tre:
@@ -1829,7 +2068,7 @@ else
 #############################
 #############################
 
-bin: $(LIBTRE) $(BINARIES)
+bin: $(LIBTRE) $(LIBLUAJIT) $(BINARIES)
 	@echo
 	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
 	@echo
@@ -1848,10 +2087,30 @@ $(YAML_SRC): $(YAML_TGZ)
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
-CLEAN-LIBTRE   =
-LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+$(LUAJIT_SRC): $(LUAJIT_TGZ)
+	@echo "Unpacking LUAJIT library..."
+	$(TAR_COMMAND) $(TAR_PARAM) $(LUAJIT_TGZ)
+	@echo "Patching LuaJIT library..."
+	$(CAT_COMMAND) $(LUAJIT_PATCHES) | $(PATCH_COMMAND) $(PATCH_PARAMS)
 
-%.o: ../%.cpp
+LIBLUAJIT: $(LUAJIT_SRC) $(LUAJIT_LIB)
+	@echo "Making LuaJIT library..."
+
+CLEAN-LIBTE    =
+CLEAN-LIBLUAJIT =
+
+EXTRA_LIBS = $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+
+# add -lpthread if needed
+ifeq ($(findstring UNITEX_USE_POSIX_THREADS,$(ADDITIONAL_CFLAG)),UNITEX_USE_POSIX_THREADS)
+# Found
+EXTRA_LIBS += -lpthread
+endif
+
+LIBS   = -L"." $(TRE_LINK_LIB) $(LUAJIT_LINK_LIB) $(EXTRA_LIBS)
+
+
+%.o: ../%.cpp ../*.h ../ELGLib/*.h ../ELGLib/uString/*.h
 	$(CC) -c $(CFLAGS) $<
 
 clean-all-but-tre:
@@ -2032,7 +2291,45 @@ $(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNITEXTOOL_LOGGER)$(EXTENSION): $(UNITEXTOOL_LOGGER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+	$(CC) -o $@ $+ $(OPTIONS) $(LIBS)
+#
+# Compilation instructions for base
+#
+table.o: ../base/unicode/table.cpp
+	$(CC) -c ../base/unicode/table.cpp $(OPTIONS)
+
+utf8.o: ../base/unicode/utf8.cpp
+	$(CC) -c ../base/unicode/utf8.cpp $(OPTIONS)
+	
+case.o: ../base/unicode/case.cpp
+	$(CC) -c ../base/unicode/case.cpp $(OPTIONS)	
+
+severity_level.o: ../base/unilog/severity_level.cpp
+	$(CC) -c ../base/unilog/severity_level.cpp $(OPTIONS)
+	
+functions.o: ../base/time/functions.cpp
+	$(CC) -c ../base/time/functions.cpp $(OPTIONS)
+
+chrono.o: ../base/time/chrono.cpp
+	$(CC) -c ../base/time/chrono.cpp $(OPTIONS)
+
+safe_bool.o: ../base/boolean/safe_bool.cpp
+	$(CC) -c ../base/boolean/safe_bool.cpp $(OPTIONS)
+
+whereami.o: ../base/vendor/whereami/whereami.c
+	$(CC) -c ../base/vendor/whereami/whereami.c $(OPTIONS)
+#
+# Compilation instructions for ELG
+#
+common.o: ../ELGLib/common.cpp
+	$(CC) -c ../ELGLib/common.cpp $(OPTIONS)	
+
+#once.o: ../base/thread/once.cpp
+#	$(CC) -c ../base/thread/once.cpp $(OPTIONS)
+
+#
+# Compilation instructions for ELG
+#
 
 #
 # Compilation instructions for Logger
@@ -2101,6 +2398,41 @@ SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
+export_unitex_virtualwork.o: ../VirtOptimizations/export_unitex_virtualwork.cpp
+	$(CC) -c ../VirtOptimizations/export_unitex_virtualwork.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+FileTools.o: ../VirtOptimizations/FileTools.cpp
+	$(CC) -c ../VirtOptimizations/FileTools.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+MiniMutexDummy.o: ../VirtOptimizations/MiniMutexDummy.cpp
+	$(CC) -c ../VirtOptimizations/MiniMutexDummy.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+MiniMutexPosix.o: ../VirtOptimizations/MiniMutexPosix.cpp
+	$(CC) -c ../VirtOptimizations/MiniMutexPosix.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+MiniMutexWin.o: ../VirtOptimizations/MiniMutexWin.cpp
+	$(CC) -c ../VirtOptimizations/MiniMutexWin.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+PersistenceInterfaceForVirt.o: ../VirtOptimizations/PersistenceInterfaceForVirt.cpp
+	$(CC) -c ../VirtOptimizations/PersistenceInterfaceForVirt.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtAllocator.o: ../VirtOptimizations/VirtAllocator.cpp
+	$(CC) -c ../VirtOptimizations/VirtAllocator.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtDela.o: ../VirtOptimizations/VirtDela.cpp
+	$(CC) -c ../VirtOptimizations/VirtDela.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtFileSystem.o: ../VirtOptimizations/VirtFileSystem.cpp
+	$(CC) -c ../VirtOptimizations/VirtFileSystem.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtFst2.o: ../VirtOptimizations/VirtFst2.cpp
+	$(CC) -c ../VirtOptimizations/VirtFst2.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtualSpaceManager.o: ../VirtOptimizations/VirtualSpaceManager.cpp
+	$(CC) -c ../VirtOptimizations/VirtualSpaceManager.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
+
+VirtualTimeoutCancel.o: ../VirtOptimizations/VirtualTimeoutCancel.cpp
+	$(CC) -c ../VirtOptimizations/VirtualTimeoutCancel.cpp $(OPTIONS) $(VIRTOPTIMIZATION_OPTIONS)
 
 # compilation option for yaml	
 api.o: $(YAML_SRC) yaml-0.1.6/src/api.c
@@ -2230,12 +2562,12 @@ else
 no_o_files:
 	$(RM) -f *.o
 
-.libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o
+.libunitex: no_o_files $(LIBTRE) $(LIBLUAJIT) $(OBJS) Test_lib.o
 	$(RM) Main_*.o	
 	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(BUILD_LIB_OPTIONS) $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) $(TEST_LIB_OPTIONS) ../bin/unitex.dll -o ../bin/Test_lib.exe
 
-.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(OBJS) Test_lib.o
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(LIBLUAJIT) $(OBJS) Test_lib.o
 	-$(RM) Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(BUILD_LIB_OPTIONS) $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class

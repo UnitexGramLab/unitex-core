@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,6 +43,7 @@
 // C system files                  (try to order the includes alphabetically)
 #include <cstddef>                 // ptrdiff_t
 #include <cwchar>                  // wcslen
+#include <cassert>                 // assert
 /* ************************************************************************** */
 // C++ system files                (try to order the includes alphabetically)
 
@@ -60,7 +61,9 @@ namespace unitex {
 # define HAS_UNITEX_NAMESPACE 1
 #endif  // !defined(HAS_UNITEX_NAMESPACE)
 /* ************************************************************************** */
-
+#define UNITEX_STRING_IS_NULL       (data_->str == NULL)
+/* ************************************************************************** */
+typedef size_t (*U_TRANSLATE_FUNCTION)(const unichar*, unichar*);
 /* ************************************************************************** */
 /**
  * @class    UnitexString
@@ -160,7 +163,18 @@ class UnitexString {
    * @see    format
    * @see    append_format
    */
-  static const size_type  kMaxBufferSize = 1024;
+  static const size_type  kMaxBufferSize = MAXBUF;
+
+  /**
+   * @brief  Min buffer size
+   *
+   * Min buffer size, expressed in number of characters, used in
+   * UnitexString::format and UnitexString::append_format functions
+   *
+   * @see    format
+   * @see    append_format
+   */
+  static const size_type  kMinBufferSize = MINBUF;
 
   /// @}
 
@@ -172,7 +186,7 @@ class UnitexString {
    * characters
    */
   UnitexString() :
-      data_(new_Ustring()) {
+      data_(acquire()) {
   }
 
   /**
@@ -183,7 +197,24 @@ class UnitexString {
    * @param  string Source string
    */
   UnitexString(const UnitexString& string) :
-        data_(new_Ustring(string.data_->str)) {
+    data_(acquire(string.data_->str)) {
+  }
+
+  /**
+   * @brief  Capacity constructor
+   *
+   * Requests that the string capacity be adapted to a planned size
+   * to a length of *up to* n characters.
+   *
+   * @param  n      Planned length for the string, expressed in number of
+   *                characters
+   *
+   * @note          The resulting string capacity may be equal or greater
+   *                than @e n.
+   */
+  UNITEX_EXPLICIT_CONVERSIONS
+  UnitexString(size_type n) :
+    data_(acquire(n)) {
   }
 
   /**
@@ -198,14 +229,14 @@ class UnitexString {
    * @param  n      Number of characters to copy (default remainder)
    */
   UnitexString(const UnitexString& string, size_t pos, size_type n = npos) {
-    if (pos < string.length()) {
-      if (n > (string.length() - pos)) {
-        n = string.length() - pos;
+    if (pos < string.len()) {
+      if (n > (string.len() - pos)) {
+        n = string.len() - pos;
       }
-      data_ = new_Ustring(n);
+      data_ = acquire(n);
       this->append(string.data() + pos, n);
     } else {
-      data_ = new_Ustring();
+      data_ = acquire();
     }
   }
 
@@ -217,8 +248,9 @@ class UnitexString {
    *
    * @param  string A null-terminated character sequence (C-string)
    */
-  /*explicit*/ UnitexString(const char* string) :                   // NOLINT
-      data_(new_Ustring()) {
+  UNITEX_EXPLICIT_CONVERSIONS
+  UnitexString(const char* string) :                   // NOLINT
+      data_(acquire()) {
     this->append(string);
   }
 
@@ -231,7 +263,7 @@ class UnitexString {
    * @param  n      Number of characters to copy
    */
   UnitexString(const char* string, size_type n) :
-        data_(new_Ustring(n)) {
+        data_(acquire(n)) {
     this->append(string, n);
   }
 
@@ -246,7 +278,7 @@ class UnitexString {
    *                   copy of this value.
    */
   UnitexString(size_type n, char character) :
-      data_(new_Ustring(n)) {
+      data_(acquire(n)) {
     // sets the first num bytes of the block of memory pointed by
     // data_->str to the specified value (interpreted as a char)
     // we avoid to use memset(data_->str, character, n);
@@ -270,10 +302,10 @@ class UnitexString {
   UnitexString(const char* first, const char* last) {
     if (first < last) {
       const size_t distance = last - first;
-      data_ = new_Ustring(distance);
+      data_ = acquire(distance);
       this->append(first, distance);
     } else {
-      data_ = new_Ustring();
+      data_ = acquire();
     }
   }
 
@@ -286,7 +318,7 @@ class UnitexString {
    * @param  string A null-terminated character sequence (unichar-string)
    */
   explicit UnitexString(const unichar* string) :
-      data_(new_Ustring(string)) {
+      data_(acquire(string)) {
   }
 
   /**
@@ -298,7 +330,7 @@ class UnitexString {
    * @param  n      Number of characters to copy
    */
   UnitexString(const unichar* string, size_type n) :
-        data_(new_Ustring(n)) {
+        data_(acquire(n)) {
     this->append(string, n);
   }
 
@@ -313,15 +345,31 @@ class UnitexString {
    *                   copy of this value.
    */
   UnitexString(size_type n, unichar character) :
-      data_(new_Ustring(n)) {
+      data_(acquire(n)) {
     // sets the first num bytes of the block of memory pointed by
     // data_->str to the specified value (interpreted as a char)
     // we avoid to use memset(data_->str, character, n);
-    for (unsigned int i = 0; i < n; i++) {
+    for (unsigned int i = 0; i < n; ++i) {
       data_->str[data_->len + i] = character;
     }
     data_->len = n;
     data_->str[data_->len] = '\0';
+  }
+
+  /**
+   * @brief  Fill constructor from an UnitexString
+   *
+   * Fills the string with n consecutive copies of a string
+   *
+   * @param  n         Number of times to fill
+   * @param  string    String to fill the string with.
+   */
+  UnitexString(size_type n, const UnitexString& string) :
+      data_(acquire(n * string.len())) {
+    // sets n consecutive copies of the string
+    for (unsigned int i = 0; i < n; ++i) {
+      unitex::u_strcat(data_,  string.data_->str, string.data_->len);
+    }
   }
 
   /**
@@ -337,11 +385,45 @@ class UnitexString {
   UnitexString(const unichar* first, const unichar* last) {
     if (first < last) {
       const size_t distance = last - first;
-      data_ = new_Ustring(distance);
+      data_ = acquire(distance);
       this->append(first, distance);
     } else {
-      data_ = new_Ustring();
+      data_ = acquire();
     }
+  }
+
+  /**
+   * @brief  Constructor from a encoded c-string
+   *
+   * Allocates and initializes a string from a null-terminated encoded
+   * character sequence (C-string)
+   *
+   * @param  string A null-terminated character sequence (C-string)
+   */
+  UnitexString(Encoding encoding, const char* string,
+               size_type buffer_size = kMaxBufferSize) :  // NOLINT
+      data_(acquire(buffer_size)) {
+    size_type length = 0;
+    if(string) {
+    switch (encoding) {
+      case UTF16_LE:
+        break;
+      case BIG_ENDIAN_UTF16:
+        break;
+      case PLATFORM_DEPENDENT_UTF16:
+        break;
+      case ASCII:
+        // same as binary
+        this->append(string);
+        return;
+      case UTF8:
+        // decode from UTF-8
+        length = unitex::u_decode_utf8(string, data_->str);
+        break;
+    }
+    }
+    // set the length of the resulting string
+    data_->len = length;
   }
 
   /**
@@ -353,7 +435,19 @@ class UnitexString {
    * @param  string A null-terminated character sequence (Ustring-string)
    */
   explicit UnitexString(const Ustring* string) :
-        data_(new_Ustring(string->str)) {
+        data_(acquire(string->str)) {
+  }
+
+  /**
+   * @brief  Constructor from unitex Ustring
+   *
+   * Initializes an already allocate string representing a null-terminated
+   * character sequence (Ustring-string)
+   *
+   * @param  string A null-terminated character sequence (Ustring-string)
+   */
+  explicit UnitexString(Ustring* string) :
+      data_(attach(string)) {
   }
 
   /**
@@ -365,7 +459,7 @@ class UnitexString {
    * @param  n      Number of characters to copy
    */
   UnitexString(const Ustring* string, size_type n) :
-        data_(new_Ustring(n)) {
+        data_(acquire(n)) {
     this->append(string, n);
   }
 
@@ -377,7 +471,8 @@ class UnitexString {
    * Free the memory allocated to the internal string
    */
   ~UnitexString() {
-    release();
+    // if data_ is acquired then release, detach otherwise
+    release() || detach();
   }
 
   // Iterators
@@ -427,7 +522,7 @@ class UnitexString {
    * @return An iterator to the past-the-end of the string
    */
   iterator end() {
-    return iterator(begin() + length());
+    return iterator(begin() + len());
   }
 
   /**
@@ -440,7 +535,7 @@ class UnitexString {
    * @return A constant iterator to the past-the-end of the string
    */
   const_iterator end() const {
-    return const_iterator(begin() + length());
+    return const_iterator(begin() + len());
   }
 
   /**
@@ -454,7 +549,7 @@ class UnitexString {
    * @return A constant iterator to the past-the-end of the string
    */
   const_iterator cend() const {
-     return const_iterator(begin() + length());
+     return const_iterator(begin() + len());
   }
 
   // assignment operators =
@@ -695,17 +790,17 @@ class UnitexString {
    * @return True if this->compare(rhs) == 0.  False otherwise
    */
   bool operator==(const Ustring* rhs) const {
-    return this->compare(rhs) == 0;
+    return u_equal(this->data_, rhs);
   }
 
   /**
    * @brief  Test equivalence between two UnitexString objects
    *
    * @param  rhs    A UnitexString object
-   * @return True if this->compare(rhs) == 0.  False otherwise
+   * @return True if both strings are equals.  False otherwise
    */
   bool operator==(const UnitexString& rhs) const {
-    return this->compare(rhs) == 0;
+    return u_equal(this->data_, rhs.data_);
   }
 
   // boolean not equal operands
@@ -801,8 +896,8 @@ class UnitexString {
    */
   reference at(size_type pos) {
     // FIXME(martinec) throws unitex::out_of_range
-    // if (!is_null() &&  pos <= length())
-    assert(!is_null() &&  pos <= length());
+    // if (!UNITEX_STRING_IS_NULL &&  pos <= length())
+    assert(!UNITEX_STRING_IS_NULL &&  pos <= len());
     return *(begin() + pos);
   }
 
@@ -816,7 +911,7 @@ class UnitexString {
    * @return Read-only (const) reference to the character.
    */
   const_reference at(size_type pos) const {
-    assert(!is_null() && pos <= length());
+    assert(!UNITEX_STRING_IS_NULL && pos <= len());
     return *(begin() + pos);
   }
 
@@ -837,7 +932,7 @@ class UnitexString {
    */
   unichar back() const {
     assert(!this->is_empty());
-    return this->at(this->length()-1);
+    return this->at(this->len()-1);
   }
 
   /**
@@ -859,7 +954,7 @@ class UnitexString {
    *
    * Returns the length of the string, in terms of number of characters
    */
-  size_type length() const {
+  size_type len() const {
     return static_cast<size_type>(data_->len);
   }
 
@@ -869,7 +964,7 @@ class UnitexString {
    * Returns the length of the string, in terms of number of characters
    */
   size_type size() const {
-    return length();
+    return len();
   }
 
   /**
@@ -878,7 +973,7 @@ class UnitexString {
    * Returns the length of the string, in terms of bytes.
    */
   size_type bytes() const {
-    return (length() * sizeof(value_type));
+    return (len() * sizeof(value_type));
   }
 
   /**
@@ -978,6 +1073,96 @@ class UnitexString {
   }
 
   /**
+   * @brief  Append a encoded c-string
+   *
+   * Appends a string from a null-terminated encoded
+   * character sequence (C-string)
+   *
+   * @param  string A null-terminated character sequence (C-string)
+   */
+  UnitexString& append(Encoding encoding, const char* string,
+                       size_type increase_length = kMaxBufferSize) {
+    // request to adapt the underline string capacity with a
+    // size to a length of *up to* the desired length of characters
+    reserve(increase_length);
+    size_type length = 0;
+    //
+    switch (encoding) {
+      case UTF16_LE:
+        break;
+      case BIG_ENDIAN_UTF16:
+        break;
+      case PLATFORM_DEPENDENT_UTF16:
+        break;
+      case ASCII:
+        // same as binary
+        this->append(string);
+        return *this;
+      case UTF8:
+        // decode from UTF-8
+        length = unitex::u_decode_utf8(string, end());
+        break;
+    }
+    // set the length of the resulting string
+    data_->len = data_->len + length;
+    return *this;
+  }
+
+
+  /**
+   * @brief  Append a encoded c-string
+   *
+   * Appends a string from a null-terminated encoded
+   * character sequence (C-string)
+   *
+   * @param  string A null-terminated character sequence (C-string)
+   */
+  UnitexString& append(Encoding encoding, const char* string,
+                       size_type length, size_type& readed) {
+    // request to adapt the underline string capacity with a
+    // size to a length of *up to* the desired length of characters
+    reserve(length);
+    //
+    switch (encoding) {
+      case UTF16_LE:
+        break;
+      case BIG_ENDIAN_UTF16:
+        break;
+      case PLATFORM_DEPENDENT_UTF16:
+        break;
+      case ASCII:
+        // same as binary
+        this->append(string, length);
+        readed = length;
+        return *this;
+      case UTF8:
+          // u_decode_utf8_n returns the number of bytes consumed from
+          // string
+        readed = unitex::u_decode_utf8_n(string, end(), length);
+        break;
+    }
+    // set the length of the resulting string
+    data_->len = data_->len + length;
+    return *this;
+  }
+
+  /**
+   * @brief  Append and translate a string
+   */
+  UnitexString& append(const Ustring* string,
+                       U_TRANSLATE_FUNCTION translate,
+                       size_type increase_length = kMaxBufferSize) {
+    // request to adapt the underline string capacity with a
+    // size to a length of *up to* the desired length of characters
+    reserve(increase_length);
+    // transform the input string and append it at the end
+    size_type length = translate(string->str, end());
+    // set the new length of the resulting string
+    data_->len = data_->len + length;
+    return *this;
+  }
+
+  /**
    * @brief  Append to string from unichar
    *
    * Extends the string by appending an additional character at the end of its
@@ -1050,7 +1235,7 @@ class UnitexString {
    * @return *this
    */
   UnitexString& append(const Ustring* string, size_type n) {
-    return this->append(string, n);
+    return this->append(string->str, n);
   }
 
   /**
@@ -1117,39 +1302,76 @@ class UnitexString {
     assert(size <= kMaxBufferSize);
 
     // resize to fit
-    this->resize(this->length() + size + 1);
+    this->resize(this->len() + size + 1);
 
     // append string_buffer
     return this->append(string_buffer, size);
   }
 
   /**
+   * @brief  Encode the UnitexString into a UTF-8 C-string
+   *
+   * @param  An already allocated buffer destination (C-string)
+   *
+   * @return length of the destination string
+   */
+  int encode(char* destination) {
+    return u_encode_utf8(data_->str, destination);
+  }
+
+  /**
+   * @brief  Reverse the string
+   * @return *this
+   */
+  UnitexString& reverse() {
+    u_reverse(data_->str, data_->len);
+    return *this;
+  }
+
+  /**
    * @brief  Lowercase the characters in the string
    * @return *this
    */
-  UnitexString& tolower() {
+  UnitexString& lower() {
     unitex::u_tolower(data_->str);
     return *this;
   }
 
   /**
-   * @brief  Uppercase the characters in the string
+   * @brief  Upper case the characters in the string
    * @return *this
    */
-  UnitexString& toupper() {
+  UnitexString& upper() {
     unitex::u_toupper(data_->str);
     return *this;
   }
 
-//  /**
-//   * @brief  Titlecase the characters in the string
-//   * @return *this
-//   */
-//  UnitexString& totitle() {
-//    // TODO(martinec) implement unitex::u_totitle
-//    unitex::u_totitle(data_->str);
-//    return *this;
-//  }
+  /**
+   * @brief  Fold case the characters in the string
+   * @return *this
+   */
+  UnitexString& fold() {
+    unitex::u_tofold(data_->str);
+    return *this;
+  }
+
+  /**
+   * @brief  Title case the characters in the string
+   * @return *this
+   */
+  UnitexString& title() {
+    unitex::u_totitle_first(data_->str);
+    return *this;
+  }
+
+  /**
+   * @brief  Deaccentuate the characters in the string
+   * @return *this
+   */
+  UnitexString& deaccentuate() {
+    unitex::u_deaccentuate(data_->str);
+    return *this;
+  }
 
   /**
    * @brief  Append character to string
@@ -1306,7 +1528,7 @@ class UnitexString {
    *
    * @see  c_unichar() const
    */
-  // UNITEX_EXPLICIT_CONVERSIONS
+  UNITEX_EXPLICIT_CONVERSIONS
   operator const unichar*() const {
     return data();
   }
@@ -1319,7 +1541,10 @@ class UnitexString {
    * @attention The caller should not delete the return value
    */
   const unichar* data() const {
-    return is_null() ? '\0' : begin();
+    if (UNITEX_STRING_IS_NULL) {
+      return (const unichar*) '\0';
+    }
+    return begin();
   }
 
   /**
@@ -1339,7 +1564,7 @@ class UnitexString {
    *
    * @see  c_ustring() const
    */
-  // UNITEX_EXPLICIT_CONVERSIONS
+  UNITEX_EXPLICIT_CONVERSIONS
   operator const Ustring*() const {
     return data_;
   }
@@ -1352,7 +1577,7 @@ class UnitexString {
    * @note   NULL and the empty string are different
    */
   bool is_null() const {
-    return data_->str == U_EMPTY;
+    return UNITEX_STRING_IS_NULL;
   }
 
   /**
@@ -1368,8 +1593,30 @@ class UnitexString {
    * @see    is_null() const
    */
   bool is_empty() const {
-    return (!is_null() && length() == 0);
+    return (!UNITEX_STRING_IS_NULL && len() == 0);
   }
+
+  /**
+   * @brief  Test whether the underline data_ is attached
+   *
+   * @return True if the data_ allocation is managed outside. False otherwise
+   *
+   * @see    attach()
+   */
+  bool is_attached() const {
+    return engaged_ == 0;
+  }
+
+  /**
+   * @brief  Test whether the underline data_ is acquired
+   *
+   * @return True if the data_ allocation is done by this class. False otherwise
+   *
+   * @see    attach()
+   */
+  bool is_acquired() const {
+     return engaged_ == 1;
+   }
 
   /**
    * @brief  Clear string
@@ -1394,6 +1641,7 @@ class UnitexString {
    */
   void swap(UnitexString& string) {
     if (this != &string) {
+       this->swap(engaged_,    string.engaged_);
        this->swap(data_->str,  string.data_->str);
        this->swap(data_->size, string.data_->size);
        this->swap(data_->len,  string.data_->len);                  // NOLINT
@@ -1563,14 +1811,67 @@ class UnitexString {
   // Methods, including static
 
   /**
+   * @brief  Attach an Ustring
+   * @note   To be used only from a constructor
+   * @see    data_
+   */
+  Ustring* attach(Ustring* string) {
+    engaged_ = 0;
+    return string;
+  }
+
+  /**
+   * @brief  Detach data_ from an attached Ustring
+   * @note   To be used only from a destructor
+   * @see    data_
+   */
+  int detach() {
+    if (is_attached()) {
+      engaged_ = 2;
+      data_ = NULL;
+      return 1;
+    }
+    return 0;
+  }
+
+  /**
+   * @brief  Allocate an empty Ustring
+   * @see    data_
+   */
+  Ustring* acquire() {
+    engaged_ = 1;
+    return new_Ustring();
+  }
+
+  /**
+   * @brief  Allocate an Ustring representing the given string
+   * @see    data_
+   */
+  Ustring* acquire(const unichar* string) {
+    engaged_ = 1;
+    return new_Ustring(string);
+  }
+
+  /**
+   * @brief  Allocate an empty Ustring with a buffer set to the given size
+   * @see    data_
+   */
+  Ustring* acquire(size_type size) {
+    engaged_ = 1;
+    return new_Ustring(size);
+  }
+  /**
    * @brief  Free the memory allocated to the internal Ustring
    * @see    data_
    */
-  void release() {
-    if (!is_null()) {
+  int release() {
+    if (is_acquired()) {
+      engaged_ = 0;
       this->clear();
       free_Ustring(data_);
+      return 1;
     }
+    return 0;
   }
 
   /**
@@ -1588,6 +1889,12 @@ class UnitexString {
   }
 
   // Data Members (except static const data members)
+
+  /**
+   * @brief  underline Ustring container
+   */
+  int8_t engaged_;
+
   /**
    * @brief  underline Ustring container
    */

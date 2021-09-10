@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -143,12 +143,10 @@
  */
 #if UNITEX_COMPILER_IS_NOT(CLANG)
 # define UNITEX_HAS_FEATURE(FeatureName)                                  \
-                     (defined(UNITEX_HAS_FEATURE_##FeatureName)         &&\
-                              UNITEX_HAS_FEATURE_##FeatureName)
+                     (UNITEX_HAS_FEATURE_##FeatureName == 1)
 #else   // use Clang __has_feature
 # define UNITEX_HAS_FEATURE(FeatureName) __has_feature(FeatureName)     ||\
-                          (defined(UNITEX_HAS_FEATURE_##FeatureName)    &&\
-                                   UNITEX_HAS_FEATURE_##FeatureName)
+                     (UNITEX_HAS_FEATURE_##FeatureName == 1)
 #endif  // UNITEX_COMPILER_IS_NOT(CLANG)
 /* ************************************************************************** */
 #if UNITEX_COMPILER_IS_NOT(CLANG)
@@ -156,13 +154,17 @@
  * @brief  __has_feature macro compatibility with non-Clang compilers
  * @note   it's preferred to use UNITEX_HAS_FEATURE than Clang's __has_feature
  */
+#ifndef  __has_feature
 # define __has_feature(x)     UNITEX_HAS_FEATURE(x)
+#endif
 
 /**
  * @brief  __has_extension macro compatibility with non-Clang compilers
  * @note   it's preferred to use UNITEX_HAS_FEATURE than Clang's __has_feature
  */
+#ifndef  __has_extension
 # define __has_extension(x)   UNITEX_HAS_FEATURE(x)
+#endif
 #endif  //  UNITEX_COMPILER_IS_NOT(CLANG)
 /* ************************************************************************** */
 #if UNITEX_COMPILER_COMPLIANT(CXX98)

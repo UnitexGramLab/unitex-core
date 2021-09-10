@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -639,6 +639,7 @@ while (value==-1) {
       case 6: {
          /* Should not appear, since we quit the automaton when we have read the final '\0' */
          fatal_error("reg_2_grf: illegal position in state 6\n");
+         break;
       }
       /* state 7 */
       case 7: {

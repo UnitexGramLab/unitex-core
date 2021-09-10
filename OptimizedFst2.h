@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -161,7 +161,7 @@ struct optimizedFst2State {
 typedef struct optimizedFst2State* OptimizedFst2State;
 
 
-OptimizedFst2State* build_optimized_fst2_states(Variables*,OutputVariables*,Fst2*,Abstract_allocator);
+OptimizedFst2State* build_optimized_fst2_states(InputVariables*,OutputVariables*,Fst2*,Abstract_allocator);
 void free_optimized_states(OptimizedFst2State*,int,Abstract_allocator);
 
 } // namespace unitex

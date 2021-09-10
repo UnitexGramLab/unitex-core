@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,7 +47,6 @@ enum meta_symbol {
    META_TEXT_START,   // {^}: matches the text start
    META_TEXT_END,      // {$}: matches the end of the text
    META_LETTER,      //<LETTER>: matches a letter in the morphological mode
-   META_LETTRE,      //<LETTRE>: matches a letter in the morphological mode
    META_WORD,       // <WORD>: used to match a token made of letters
    META_FIRST,      // <FIRST>: used to match a token made of letters that starts with an uppercase one
    META_UPPER,      // <UPPER>: used to match a token made of uppercase letters
