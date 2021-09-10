@@ -703,6 +703,20 @@ while (list!=NULL) {
 }
 }
 
+/**
+ * Removes 'n' chars from all strings of the given list. If 'n'
+ * is greater than the length of a string, the string is emptied.
+ */
+void empty_non_pending_variables(OutputVariables* var) {
+OutputVarList* list=var->recycle_allocation;
+if (list==NULL) {
+    return;
+}
+while (list!=NULL) {
+    remove_n_chars(list->var,u_strlen(list->var));
+    list=list->next;
+}
+}
 
 /**
  * Sets the variable #index as being pending.

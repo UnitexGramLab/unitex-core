@@ -61,7 +61,7 @@ void push_output_string(struct stack_unichar*,unichar*);
 
 
 void append_literal_output(struct stack_unichar*, struct locate_parameters*, int*);
-int deal_with_extended_output(unichar*, struct locate_parameters*, struct extended_output_render*);
+int deal_with_extended_output(unichar*, struct locate_parameters*, struct extended_output_render*, OutputVariables *input_variables);
 
 } // namespace unitex
 

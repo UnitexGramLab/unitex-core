@@ -105,6 +105,7 @@ void unset_output_variable_pending(OutputVariables* var,const unichar* var_name)
 
 unsigned int add_raw_string_to_output_variables(OutputVariables*,const unichar*,unsigned int);
 void remove_chars_from_output_variables(OutputVariables*,unsigned int);
+void empty_non_pending_variables(OutputVariables* var);
 
 } // namespace unitex
 
