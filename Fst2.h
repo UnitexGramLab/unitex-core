@@ -250,10 +250,17 @@ int load_persistent_fst2(const char* filename);
 void free_persistent_fst2(const char* filename);
 
 int get_graph_index(Fst2* fst2,int n_state);
-
 void fst2_output_dot(Fst2 * A);
 
 Fst2Tag create_tag(Fst2* fst2,unichar* line,Abstract_allocator prv_alloc);
+
+Fst2State new_Fst2State(Abstract_allocator prv_alloc);
+Fst2Tag new_Fst2Tag(Abstract_allocator prv_alloc);
+Fst2Tag new_Fst2Tag_clone(Fst2Tag Fst2TagSrc,Abstract_allocator prv_alloc);
+void set_initial_state(Fst2State e,int finality);
+void add_transition_to_state(Fst2State state,int tag_number,int state_number,Abstract_allocator prv_alloc);
+void set_final_state(Fst2State e,int finality);
+void free_Fst2Tag(Fst2Tag e,Abstract_allocator prv_alloc);
 
 } // namespace unitex
 
