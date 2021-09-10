@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -79,6 +79,12 @@ namespace unitex {
 
     int main_UniBatchRunScript(int argc, char* const argv[]);
 
+    
+    extern const char* optstring_UniBatchFieldRunScript;
+    extern const struct option_TS lopts_UniBatchFieldRunScript[];
+    extern const char* usage_UniBatchFieldRunScript;
+
+    int main_UniBatchFieldRunScript(int argc, char* const argv[]);
 
 #ifdef __cplusplus
     //        } // extern "C"

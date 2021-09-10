@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -88,6 +88,7 @@ typedef struct alphabet_ Alphabet;
 #define IS_UPPER_MACRO(c,alphabet) \
                 ((CASE_FLAG_MACRO(c,alphabet)) & 1)
 
+Alphabet* new_alphabet(int korean);
 Alphabet* load_alphabet(const VersatileEncodingConfig*,const char*);
 Alphabet* load_alphabet(const VersatileEncodingConfig*,const char*,int);
 int is_abstract_or_persistent_alphabet_filename(const char* filename);
