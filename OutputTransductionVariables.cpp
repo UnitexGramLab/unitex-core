@@ -680,7 +680,11 @@ if (s==NULL || s[0]=='\0') return 0;
 unsigned int old=list->var->len;
 OutputVarList* first=list;
 while (list!=NULL) {
-    u_strcat(list->var,s, length);
+    if (length != 0) {
+      u_strcat(list->var,s, length);
+    } else {
+      u_strcat(list->var,s);
+    }
     list=list->next;
 }
 return first->var->len-old;
