@@ -177,7 +177,7 @@ int process_extended_output(unichar* s,
                    struct locate_parameters* p,
                    int capture_in_debug_mode,
                    struct extended_output_render* r,
-                   OutputVariables *input_variables) {
+                   OutputVariables* extra_variables) {
 int old_stack_pointer=r->stack_template->top;
 int i1=0;
 if (capture_in_debug_mode) {
@@ -1438,7 +1438,7 @@ for (;;) {
           /* Not a normal one ? Maybe an output one */
           const Ustring* output=get_output_variable(p->output_variables,name);
           if (output==NULL) {
-              const Ustring* input=get_output_variable(input_variables,name);
+              const Ustring* input=get_output_variable(extra_variables,name);
               if(input==NULL) {
                 switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;

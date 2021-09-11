@@ -48,7 +48,7 @@ namespace unitex {
 
 const char* usage_Fst2List =
     "Usage:\n"
-        "Fst2List [-o <file>][-p (s|f|d)][-(a|t) (s|m)] [-m] [-d] [-K] [-f (s|a)] [-g <str>] [-Q <str>][-s <str>] [-r (s|l|x) <str>] [-l <line#>] [-i <subgraphname>]... [-c SS=<0xXXXX>]... [-D <file>]... <fname>\r\n"
+        "Fst2List [-o <file>][-p (s|f|d)][-(a|t) (s|m)] [-m] [-d] [-K] [-E <path>] [-f (s|a)] [-g <str>] [-Q <str>][-s <str>] [-r (s|l|x) <str>] [-l <line#>] [-i <subgraphname>]... [-c SS=<0xXXXX>]... [-D <file>]... <fname>\r\n"
 
         "<fname>: input file name with extension \".fst2\"\r\n"
         "-S, --print: display result on standard output. Exclusive with -o\r\n"
@@ -82,6 +82,7 @@ const char* usage_Fst2List =
         "-P <file>, generate dictionary file\r\n"
         "-K, indicates that the <fname> argument is in Korean\r\n"
         "-D <file>, morphological dictionary file to load, <file> must have the extension \".bin\"\r\n"
+        "-E <path>/--elg_extensions_path=<path>: uses ELGs extensions directory X instead of App/elg\n"
         "-V, --only_verify_arguments: only verify arguments syntax and exit\r\n"
         "-h, --help: display this help and exit";
 
@@ -2544,17 +2545,35 @@ int CFstApp::outWordsOfGraph(int depth) {
               }
             }
             else {  //In the other, check if the output is a input/output variable call in the tag's output
-              if(!process_output(Tag->output, p, p->stack, 0, input_variables)) {
+              // to render literal outputs
+              extended_output_render r;
+
+              // process the output
+              if(!process_extended_output(Tag->output, p, 0, &r, input_variables)) {
                 break;  // process_output may returns 0 in the case of unsatisfied equations
               }
-              if(p->stack == NULL){
+
+              // there is no more chars to add to the output template,
+              // hence we put a mark to indicate the end of the string
+              if (!is_empty(r.stack_template)) {
+                push(r.stack_template, '\0');
+              }
+
+              // prepare the output template to be rendered
+              r.prepare();
+
+              // copy the passed output into the literal output stack
+              int captured_chars = 0;
+              append_literal_output(r.render(0), p, &captured_chars);
+
+              if(p->literal_output == NULL){
                 outputBufferPtr = u_null_string;
               }
               else{
-                outputBufferPtr = (u_strcmp(p->stack->stack, u_epsilon_string)) ?
-                  p->stack->stack : u_null_string;
-                p->stack->stack[p->stack->stack_pointer+1]='\0';
-                empty(p->stack);
+                outputBufferPtr = (u_strcmp(p->literal_output->buffer, u_epsilon_string)) ?
+                  p->literal_output->buffer : u_null_string;
+                p->literal_output->buffer[p->literal_output->top+1]='\0';
+                empty(p->literal_output);
               }
             }
           }
@@ -2855,7 +2874,7 @@ int CFstApp::outWordsOfGraph(int depth) {
 //
 //
 
-const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVKPhs:qr:c:g:D:Q:";
+const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVKPhs:q:r:c:g:D:Q:E:";
 const struct option_TS lopts_Fst2List[]= {
   {"output",required_argument_TS,NULL,'o'},
   {"ignore_outputs",required_argument_TS,NULL,'a'},
@@ -2880,6 +2899,7 @@ const struct option_TS lopts_Fst2List[]= {
   {"make_dictionary",no_argument_TS,NULL,'P'},
   {"help",no_argument_TS,NULL,'h'},
   {"binary dics",required_argument_TS,NULL,'D'},
+  {"elg_extensions_path",required_argument_TS,NULL,'E'},
   {NULL,no_argument_TS,NULL,0}
 };
 
@@ -2905,6 +2925,8 @@ int main_Fst2List(int argc, char* const argv[]) {
   UnitexGetOpt options;
   VersatileEncodingConfig vec = VEC_DEFAULT;
   bool makeDic = false;
+
+  char elg_extensions_path[FILENAME_MAX]="";
 
   while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2List,lopts_Fst2List,&index))) {
     switch(val) {
@@ -2936,6 +2958,13 @@ int main_Fst2List(int argc, char* const argv[]) {
         }
         aa.morphDicCnt++;
       }
+      break;
+   case 'E':
+      if (options.vars()->optarg[0]=='\0') {
+        error("You must specify a non empty ELGs path\n");
+        return USAGE_ERROR_CODE;
+      }
+      strcpy(elg_extensions_path,options.vars()->optarg);
       break;
     case 'P':
       makeDic = true;
@@ -3188,9 +3217,12 @@ int main_Fst2List(int argc, char* const argv[]) {
           &(vec.bom_output), arg);
       break;
     }
-    default:
-      error("Invalid arguments: rerun with --help\n");
-      return USAGE_ERROR_CODE;
+    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                          error("Missing argument for option --%s\n",lopts_Fst2List[index].name);
+              return USAGE_ERROR_CODE;
+    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                          error("Invalid option --%s\n",options.vars()->optarg);
+              return USAGE_ERROR_CODE;
     } // end switch
     index=-1;
   } // end while
@@ -3210,8 +3242,61 @@ int main_Fst2List(int argc, char* const argv[]) {
   aa.fileNameSet(argv[options.vars()->optind], ofilename);
   aa.vec = vec;
 
-  aa.p = new_locate_parameters();
-  (*aa.p->stack->stack) = '\0';
+  // --------------------------------------------------------------------------
+  // TODO() refactor this code in a single function together with Locate.cpp:610
+  // --------------------------------------------------------------------------
+  // if the path of the ELGs extensions is not given,
+  // a default path is calculated
+  if (elg_extensions_path[0] == '\0') {
+    // the current executable path
+    char exec_path[FILENAME_MAX] = "";
+    // App
+    get_exec_path(exec_path);
+    // App/
+    add_path_separator(exec_path);
+    // App/elg
+    strcat(exec_path, ELG_FUNCTION_DEFAULT_SCRIPT_DIR_NAME);
+    // Copy back
+    strcpy(elg_extensions_path, exec_path);
+  }
+  // --------------------------------------------------------------------------
+
+  // --------------------------------------------------------------------------
+  // TODO() refactor this code in a single function together with LocatePattern.cpp:267
+  // check if the ELGs path exists and is a directory
+  if(!is_directory(elg_extensions_path)) {
+    error("ELG error: %s directory doesn't exist\n", elg_extensions_path);
+    return 0;
+  }
+
+  // get the real scripts path
+  char real_elg_extensions_path[FILENAME_MAX]="";
+  get_real_path(elg_extensions_path, real_elg_extensions_path);
+
+  // Make sure that the ELGs path always ends with a path separator
+  add_path_separator(real_elg_extensions_path);
+
+  // Check if the ELG init function exists
+  char script_init_name[FILENAME_MAX]   = { };
+  char script_init_file[FILENAME_MAX]   = { };
+
+  // script name = extension_name.upp
+  strcat(script_init_name, ELG_FUNCTION_DEFAULT_SCRIPT_INIT_NAME);
+  strcat(script_init_name, ELG_FUNCTION_DEFAULT_EXTENSION);
+
+  // script_file = /default/path/extension_name.upp
+  strcat(script_init_file, real_elg_extensions_path);
+  strcat(script_init_file, script_init_name);
+
+  // throw an error if the init script do not exist
+  if (!is_regular_file(script_init_file)) {
+    error("ELG error: %s doesn't exist. Please create at least an empty file\n", script_init_file);
+    return USAGE_ERROR_CODE;
+  }
+  // --------------------------------------------------------------------------
+
+  aa.p = new_locate_parameters(real_elg_extensions_path);
+  (*aa.p->literal_output->buffer) = '\0';
   load_morphological_dictionaries(&aa.vec, morpho_dic, aa.p);
   if(makeDic) {
     aa.setGrammarMode(fst2_filename);
@@ -3220,7 +3305,8 @@ int main_Fst2List(int argc, char* const argv[]) {
 
   free(ofilename);
 
-  free_stack_unichar(aa.p->stack);
+  free_stack_unichar(aa.p->literal_output);
+  free_stack_unichar(aa.p->stack_elg);
   free(aa.p->morpho_dic_bin_free);
   free(aa.p->morpho_dic_inf_free);
   clear_dic_variable_list(&aa.p->dic_variables);
