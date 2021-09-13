@@ -1878,10 +1878,10 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx, unichar changeStrTo[][MAX_CH
   dela_entries = new_hash_table((HASH_FUNCTION)Fst2Tag_hash, (EQUAL_FUNCTION)Fst2Tag_equal, (FREE_FUNCTION)Fst2Tag_free, Dela_entry_free, NULL);
   //Checks the automaton's tags to find lexical masks
   check_lexical_masks();
-  for(i = 0; i < morphDicCnt; i++) {
-    free_Dictionary(p->morpho_dic[i], NULL);
-  }
-  free(p->morpho_dic);
+  //  for(i = 0; i < morphDicCnt; i++) {
+  //    free_Dictionary(p->morpho_dic[i], NULL);
+  //  }
+  //free(p->morpho_dic);
   switch (display_control) {
   case GRAPH: {    // explore each graph separately
     if (enableLoopCheck) {
@@ -3298,6 +3298,7 @@ int main_Fst2List(int argc, char* const argv[]) {
   aa.p = new_locate_parameters(real_elg_extensions_path);
   (*aa.p->literal_output->buffer) = '\0';
   load_morphological_dictionaries(&aa.vec, morpho_dic, aa.p);
+
   if(makeDic) {
     aa.setGrammarMode(fst2_filename);
   }
@@ -3307,8 +3308,18 @@ int main_Fst2List(int argc, char* const argv[]) {
 
   free_stack_unichar(aa.p->literal_output);
   free_stack_unichar(aa.p->stack_elg);
+
+  // --------------------------------------------------------------------------
+  // free morphological dictionaries
+  for (int i=0;i<aa.p->n_morpho_dics;i++) {
+      free_Dictionary(aa.p->morpho_dic[i]);
+  }
+  free(aa.p->morpho_dic);
   free(aa.p->morpho_dic_bin_free);
   free(aa.p->morpho_dic_inf_free);
+  free_string_hash(aa.p->morpho_dic_index);
+  // --------------------------------------------------------------------------
+
   clear_dic_variable_list(&aa.p->dic_variables);
   aa.p->dic_variables = NULL;
   free_locate_parameters(aa.p);
