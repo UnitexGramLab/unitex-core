@@ -16,6 +16,10 @@
 # language: instructs travis what compilers && environment to set up in build matrix
 language: cpp
 
+os:
+  - linux
+  - osx
+
 # route builds to Ubuntu Xenial 16.04
 dist: xenial          # or bionic | xenial | trusty | precise with xenial as default
 
