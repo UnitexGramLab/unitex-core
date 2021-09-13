@@ -49,7 +49,7 @@ addons_shortcuts:
     apt:
       sources:    [ 'ubuntu-toolchain-r-test' ]
       packages:   [ 'g++-4.9', 'gcc-4.9', 'cmake', 'cppcheck', 'valgrind' ]
-  addons_gcc49:   &gcc5
+  addons_gcc5:    &gcc5
     apt:
       sources:    [ 'ubuntu-toolchain-r-test' ]
       packages:   [ 'g++-5', 'gcc-5', 'cmake', 'cppcheck', 'valgrind' ]      
