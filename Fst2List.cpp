@@ -3299,10 +3299,28 @@ int main_Fst2List(int argc, char* const argv[]) {
   (*aa.p->literal_output->buffer) = '\0';
   load_morphological_dictionaries(&aa.vec, morpho_dic, aa.p);
 
+  // --------------------------------------------------------------------------
+  // load main extension
+  aa.p->elg->load_main_extension(fst2_filename, aa.p->fst2);
+  // --------------------------------------------------------------------------
+
+  // --------------------------------------------------------------------------
+  // add special token constants
+  aa.p->elg->setup_special_constants(aa.p);
+
+  // setup local environment
+  aa.p->elg->setup_local_environment();
+  // --------------------------------------------------------------------------
+
   if(makeDic) {
     aa.setGrammarMode(fst2_filename);
   }
   aa.getWordsFromGraph(changeStrToIdx, changeStrTo, fst2_filename);
+
+  // --------------------------------------------------------------------------
+  // unload main extension
+  aa.p->elg->unload_main_extension();
+  // --------------------------------------------------------------------------
 
   free(ofilename);
 

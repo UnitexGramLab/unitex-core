@@ -412,6 +412,16 @@ for (;;) {
                 if (v==NULL) {
                   /* Not a normal one ? Maybe an output one */
                   Ustring* output = get_mutable_output_variable(p->output_variables, variable_name);
+                  // Starting v4.0 Fst2List is dealing with input/output variables. Output
+                  // variables are tracked by locate_parameters.output_variables but (I do not understand
+                  // the reason for this) Input variables are tracked with the function parameter
+                  // extra_variables, i.e. not using locate_parameters.input_variables as might be
+                  // expected. For now the following lines are a dirty hotfix.
+                  // FIXME() begins --------------------------------------------------------------
+                  if (extra_variables!=NULL && output==NULL) {
+                    output=get_mutable_output_variable(extra_variables,variable_name);
+                  }
+                  // FIXME() ends    --------------------------------------------------------------
                   // neither input nor output variable exists
                   if (output==NULL) {
                       if (variable_pass_type == VARIABLE_PASS_BY_VALUE) {
@@ -1435,22 +1445,26 @@ for (;;) {
       /* Case of a variable like $a$ that can be either a normal one or an output one */
       struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
       if (v==NULL) {
-          /* Not a normal one ? Maybe an output one */
-          const Ustring* output=get_output_variable(p->output_variables,name);
-          if (output==NULL) {
-              const Ustring* input=get_output_variable(extra_variables,name);
-              if(input==NULL) {
-                switch (p->variable_error_policy) {
-                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
-                    case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
-                }
+         /* Not a normal one ? Maybe an output one */
+         const Ustring* output=get_output_variable(p->output_variables,name);
+         // Starting v4.0 Fst2List is dealing with input/output variables. Output
+         // variables are tracked by locate_parameters.output_variables but (I do not understand
+         // the reason for this) Input variables are tracked with the function parameter
+         // extra_variables, i.e. not using locate_parameters.input_variables as might be
+         // expected. For now the following lines are a dirty hotfix.
+         // FIXME() begins --------------------------------------------------------------
+         if (extra_variables!=NULL && output==NULL) {
+           output=get_output_variable(extra_variables,name);
+         }
+         // FIXME() ends    --------------------------------------------------------------
+         if (output==NULL) {
+             switch (p->variable_error_policy) {
+                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
+                 case IGNORE_VARIABLE_ERRORS: continue;
+                 case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
              }
-              push_output_string(r->stack_template,input->str);
-          }
-          else {
-            push_output_string(r->stack_template,output->str);
-          }
+         }
+         push_output_string(r->stack_template,output->str);
       } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
