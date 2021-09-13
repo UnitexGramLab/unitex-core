@@ -38,6 +38,7 @@ https://github.com/UnitexGramLab/unitex-doc-contributor-guidelines/blob/master/p
 - [ ] `tmp`: Temporal change
 - [ ] `major`: Major change
 - [ ] `minor`: Minor change
+- [ ] `revert`: Revert a commit change
 - [ ] `sec`: Vulnerability-related change
 - [ ] None of the above (normal change)
 
@@ -48,18 +49,23 @@ https://github.com/UnitexGramLab/unitex-doc-contributor-guidelines/blob/master/p
 - [ ] `fix`: Bug fix
 - [ ] `feature`: New feature
 - [ ] `hotfix`: Hotfix for bugs
-- [ ] `refactor`: Improve coding style, comments
+- [ ] `refactor`: Improve coding style, comments
 - [ ] `remove`: Remove a feature
 
 ## Checklist:
 <!-- Go over all the following points, and put an `x` in all the boxes that apply -->
 <!-- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
 - [ ] My code compiles
+- [ ] My code does not generate new warnings
+- [ ] My code only implements a single fix or feature
 - [ ] My code follows the code style of this project
 - [ ] My code includes javadoc/doxygen where appropriate
 - [ ] My code is well factored, so that there is not repetitive code in the wild
+- [ ] My code does not refactor the surrounding code unless necessary
 - [ ] My code does not require a change in the documentation, if so I already opened an issue to list the changes
-- [ ] I have read the **CONTRIBUTING** document
-- [ ] I have read the **Commit Message Guidelines**
+- [ ] I have read the [**CONTRIBUTING**](../.github/CONTRIBUTING.md) document
+- [ ] I have read the [**Pull Request/Commit Message Guidelines**](https://git.io/JuS6u)
+- [ ] I have given a clear and concise title to my pull request following the above guidelines
 - [ ] I understand that all commits on my pull request will be squashed to a single good one
+- [ ] All above points were checked and are marked
 <!-- Check if all the points above have an `x`, if so you can submit your PR for review -->

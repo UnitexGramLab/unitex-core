@@ -8,7 +8,7 @@ Unitex is the Natural Language Processing (NLP) engine of [Unitex/GramLab][unite
 
     git clone https://github.com/UnitexGramLab/unitex-core
     cd unitex-core/build
-    make DEBUG=yes UNITEXTOOLLOGGERONLY=yes
+    make DEBUG=yes 64BITS=yes UNITEXTOOLLOGGERONLY=yes
 
 ## Contributing
 

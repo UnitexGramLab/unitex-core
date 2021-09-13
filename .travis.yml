@@ -16,8 +16,12 @@
 # language: instructs travis what compilers && environment to set up in build matrix
 language: cpp
 
-# sudo: false instructs Travis to build our project in a docker VM (faster)
-sudo: required
+# the value of the $TRAVIS_OS_NAME variable is set to linux or osx according to
+# the operating system a particular build is running on
+os: linux
+
+# route builds to Ubuntu Xenial 16.04
+dist: xenial          # or bionic | xenial | trusty | precise with xenial as default
 
 # only available on private builds
 cache:
@@ -49,12 +53,20 @@ addons_shortcuts:
     apt:
       sources:    [ 'ubuntu-toolchain-r-test' ]
       packages:   [ 'g++-4.9', 'gcc-4.9', 'cmake', 'cppcheck', 'valgrind' ]
-  addons_gcc49:   &gcc5
+  addons_gcc5:    &gcc5
     apt:
       sources:    [ 'ubuntu-toolchain-r-test' ]
-      packages:   [ 'g++-5', 'gcc-5', 'cmake', 'cppcheck', 'valgrind' ]      
+      packages:   [ 'g++-5', 'gcc-5', 'cmake', 'cppcheck', 'valgrind' ]
+  addons_gcc7:    &gcc7
+    apt:
+      sources:    [ 'ubuntu-toolchain-r-test' ]
+      packages:   [ 'g++-7', 'gcc-7', 'cmake', 'cppcheck', 'valgrind' ]
 
-matrix:
+  addons_macos:    &macos
+    homebrew:
+      packages:   [ 'bash' ]
+
+jobs:
   # if a rows in the build matrix fails, set
   # the build to finish as soon as possible
   fast_finish: true
@@ -69,38 +81,43 @@ matrix:
       #compiler: "clang"
       #env: CXX=clang++-3.8
       #addons: *clang38
+    #- os: linux
+      #dist: trusty
+      #compiler: "gcc"
+      #env: CXX=g++-4.7
+      #addons: *gcc47
+    #- os: linux
+      #dist: trusty
+      #compiler: "gcc"
+      #env: CXX=g++-4.8
+      #addons: *gcc48
+    #- os: linux
+      #dist: trusty
+      #compiler: "gcc"
+      #env: CXX=g++-4.9
+      #addons: *gcc49
     - os: linux
-      dist: trusty
-      compiler: "gcc"
-      env: CXX=g++-4.7
-      addons: *gcc47    
-    - os: linux
-      dist: trusty
-      compiler: "gcc"
-      env: CXX=g++-4.8
-      addons: *gcc48
-    - os: linux
-      dist: trusty
-      compiler: "gcc"
-      env: CXX=g++-4.9
-      addons: *gcc49
-    - os: linux
-      dist: trusty
+      dist: xenial
       compiler: "gcc"
       env: CXX=g++-5
       addons: *gcc5
+    #- os: linux
+      #dist: bionic
+      #compiler: "gcc"
+      #env: CXX=g++-7
+      #addons: *gcc7
+    #- os: osx
+      ## OS X 10.11
+      #osx_image: xcode11
+      #compiler: clang
+      #env: MACOSX_DEPLOYMENT_TARGET=11.0
+      #addons: *macos
+    #- os: osx
+      ## OS X 12.3
+      #osx_image: xcode12u
+      #env: MACOSX_DEPLOYMENT_TARGET=12.0
+  allow_failures:
     - os: osx
-      # OS X 10.11
-      osx_image: xcode11
-      compiler: clang
-      env: MACOSX_DEPLOYMENT_TARGET=11.0
-    - os: osx
-      # OS X 12.3
-      osx_image: xcode12u
-      compiler: clang
-      env: MACOSX_DEPLOYMENT_TARGET=12.0
-#  allow_failures:
-#    - os: osx      
 
 notifications:
   email:
@@ -112,7 +129,7 @@ notifications:
     secure: Czf+dd6CyKvEvRTYi3E70lrsDoDZHXdyXSI7+PyQdJpjErU9LeTA0BXNlH5RYBaM7GOXftxQZuvkh0nXTF8e0xqz5qhO3bUdT7iJqivfmzLVuA5LPaKUg8vIv796RsG2RE9TH4SaOhQjJXfzWT5RgwQZeOldGL8scWzNtsnmgkv5QTdScwEU2m9qyo/WZXY6hnh6uKe2gtDgeeG0csRCk/n8SkPHY3AwBLrcLT9XhgQN7GbHOigfkSqF0OF6K8MCl2TxGGuO85cNZx1MXAYI8800F63+zGEz3AlNUZIS61/POaHIYD5fCjheyUDxtC7+GDIcOy8n6eN3nXB9ewIh0okg/Bg4yEfIfdBeKprEvTjKw4qcYOKoVsSoQ8C0pRyMQRdcSisivweaatvr0s/hAQwsrzyZvbfTqUsYaJD3gShe29UULfMWalc5tK9PQtNYtia5Dxn1776kIcGJ+z/lgFLboWsE6uluenMKwVVPc27ArknZZ6YcgC4C8rdMxc2yvZFNMQjmuwqUswq9Iuv3GB80/1YJO/mihjP6nXn6CZ1jk/eUuKrZDXqe3kruKn3atMOsXsLl15MhX0QAdz/ASbLu/GqHhOwUgsOwLQMaajWAn1L/8+GnMjODM75hlr06qrm8MIXvb+ERP5zAujeMTUWCpkYBdi3F1W1ahOrUTcE=
 
 before_install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ];   then export PATH=$PATH:/usr/bin:/bin:/usr/sbin:/sbin; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=$PATH:/usr/bin:/bin:/usr/sbin:/sbin; fi
   - cmake  --version
   - ${CC}  --version
   - ${CXX} --version
@@ -129,7 +146,7 @@ script:
   # https://github.com/travis-ci/docs-travis-ci-com/commit/fbca7ce4
   - test -n $CC && unset CC
   # TODO() Put back -ansi -pedantic
-  - mkdir -p bin && cd build && make ADDITIONAL_CFLAG+=-DUNITEX_CORE_VERSION_GIT_COMMIT_HASH=${UNITEX_CORE_VERSION_GIT_COMMIT_HASH} ADDITIONAL_CFLAG+="-Wextra -Wno-type-limits -DNO_C99_VARIABLE_LENGTH_ARRAY" ADDITIONAL_YAML_OPTIONS+="-w" DEBUG=yes UNITEXTOOLLOGGERONLY=yes && cd ..
+  - mkdir -p bin && cd build && make ADDITIONAL_CFLAG+=-DUNITEX_CORE_VERSION_GIT_COMMIT_HASH=${UNITEX_CORE_VERSION_GIT_COMMIT_HASH} ADDITIONAL_CFLAG+="-Wextra -Wno-type-limits -DNO_C99_VARIABLE_LENGTH_ARRAY" ADDITIONAL_YAML_OPTIONS+="-w" 64BITS=yes DEBUG=yes UNITEXTOOLLOGGERONLY=yes && cd ..
   - export UNITEX_BIN="$PWD/bin/UnitexToolLogger" && echo ${UNITEX_BIN}
   - cd unitex-core-tests
   - "./unitex-core-test.sh -w80 -p1"

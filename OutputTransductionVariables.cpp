@@ -680,7 +680,11 @@ if (s==NULL || s[0]=='\0') return 0;
 unsigned int old=list->var->len;
 OutputVarList* first=list;
 while (list!=NULL) {
-    u_strcat(list->var,s, length);
+    if (length != 0) {
+      u_strcat(list->var,s, length);
+    } else {
+      u_strcat(list->var,s);
+    }
     list=list->next;
 }
 return first->var->len-old;
@@ -703,6 +707,20 @@ while (list!=NULL) {
 }
 }
 
+/**
+ * Removes 'n' chars from all strings of the given list. If 'n'
+ * is greater than the length of a string, the string is emptied.
+ */
+void empty_non_pending_variables(OutputVariables* var) {
+OutputVarList* list=var->recycle_allocation;
+if (list==NULL) {
+    return;
+}
+while (list!=NULL) {
+    remove_n_chars(list->var,u_strlen(list->var));
+    list=list->next;
+}
+}
 
 /**
  * Sets the variable #index as being pending.

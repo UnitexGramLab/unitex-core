@@ -502,9 +502,6 @@ state->transitions=new_Transition(tag_number,state_number,state->transitions,prv
 }
 
 
-void set_initial_state(fst2State*,int);
-void set_final_state(fst2State*,int);
-
 /**
  * Reads fst2 states from the given file 'f' and stores them into
  * the given fst2. If 'read_names' is non null, graph names are

@@ -424,6 +424,9 @@ struct locate_parameters {
    int pos_in_chars;
 };
 
+void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p);
+struct locate_parameters* new_locate_parameters(const char* elg_extensions_path);
+void free_locate_parameters(struct locate_parameters* p);
 
 int locate_pattern(const char*,const char*,const char*,const char*,const char*,const char*,const char*,
                    MatchPolicy,OutputPolicy, const VersatileEncodingConfig*,const char*,TokenizationPolicy,
