@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -71,7 +71,6 @@
  * @endcode
  */
 #define UNITEX_BUILD_MODE(BuildMode)   \
-        (defined(UNITEX_BUILD_MODE_##BuildMode) &&\
-                 UNITEX_BUILD_MODE_##BuildMode)
+        (UNITEX_BUILD_MODE_##BuildMode == 1)
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_BUILD_MODE_H_                                // NOLINT

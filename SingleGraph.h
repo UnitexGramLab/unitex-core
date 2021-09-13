@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -137,7 +137,6 @@ double evaluate_ambiguity(SingleGraph,int*,int*);
 void count_paths(SingleGraph graph,int q1,int q2,int* min_path_length,int* max_path_length,
                  int* number_of_paths);
 void reverse_transition_lists(SingleGraph g);
-
 } // namespace unitex
 
 #endif

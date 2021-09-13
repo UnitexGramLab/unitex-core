@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -76,7 +76,7 @@
 #define UNITEX_PP_STRING_CONCAT(a,b)      UNITEX_PP_STRING_EXPAND(a)b
 
 /**
- * @def    UNITEX_PP_TOKEN_CONCAT
+ * @def    UNITEX_PP_TOKEN_CAT
  * @brief  Token-Concatenation macro without inhibition
  *
  * e.g.

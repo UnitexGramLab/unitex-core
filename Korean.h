@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,7 +57,6 @@ namespace unitex {
 
 #define KR_HCJ_START        0x3130
 #define KR_HCJ_END      0x318E
-
 
 /**
  * Here we define the Hangul Compatibility Jamos used in the library.
@@ -243,7 +242,7 @@ public:
       }
       initJamoMap();
       alphabet=alph;
-      table=new_hash_table(1024,0.75f,(HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+      table=new_hash_table(1024,0.75f,(HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)((EQUAL_UNICHAR_FUNCTION)u_equal),
               (FREE_FUNCTION)free,(FREE_FUNCTION)free,(KEYCOPY_FUNCTION)keycopy);
    };
 

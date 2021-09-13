@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -132,9 +132,9 @@ struct Bool {
    * Valid input : {0, 1}
    */
   Bool& operator =(int state_number) {
-    state_ = (state_number != 0 || state_number != 1 ) ?
-              constant::invalid_ :
-              static_cast<constant::state>(state_number);
+    state_ = (state_number == 0 || state_number == 1 ) ?
+              static_cast<constant::state>(state_number):
+              constant::invalid_ ;
 
     return *this;
   }

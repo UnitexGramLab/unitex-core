@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,49 +37,6 @@
 #endif
 
 namespace unitex {
-
-#ifndef UNITEX_PREVENT_EXPOSE_MINI_PERSISTANCE_IN_INTERFACE
-
-int standard_load_persistence_dictionary(const char*filename,char* persistent_filename_buffer,size_t buffer_size)
-{
-    if ((persistent_filename_buffer == NULL) || (buffer_size <= strlen(filename)))
-        return 0;
-    strcpy(persistent_filename_buffer,filename);
-    return load_persistent_dictionary(filename);
-}
-
-void standard_unload_persistence_dictionary(const char*filename)
-{
-    free_persistent_dictionary(filename);
-}
-
-int standard_load_persistence_fst2(const char*filename,char* persistent_filename_buffer,size_t buffer_size)
-{
-    if ((persistent_filename_buffer == NULL) || (buffer_size <= strlen(filename)))
-        return 0;
-    strcpy(persistent_filename_buffer,filename);
-    return load_persistent_fst2(filename);
-}
-
-void standard_unload_persistence_fst2(const char*filename)
-{
-    free_persistent_fst2(filename);
-}
-
-int standard_load_persistence_alphabet(const char*filename,char* persistent_filename_buffer,size_t buffer_size)
-{
-    if ((persistent_filename_buffer == NULL) || (buffer_size <= strlen(filename)))
-        return 0;
-    strcpy(persistent_filename_buffer,filename);
-    return load_persistent_alphabet(filename);
-}
-
-void standard_unload_persistence_alphabet(const char*filename)
-{
-    free_persistent_alphabet(filename);
-}
-
-#endif
 
 UNITEX_FUNC int UNITEX_CALL persistence_public_load_dictionary(const char*filename,char* persistent_filename_buffer,size_t buffer_size)
 {

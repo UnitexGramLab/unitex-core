@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -101,6 +101,10 @@ if (filters->size>0) {
          }
       }
       if (replaceLetters==1) {
+         if(alph==NULL){
+           error("\nWARNING: If you want to use a custom case-insensitive matching in morphological filters\n");
+           error("you must define an alphabet file.\n");
+         }
          /* If we must replace letters by the set of their case variants
           * like".+e" -> ".+[eE]" */
          unichar temp[2048];

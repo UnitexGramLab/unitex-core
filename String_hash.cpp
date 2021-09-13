@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -266,6 +266,7 @@ for (;;) {
     pos++;
     node=t->node;
 }
+return NO_VALUE_INDEX;
 }
 
 
@@ -341,7 +342,7 @@ int i=0,j=0;
 while (s[i]!='\0') {
     if (s[i]=='\\') {
         switch (s[i+1]) {
-        case '\0': fatal_error("Unexpected backslash at end of line in normalize_CR_LF\n");
+        case '\0': fatal_error("Unexpected backslash at end of line in normalize_CR_LF\n"); break;
         case 'r': s[j++]=0x0D; i+=2; break;
         case 'n': s[j++]=0x0A; i+=2; break;
         default: s[j++]=s[i+1]; i+=2; break;

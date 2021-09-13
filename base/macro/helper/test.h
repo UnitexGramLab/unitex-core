@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,64 +43,16 @@
 #define UNITEX_BASE_PREPROCESSOR_TEST_H_                            // NOLINT
 /* ************************************************************************** */
 /**
- * @brief  Tests if a macro is defined and set
- *
- * @code{.cpp}
- *  // true if kFoo is defined and true
- *  UNITEX_DEFINED_SET(kFoo)
- * @endcode
- */
-#define UNITEX_DEFINED_SET(definition)        \
-        (defined(definition) && (definition))
-/* ************************************************************************** */
-/**
- * @brief  Tests if a macro is defined and unset
- *
- * @code{.cpp}
- *  // true if kFoo is defined and false
- *  UNITEX_DEFINED_UNSET(kFoo)
- * @endcode
- */
-#define UNITEX_DEFINED_UNSET(definition)      \
-        (defined(definition) && !(definition))
-
-/* ************************************************************************** */
-/**
- * @brief  Tests if a macro prefixed by HAVE_ or UNITEX_HAVE_ is defined
+ * @brief  Tests if a macro prefixed by HAVE_ or UNITEX_HAVE_ is defined and set
  *
  * @code{.cpp}
  *  // true if HAVE_BOOST_THREAD or UNITEX_HAVE_BOOST_THREAD are defined
  *  UNITEX_HAVE(BOOST_THREAD)
  * @endcode
  */
-#define UNITEX_HAVE(X)                        \
-            (defined(HAVE_##X)              ||\
-             defined(UNITEX_HAVE_##X))
-/* ************************************************************************** */
-/**
- * @brief  Tests if a macro prefixed by HAVE_ or UNITEX_HAVE_ is defined and set
- *
- * @code{.cpp}
- *  // true if HAVE_kFoo or UNITEX_HAVE_kFoo are defined and set
- *  UNITEX_HAVE_SET(kFoo)
- * @endcode
- */
-#define UNITEX_HAVE_SET(X)                                     \
-            ((defined(HAVE_##X)        && (HAVE_##X))        ||\
-             (defined(UNITEX_HAVE_##X) && (UNITEX_HAVE_##X)))
-/* ************************************************************************** */
-/**
- * @brief  Tests if a macro prefixed by HAVE_ or UNITEX_HAVE_ is defined and
- *         unset
- *
- * @code{.cpp}
- *  // true if HAVE_kFoo or UNITEX_HAVE_kFoo are defined and unset
- *  UNITEX_HAVE_UNSET(kFoo)
- * @endcode
- */
-#define UNITEX_HAVE_UNSET(X)                                    \
-            ((defined(HAVE_##X)        && !(HAVE_##X))        ||\
-             (defined(UNITEX_HAVE_##X) && !(UNITEX_HAVE_##X)))
+#define UNITEX_HAVE(X)                \
+            ((HAVE_##X)             ||\
+             (UNITEX_HAVE_##X == 1))
 /* ************************************************************************** */
 /**
  * @brief  Tests if a macro prefixed by HAS_ or UNITEX_HAS_ is defined
@@ -110,34 +62,9 @@
  *  UNITEX_HAS(kFoo)
  * @endcode
  */
-#define UNITEX_HAS(X)                        \
-            (defined(HAS_##X)              ||\
-             defined(UNITEX_HAS_##X))
-/* ************************************************************************** */
-/**
- * @brief  Tests if a macro prefixed by HAS_ or UNITEX_HAS_ is defined and set
- *
- * @code{.cpp}
- *  // true if HAS_kFoo or UNITEX_HAS_kFoo are defined and set
- *  UNITEX_HAS_SET(kFoo)
- * @endcode
- */
-#define UNITEX_HAS_SET(X)                                    \
-            ((defined(HAS_##X)        && (HAS_##X))        ||\
-             (defined(UNITEX_HAS_##X) && (UNITEX_HAS_##X)))
-/* ************************************************************************** */
-/**
- * @brief  Tests if a macro prefixed by HAS_ or UNITEX_HAS_ is defined and
- *         unset
- *
- * @code{.cpp}
- *  // true if HAS_kFoo or UNITEX_HAS_kFoo are defined and unset
- *  UNITEX_HAS_UNSET(kFoo)
- * @endcode
- */
-#define UNITEX_HAS_UNSET(X)                                   \
-            ((defined(HAS_##X)        && !(HAS_##X))        ||\
-             (defined(UNITEX_HAS_##X) && !(UNITEX_HAS_##X)))
+#define UNITEX_HAS(X)                 \
+            ((HAS_##X)              ||\
+             (UNITEX_HAS_##X) == 1)
 /* ************************************************************************** */
 /**
  * @brief  Tests if a macro prefixed by USE_ or UNITEX_USE_ is defined and
@@ -148,8 +75,8 @@
  *  UNITEX_USE(BOOST_THREADS)
  * @endcode
  */
-#define UNITEX_USE(X)                                        \
-            ((defined(USE_##X)        && (USE_##X))        ||\
-             (defined(UNITEX_USE_##X) && (UNITEX_USE_##X)))
+#define UNITEX_USE(X)                 \
+            ((USE_##X)              ||\
+             (UNITEX_USE_##X) == 1)
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_PREPROCESSOR_TEST_H_                         // NOLINT

@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -234,7 +234,7 @@ static void push_output_string(struct fst2txt_parameters* p, unichar s[]) {
             unichar name[100];
             int L = 0;
             i++;
-            while (is_variable_char(s[i])) {
+            while (u_is_identifier(s[i])) {
                 name[L++] = s[i++];
             }
             name[L] = '\0';
@@ -636,17 +636,17 @@ static void scan_graph(
     if (is_final_state(current_state)) {
 
         // if we are in a final state
-        p->stack->stack[p->stack->stack_pointer + 1] = '\0';
+        p->stack->buffer[p->stack->top + 1] = '\0';
         if (n_graph == 0) { // in main graph
             if (pos >= p->input_length/*sommet>u_strlen(output)*/) {
                 // and if the recognized input is longer than the current one, it replaces it
-                u_strcpy(p->output, p->stack->stack);
+                u_strcpy(p->output, p->stack->buffer);
                 p->input_length = (pos);
                 vector_int_copy(p->insertions, p->current_insertions, p->fst2txt_abstract_allocator);
             }
         } else { // in a subgraph
             (*match_list) = insert_if_absent(pos, -1, -1, (*match_list),
-                    p->stack->stack_pointer + 1, p->stack->stack, p->variables,
+                    p->stack->top + 1, p->stack->buffer, p->variables,
                     NULL, NULL, -1, -1, NULL, -1, p->current_insertions,-1,
                     &p->pa);
         }
@@ -657,7 +657,7 @@ static void scan_graph(
     /* The same, but tolerant if there is a remaining space */
     int end_of_text2 = pos + p->current_origin + 1 == p->text_buffer->size
             && p->buffer[pos + p->current_origin] == ' ';
-    int SOMMET = p->stack->stack_pointer + 1;
+    int SOMMET = p->stack->top + 1;
     int pos2;
     /* If there are some letter sequence transitions like %hello, we process them */
     if (!end_of_text && p->token_tree[e]->transition_array != NULL) {
@@ -697,7 +697,7 @@ static void scan_graph(
                     + p->current_origin], p->alphabet)))) {
                 // we proceed only if we have exactly read the 'token' sequence
                 // in both modes MERGE and REPLACE, we process the output if any
-                int SOMMET2 = p->stack->stack_pointer;
+                int SOMMET2 = p->stack->top;
                 Transition* RES = get_matching_tags(token, p->token_tree[e],
                         p->alphabet,p->fst2txt_abstract_allocator);
                 Transition* TMP;
@@ -712,7 +712,7 @@ static void scan_graph(
                     }
                 }
                 while (RES != NULL) {
-                    p->stack->stack_pointer = SOMMET2;
+                    p->stack->top = SOMMET2;
                     Fst2Tag etiq = p->fst2->tags[RES->tag_number];
                     old_nb_insert = backup(p->current_insertions);
                     emit_output(p, etiq->output, start_pos_);
@@ -741,15 +741,15 @@ static void scan_graph(
 
     Transition* t = current_state->transitions;
     while (t != NULL) {
-        p->stack->stack_pointer = SOMMET - 1;
+        p->stack->top = SOMMET - 1;
         // we process the transition of the current state
         int n_etiq = t->tag_number;
         if (n_etiq < 0) {
             // case of a sub-graph
             struct parsing_info* liste = NULL;
             unichar* pile_old;
-            p->stack->stack[p->stack->stack_pointer + 1] = '\0';
-            pile_old = u_strdup(p->stack->stack);
+            p->stack->buffer[p->stack->top + 1] = '\0';
+            pile_old = u_strdup(p->stack->buffer);
             vector_int* old_insertions = vector_int_dup(p->current_insertions, p->pa.prv_alloc_vector_int_inside_token);
             scan_graph((((unsigned) n_etiq) - 1),
                     p->fst2->initial_states[-n_etiq], pos, depth, &liste,
@@ -757,8 +757,8 @@ static void scan_graph(
             free_vector_int(p->current_insertions, p->pa.prv_alloc_vector_int_inside_token);
             p->current_insertions = NULL;
             while (liste != NULL) {
-                p->stack->stack_pointer = liste->stack_pointer - 1;
-                u_strcpy(p->stack->stack, liste->stack);
+                p->stack->top = liste->stack_pointer - 1;
+                u_strcpy(p->stack->buffer, liste->stack);
                 p->current_insertions = liste->insertions;
                 liste->insertions = NULL;
                 scan_graph(n_graph, t->state_number, liste->pos_in_tokens, depth,
@@ -769,10 +769,10 @@ static void scan_graph(
                 l_tmp->next = NULL; // in order not to free the next item
                 free_parsing_info(l_tmp, &p->pa);
             }
-            u_strcpy(p->stack->stack, pile_old);
+            u_strcpy(p->stack->buffer, pile_old);
             p->current_insertions = old_insertions;
             free(pile_old);
-            p->stack->stack_pointer = SOMMET - 1;
+            p->stack->top = SOMMET - 1;
         } else {
             // case of a normal tag
             Fst2Tag etiq = p->fst2->tags[n_etiq];

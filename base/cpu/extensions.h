@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -75,8 +75,7 @@
  * @see    UNITEX_HAS_CPU_EXTENSION_AES
  */
 #define UNITEX_HAS_CPU_EXTENSION(ExtensionName)\
-        (defined(UNITEX_HAS_CPU_EXTENSION_##ExtensionName) &&\
-                 UNITEX_HAS_CPU_EXTENSION_##ExtensionName)
+        (UNITEX_HAS_CPU_EXTENSION_##ExtensionName == 1)
 
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_CPU_EXTENSIONS_H_                            // NOLINT

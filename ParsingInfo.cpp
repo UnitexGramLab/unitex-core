@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,7 +35,7 @@ size_t get_prefered_allocator_item_size_for_nb_variable(int nbvar)
            AroundAllocAlign(sizeof(unichar)*(SIZE_RESERVE_NB_UNICHAR_STACK_INSAMEALLOC+1));
 }
 
-size_t get_prefered_allocator_item_size_for_variable(Variables* v)
+size_t get_prefered_allocator_item_size_for_variable(InputVariables* v)
 {
     return AroundAllocAlign(sizeof(struct parsing_info)) +
            AroundAllocAlign(get_variable_backup_size_in_byte(v)) +
@@ -78,7 +78,7 @@ void update_parsing_info_stack(struct parsing_info*list,const unichar* new_stack
  * Allocates, initializes and returns a new parsing info structure.
  */
 struct parsing_info* new_parsing_info(int pos_in_tokens,int pos_in_chars,int state,int stack_pointer,unichar* stack,
-                                      Variables* v,OutputVariables* output_var,struct dela_entry* dic_entry,
+                                      InputVariables* v,OutputVariables* output_var,struct dela_entry* dic_entry,
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_int_jamo,
                                       vector_int* insertions,int weight,
@@ -188,7 +188,7 @@ while (*list!=NULL) {
  * with same end position of match.
  */
 struct parsing_info* insert_if_absent(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,int stack_pointer,
-                                      unichar* stack,Variables* v,OutputVariables* output_var,
+                                      unichar* stack,InputVariables* v,OutputVariables* output_var,
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_in_jamo,
                                       vector_int* insertions,
@@ -252,7 +252,7 @@ return list;
  * Inserts an element in the given information list only if there is no element
  * with position and same stack. */
 struct parsing_info* insert_if_different(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,int stack_pointer,
-                                         unichar* stack,Variables* v,OutputVariables* output_var,
+                                         unichar* stack,InputVariables* v,OutputVariables* output_var,
                                          struct dic_variable* v2,
                                          int left_ctx_shift,int left_ctx_base,
                                          unichar* jamo,int pos_in_jamo,
@@ -341,7 +341,7 @@ return list;
 // Experimental no recursive code. To be check for reliability
 
 struct parsing_info* insert_if_absent(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,int stack_pointer,
-                                      unichar* stack,Variables* v,OutputVariables* output_var,
+                                      unichar* stack,InputVariables* v,OutputVariables* output_var,
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_in_jamo,
                                       vector_int* insertions,
@@ -414,7 +414,7 @@ return list;
 
 
 struct parsing_info* insert_if_different(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,int stack_pointer,
-                                         unichar* stack,Variables* v,OutputVariables* output_var,
+                                         unichar* stack,InputVariables* v,OutputVariables* output_var,
                                          struct dic_variable* v2,
                                          int left_ctx_shift,int left_ctx_base,
                                          unichar* jamo,int pos_in_jamo,

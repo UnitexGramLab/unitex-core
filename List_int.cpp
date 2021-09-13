@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -83,7 +83,7 @@ free_list_int(head,STANDARD_ALLOCATOR);
  */
 struct list_int* sorted_insert(int value,struct list_int* l,Abstract_allocator prv_alloc) {
 
-register struct list_int* tmp;
+struct list_int* tmp;
 struct list_int* tmp2;
 struct list_int* last = NULL;
 

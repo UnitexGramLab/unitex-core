@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -71,7 +71,7 @@ struct fst2txt_parameters {
     * we cache it here, in order to avoid problems if the fst2 is freed
     * before 'token_tree'. */
    int n_token_trees;
-   Variables* variables;
+   InputVariables* variables;
    /* Here are the text buffer and the current origin in it */
    struct buffer* text_buffer;
    int current_origin;

@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -86,16 +86,17 @@ const unichar STRING_EMPTY[] = { 0 };
 
 static inline int string_contains_unichar(const unichar* s,unichar c) {
 for (;;) {
-    if ((*(s)) == c) return 1;
     if ((*(s)) == 0) return 0;
-    if ((*(s + 1)) == c) return 1;
+    if ((*(s)) == c) return 1;
     if ((*(s + 1)) == 0) return 0;
-    if ((*(s + 2)) == c) return 1;
+    if ((*(s + 1)) == c) return 1;
     if ((*(s + 2)) == 0) return 0;
-    if ((*(s + 3)) == c) return 1;
+    if ((*(s + 2)) == c) return 1;
     if ((*(s + 3)) == 0) return 0;
+    if ((*(s + 3)) == c) return 1;
     s += 4;
 }
+ return 0;
 }
 
 

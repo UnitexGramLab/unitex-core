@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2019 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,7 @@
 #define UNITEX_VERSION_AUTHOR              "The Unitex/GramLab Authors"
 #define UNITEX_VERSION_COMPANY             "Universite Paris-Est Marne-la-Vallee"
 #define UNITEX_VERSION_CONTACT             "unitex-devel@univ-mlv.fr"
-#define UNITEX_VERSION_COPYRIGHT           "Copyright (C) 2001-2020"
+#define UNITEX_VERSION_COPYRIGHT           "Copyright (C) 2001-2021"
 #define UNITEX_VERSION_DESCRIPTION_SHORT   "corpus processing suite"
 #define UNITEX_VERSION_DESCRIPTION         "the open source, cross-platform, multilingual, lexicon- and grammar-based corpus processing suite"
 #define UNITEX_VERSION_LICENSE             "LGPL-2.1"
@@ -46,12 +46,12 @@
 #define UNITEX_VERSION_URL_ISSUES          "https://github.com/UnitexGramLab/unitex-core/issues/new"
 #define UNITEX_VERSION_URL_REPOSITORY      "https://github.com/UnitexGramLab/unitex-core"
 /* ************************************************************************** */
-#define UNITEX_VERSION_RELEASE             "Unitex/GramLab 3.3alpha"
-#define UNITEX_VERSION_STRING              "3.3alpha"
-#define UNITEX_VERSION_SEMVER              "3.3.0-alpha"
+#define UNITEX_VERSION_RELEASE             "Unitex/GramLab 4.0"
+#define UNITEX_VERSION_STRING              "4.0"
+#define UNITEX_VERSION_SEMVER              "4.0.0"
 /* ************************************************************************** */
-#define UNITEX_VERSION_MAJOR_NUMBER        3
-#define UNITEX_VERSION_MINOR_NUMBER        3
+#define UNITEX_VERSION_MAJOR_NUMBER        4
+#define UNITEX_VERSION_MINOR_NUMBER        0
 #define UNITEX_VERSION_REVISION_NUMBER     0
 #define UNITEX_VERSION_SUFFIX              "alpha"
 #define UNITEX_VERSION_TYPE                "unstable"

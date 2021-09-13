@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,24 @@
 /* ************************************************************************** */
 #ifndef UNITEX_BASE_DEBUG_CHECK_H_                                  // NOLINT
 #define UNITEX_BASE_DEBUG_CHECK_H_                                  // NOLINT
+/* ************************************************************************** */
+// Project's .h files              (try to order the includes alphabetically)
+#include "base/compiler/version.h"  // UNITEX_COMPILER_IS*
+/* ************************************************************************** */
+/**
+ * @brief    If DEBUG is undefined and _DEBUG is enabled, then we force DEBUG
+ *           to be also defined and enabled
+ *
+ * @details  _DEBUG is defined whether /LDd, /MDd, or /MTd are passed to
+ *           compiler (MSVC)
+ */
+#if UNITEX_COMPILER_IS(MSVC)
+# if defined(_DEBUG) && _DEBUG
+#  if !defined(DEBUG) || !DEBUG
+#   define DEBUG _DEBUG
+#  endif
+# endif
+#endif
 /* ************************************************************************** */
 /**
  * @brief    Sanity check DEBUG consistency over NDEBUG and _DEBUG

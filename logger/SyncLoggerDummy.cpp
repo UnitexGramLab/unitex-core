@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,8 +29,10 @@
  */
 
 
-
-
+#include "base/macro/helper/test.h"  // UNITEX_HAVE, UNITEX_USE
+#include "base/os/os.h"              // UNITEX_OS_IS
+/* ************************************************************************** */
+#if UNITEX_USE(SINGLE_THREADED)
 #include "Unicode.h"
 #include "AbstractCallbackFuncModifier.h"
 #include "SyncLogger.h"
@@ -130,3 +132,5 @@ UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread()
 
 } // namespace logger
 } // namespace unitex
+/* ************************************************************************** */
+#endif  // UNITEX_USE(SINGLE_THREADED)

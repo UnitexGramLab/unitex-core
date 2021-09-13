@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -214,6 +214,7 @@ char* to_native_path_separators(char* filename);
 int get_real_path(const char* filename, char* resolved_name);
 UnitexFileType get_file_type(const char* filename);
 void get_snt_path(const char*,char*);
+int get_exec_path(char* exec_path);
 const char* filename_without_path(const char* filename);
 void remove_path(const char*,char*);
 void remove_path_and_extension(const char*,char*);

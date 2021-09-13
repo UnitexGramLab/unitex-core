@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,6 +37,7 @@
 #include "CompressedDic.h"
 #include "Contexts.h"
 #include "DebugMode.h"
+#include "MorphologicalLocate.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -53,8 +54,13 @@ namespace unitex {
 static void morphological_locate(/*int, */int, int, int, /*int, */struct parsing_info**, int,
         struct list_context*, struct locate_parameters*,
         unichar*, int, unichar*);
+
+static void core_morphological_locate(/*int, */int, int, int, /*int, */struct parsing_info**, int,
+        struct list_context*, struct locate_parameters*,
+        unichar*, int, unichar*);
+
 int input_is_token(Fst2Tag tag);
-static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
+void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
         int pos_in_token, struct parsing_info* *matches,
         struct pattern* pattern, int save_dela_entry, unichar* jamo,
         int pos_in_jamo);
@@ -64,7 +70,7 @@ int is_entry_compatible_with_pattern(const struct dela_entry* entry,
 /**
  * Stores in 'content' the string corresponding to the given range.
  */
-static void get_content(unichar* content, struct locate_parameters* p, int pos,
+void get_content(unichar* content, struct locate_parameters* p, int pos,
         int pos_in_token, int pos2, int pos_in_token2) {
     int i = 0;
     unichar* current_token =
@@ -94,7 +100,7 @@ static int is_morpho_variable_output(unichar* s, unichar* var_name) {
         return 0;
     int i, j = 0;
     for (i = 1; s[i] != '$' && s[i] != '\0'; i++) {
-        if (!is_variable_char(s[i]))
+        if (!u_is_identifier(s[i]))
             return 0;
         var_name[j++] = s[i];
     }
@@ -125,7 +131,7 @@ static int is_debug_mode_morpho_variable_output(unichar* s, unichar* var_name) {
     for (i = 2; s[i] != '$' &&
                 s[i] != DEBUG_INFO_COORD_MARK &&
 				s[i] != '\0'; ++i) {
-        if (!is_variable_char(s[i])) return 0;
+        if (!u_is_identifier(s[i])) return 0;
         var_name[j++] = s[i];
     }
 
@@ -172,9 +178,9 @@ static int push_debug_mode_tag_without_output(unichar* s,
 	if (s[i] != DEBUG_INFO_COORD_MARK) return 0;
 
 	// push OUTPUT_MARK
-	push_output_char(p->stack, DEBUG_INFO_OUTPUT_MARK);
+	push_output_char(p->literal_output, DEBUG_INFO_OUTPUT_MARK);
 	// push COORD_MARK graph:box:line INPUT_MARK input END_MARK
-	push_output_string(p->stack, s+i);
+	push_output_string(p->literal_output, s+i);
 
 	return 1;
 }
@@ -266,7 +272,41 @@ static void update_last_position(struct locate_parameters* p, int pos) {
 /**
  * This is the core function of the morphological mode.
  */
-static void morphological_locate(/*int graph_depth, */ /* 0 means that we are in the top level graph */
+static void morphological_locate(int current_state_index,
+                                    int pos_in_tokens,
+                                    int pos_in_chars,
+                                    struct parsing_info** matches,
+                                    int n_matches,
+                                    struct list_context* ctx,
+                                    struct locate_parameters* p,
+                                    unichar* jamo,
+                                    int pos_in_jamo,
+                                    unichar* content_buffer) {
+  // put the arguments of the locate call on the global environment
+//  p->elg->set_morphological_locate_call_params(
+//      current_state_index, pos_in_tokens, pos_in_chars, matches,
+//      n_matches, ctx, p, jamo, pos_in_jamo, content_buffer);
+
+  // save the minimal unit of analysis
+  LocateMode locate_mode = p->locate_mode;
+
+  // call the morphological locate
+  core_morphological_locate(
+      current_state_index, pos_in_tokens, pos_in_chars, matches,
+      n_matches, ctx, p, jamo, pos_in_jamo, content_buffer);
+
+  // restore the minimal unit of analysis
+  p->locate_mode = locate_mode;
+
+//  // add the current state to globals
+//  p->elg->set_morphological_locate_call_params(
+//      current_state_index, pos_in_tokens, pos_in_chars, matches,
+//      n_matches, ctx, p, jamo, pos_in_jamo, content_buffer);
+}
+/**
+ * This is the core function of the morphological mode.
+ */
+static void core_morphological_locate(/*int graph_depth, */ /* 0 means that we are in the top level graph */
 int current_state_index, /* current state in the grammar */
 int pos_in_tokens, /* position in the token buffer, relative to the current origin */
 int pos_in_chars, /* position in the token in characters */
@@ -282,109 +322,45 @@ unichar* jamo, int pos_in_jamo,
 unichar* content_buffer /* reusable unichar 4096 buffer for content */
 //,variable_backup_memory_reserve* backup_reserve
 ) {
+    // the minimal unit of analysis is the character
+    p->locate_mode = MORPHOLOGICAL_MODE;
 
-    int old_weight=p->weight;
+    // set the current state
+    OptimizedFst2State current_state = p->optimized_states[current_state_index];
+
     if ((p->counting_step.count_cancel_trying) == 0) {
+      if (p->is_in_cancel_state != 0) {
+        return;
+      }
 
-        if (p->is_in_cancel_state != 0)
-            return;
-
-        if (p->is_in_trace_state == 0) {
-
-            if ((p->max_count_call) > 0) {
-                if ((p->counting_step.count_call) >= (p->max_count_call)) {
-                    p->counting_step.count_cancel_trying = 0;
-                    p->is_in_cancel_state = 1;
-                    return;
-                }
-            }
-
-            p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
-            if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
-                    +COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-                p->counting_step.count_cancel_trying = (p->max_count_call) - (p->counting_step.count_call);
-            }
-
-            if (is_cancelling_requested() != 0) {
-                p->counting_step.count_cancel_trying = 0;
-                p->is_in_cancel_state = 2;
-                return;
-            }
-            (p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
+      if ((p->max_count_call) > 0) {
+        if ((p->counting_step.count_call) >= (p->max_count_call)) {
+          p->counting_step.count_cancel_trying = 0;
+          p->is_in_cancel_state = 1;
+          return;
         }
-        else
-        {
-            if ((p->fnc_locate_trace_step != NULL)) {
-                locate_trace_info* lti;
-                lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->al.prv_alloc_trace_info_allocator);
-                if (lti==NULL) {
-                    fatal_alloc_error("morphological_locate");
-                }
-                lti->size_struct_locate_trace_info = (int)sizeof(locate_trace_info);
-                lti->is_on_morphlogical = 1;
+      }
 
-                lti->pos_in_tokens=pos_in_tokens;
+      p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
+      if (((p->max_count_call) > 0)
+          && (((p->counting_step.count_call) + COUNT_CANCEL_TRYING_INIT_CONST)
+              > (p->max_count_call))) {
+        p->counting_step.count_cancel_trying = (p->max_count_call)
+            - (p->counting_step.count_call);
+      }
 
-                lti->current_state=NULL;
-
-                lti->current_state_index=current_state_index;
-                lti->pos_in_chars=pos_in_chars;
-
-                lti->matches=matches;
-                lti->n_matches=n_matches;
-                lti->ctx=ctx;
-                lti->p=p;
-
-                lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
-
-                lti->jamo=jamo;
-                lti->pos_in_jamo=pos_in_jamo;
-
-                p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(lti,p->private_param_locate_trace);
-                free_cb(lti,p->al.prv_alloc_trace_info_allocator);
-            }
-
-            if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {
-                if ((p->max_count_call) > 0) {
-                    if ((p->counting_step.count_call) >= (p->max_count_call)) {
-                        p->counting_step.count_cancel_trying = 0;
-                        p->is_in_cancel_state = 1;
-                        return;
-                    }
-                }
-
-                p->counting_step_count_cancel_trying_real_in_debug_or_trace = COUNT_CANCEL_TRYING_INIT_CONST;
-                if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
-                        +COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-                    p->counting_step_count_cancel_trying_real_in_debug_or_trace = (p->max_count_call) - (p->counting_step.count_call);
-                }
-
-                if (is_cancelling_requested() != 0) {
-                    p->counting_step.count_cancel_trying = 0;
-                    p->is_in_cancel_state = 2;
-                    return;
-                }
-                (p->counting_step.count_call) += (p->counting_step_count_cancel_trying_real_in_debug_or_trace);
-            }
-
-            p->counting_step_count_cancel_trying_real_in_debug_or_trace --;
-            //  prepare now to be at 0 after the "--" (we don't want another test for performance */
-            (p->counting_step.count_cancel_trying)++;
-        }
+      if (is_cancelling_requested() != 0) {
+        p->counting_step.count_cancel_trying = 0;
+        p->is_in_cancel_state = 2;
+        return;
+      }
+      (p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
     }
+
     (p->counting_step.count_cancel_trying)--;
 
-
-    OptimizedFst2State current_state = p->optimized_states[current_state_index];
-    Fst2State current_state_old = p->fst2->states[current_state_index];
-    int token;
-    Transition* t;
-    int stack_top = p->stack->stack_pointer;
-    int captured_chars;
-    /* The following static variable holds the number of matches at
-     * one position in text. */
-
     p->explore_depth ++ ;
+
     /*
     if (depth == 0) {
         // We reset if this is first call to 'locate' from a given position in the text
@@ -399,6 +375,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         p->explore_depth -- ;
         return;
     }
+
     if ((p->token_error_ctx.n_matches_at_token_pos__morphological_locate)
             > p->max_matches_at_token_pos) {
         /* If there are too much matches from the current origin in the text */
@@ -408,6 +385,27 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         p->explore_depth -- ;
         return;
     }
+
+    //      p->lti->pos_in_tokens=pos_in_tokens;
+    //
+    //      p->lti->current_state=NULL;
+    //
+    //      p->lti->current_state_index=current_state_index;
+    //      p->lti->pos_in_chars=pos_in_chars;
+    //
+    //      p->lti->matches=matches;
+    //      p->lti->n_matches=n_matches;
+    //      p->lti->ctx=ctx;
+    //
+    //      p->lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
+    //
+    //      p->lti->jamo=jamo;
+    //      p->lti->pos_in_jamo=pos_in_jamo;
+
+    int old_weight=p->weight;
+
+    int stack_top = p->literal_output->top;
+
     if (current_state->control & 1) {
         /* If we are in a final state... */
         /* In we are in the top level graph, it's an error, since we are not supposed
@@ -429,17 +427,17 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                 /* If everything is fine, we add this match to the match list of the
                  * current graph level */
                 n_matches++;
-                p->stack->stack[stack_top + 1] = '\0';
+                p->literal_output->buffer[stack_top + 1] = '\0';
                 if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
                     (*matches) = insert_if_different(pos_in_tokens, pos_in_chars, -1,
-                            (*matches), p->stack->stack_pointer,
-                            &(p->stack->stack[p->stack_base + 1]),
+                            (*matches), p->literal_output->top,
+                            &(p->literal_output->buffer[p->stack_base + 1]),
                             p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
                             pos_in_jamo, NULL, p->weight,&p->al.pa);
                 } else {
                     (*matches) = insert_if_absent(pos_in_tokens, pos_in_chars, -1,
-                            (*matches), p->stack->stack_pointer,
-                            &(p->stack->stack[p->stack_base + 1]),
+                            (*matches), p->literal_output->top,
+                            &(p->literal_output->buffer[p->stack_base + 1]),
                             p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
                             pos_in_jamo, NULL, p->weight,&p->al.pa);
                 }
@@ -447,22 +445,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         }
     }
 
-    /* If we have reached the end of the token buffer, we indicate it by setting
-     * the current tokens to -1 */
-    if (pos_in_tokens + p->current_origin >= p->buffer_size) {
-        token = -1;
-    } else {
-        token = p->buffer[pos_in_tokens + p->current_origin];
-    }
-    unichar* current_token;
-    int current_token_length = 0;
-    if (token == -1 || token == p->STOP) {
-        current_token = NULL;
-        jamo = NULL;
-    } else {
-        current_token = p->tokens->value[p->buffer[p->current_origin + pos_in_tokens]];
-        current_token_length = u_strlen(current_token);
-    }
+    Transition* t;
 
     /**
      * SUBGRAPHS
@@ -512,7 +495,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
             }
             while (t != NULL) {
                 struct parsing_info* L = NULL;
-                p->stack_base = p->stack->stack_pointer;
+                p->stack_base = p->literal_output->top;
 
                 p->graph_depth ++ ;
 
@@ -537,9 +520,9 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                     do {
                         /* We restore the settings that we had at the end of the subgraph exploration */
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            u_strcpy(&(p->stack->stack[stack_top + 1]),
+                            u_strcpy(&(p->literal_output->buffer[stack_top + 1]),
                                     L->stack);
-                            p->stack->stack_pointer = L->stack_pointer;
+                            p->literal_output->top = L->stack_pointer;
                             p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
                             if (p->nb_output_variables != 0) {
                                 install_output_variable_backup(p->output_variables,L->output_variable_backup);
@@ -562,7 +545,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                 matches, n_matches, ctx, p,
                                 L->jamo, L->pos_in_jamo, content_buffer);
                         clear_dic_variable_list(&(p->dic_variables));
-                        p->stack->stack_pointer = stack_top;
+                        p->literal_output->top = stack_top;
                         L = L->next;
                     } while (L != NULL);
                     /* We free all subgraph matches */
@@ -573,7 +556,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         } while ((graph_call_list = graph_call_list->next) != NULL);
         /* Finally, we have to restore the stack and other backup stuff */
         p->weight=old_weight;
-        p->stack->stack_pointer = stack_top;
+        p->literal_output->top = stack_top;
         p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
         if (p->nb_output_variables != 0) {
             install_output_variable_backup(p->output_variables,output_variable_backup);
@@ -602,7 +585,24 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
             }
     } /* End of processing subgraphs */
 
-
+    int token;
+    int captured_chars;
+    /* If we have reached the end of the token buffer, we indicate it by setting
+     * the current tokens to -1 */
+    if (pos_in_tokens + p->current_origin >= p->buffer_size) {
+        token = -1;
+    } else {
+        token = p->buffer[pos_in_tokens + p->current_origin];
+    }
+    unichar* current_token;
+    int current_token_length = 0;
+    if (token == -1 || token == p->STOP) {
+        current_token = NULL;
+        jamo = NULL;
+    } else {
+        current_token = p->tokens->value[p->buffer[p->current_origin + pos_in_tokens]];
+        current_token_length = u_strlen(current_token);
+    }
 
     /* This variable will be used to store the results provided by <DIC>. It
      * is useful to cache the exploration of the morphological dictionaries,
@@ -621,9 +621,6 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         t = meta_list->transition;
         int match_one_letter;
         while (t != NULL) {
-            if (t->tag_number==203 && t->state_number==4000) {
-                //error("Looking at tag 203 for i=%d\n",i);
-            }
             match_one_letter = 0;
             switch (meta_list->meta) {
 
@@ -633,16 +630,18 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                 /* We could have an output associated to an epsilon or a #, so we handle this case */
                 captured_chars=0;
                 if (p->output_policy != IGNORE_OUTPUTS) {
-                    if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
+                    extended_output_render r;
+                    if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&r)) {
                         break;
                     }
+                    append_literal_output(r.render(0), p, &captured_chars);
                 }
                 morphological_locate(/*graph_depth,*/
                         t->state_number, pos_in_tokens, pos_in_chars,
                         matches, n_matches, ctx, p,
                         jamo, pos_in_jamo, content_buffer);
                 p->weight=old_weight;
-                p->stack->stack_pointer = stack_top;
+                p->literal_output->top = stack_top;
                 remove_chars_from_output_variables(p->output_variables,captured_chars);
                 break;
 
@@ -658,7 +657,6 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                 break;
 
             case META_LETTER:
-            case META_LETTRE:
             case META_MOT:
             case META_WORD:
             /* In morphological mode, this tag matches a letter, as defined in the alphabet file */
@@ -730,7 +728,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                         filter_number,
                                         p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER));
                         if (!morpho_filter_OK) {
-                            p->stack->stack_pointer = stack_top;
+                            p->literal_output->top = stack_top;
                             L2 = L2->next;
                             continue;
                         }
@@ -743,9 +741,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         captured_chars=0;
                         if(p->output_policy != IGNORE_OUTPUTS) {
                           if (!save_dic_entry) {
-                            if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&r)) {
                               break;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                           } else if (p->debug & save_dic_entry) {
                             if (!push_debug_mode_tag_without_output(p->tags[t->tag_number]->output,p)) {
                               break;
@@ -754,7 +754,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         }
 
                         if (p->output_policy == MERGE_OUTPUTS) {
-                            push_input_string(p->stack, content1,
+                            push_input_string(p->literal_output, content1,
                                     p->protect_dic_chars);
                         }
                         unichar* reached_token =
@@ -788,7 +788,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                             set_dic_variable(var_name, old_value,
                                     &(p->dic_variables),0);
                         }
-                        p->stack->stack_pointer = stack_top;
+                        p->literal_output->top = stack_top;
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
                         L2 = L2->next;
                     } while (L2 != NULL);
@@ -913,19 +913,19 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                  * then we have a match. We note the state number that corresponds to the state
                  * that follows the current $> tag transition, so that we know where to continue
                  * the exploration in the 'enter_morphological_mode' function. */
-                p->stack->stack[stack_top + 1] = '\0';
+                p->literal_output->buffer[stack_top + 1] = '\0';
                 if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
                     (*matches) = insert_if_different(pos_in_tokens, pos_in_chars,
                             t->state_number, (*matches),
-                            p->stack->stack_pointer,
-                            &(p->stack->stack[p->stack_base + 1]),
+                            p->literal_output->top,
+                            &(p->literal_output->buffer[p->stack_base + 1]),
                             p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
                             pos_in_jamo, NULL, p->weight,&p->al.pa);
                 } else {
                     (*matches) = insert_if_absent(pos_in_tokens, pos_in_chars,
                             t->state_number, (*matches),
-                            p->stack->stack_pointer,
-                            &(p->stack->stack[p->stack_base + 1]),
+                            p->literal_output->top,
+                            &(p->literal_output->buffer[p->stack_base + 1]),
                             p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
                             pos_in_jamo, NULL, p->weight,&p->al.pa);
                 }
@@ -937,13 +937,15 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                  * to matching one letter */
                 captured_chars=0;
                 if (p->output_policy != IGNORE_OUTPUTS) {
-                    if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
+                    extended_output_render r;
+                    if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&r)) {
                         goto next;
                     }
+                    append_literal_output(r.render(0), p, &captured_chars);
                 }
                 if (p->output_policy == MERGE_OUTPUTS) {
                     /* If needed, we push the character that was matched */
-                    push_input_char(p->stack, current_token[pos_in_chars],
+                    push_input_char(p->literal_output, current_token[pos_in_chars],
                             p->protect_dic_chars);
                 }
                 int new_pos;
@@ -1001,7 +1003,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         p, new_jamo, new_pos_in_jamo,
                         content_buffer);
                 p->weight=old_weight;
-                p->stack->stack_pointer = stack_top;
+                p->literal_output->top = stack_top;
                 remove_chars_from_output_variables(p->output_variables,captured_chars);
             }
             next: t = t->next;
@@ -1029,7 +1031,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         p->weight=old_weight;
     unset_output_variable_pending(p->output_variables,variable_list->variable_number);
     swap_output_variable_content(p->output_variables, variable_list->variable_number, recycle_Ustring);
-        p->stack->stack_pointer = stack_top;
+        p->literal_output->top = stack_top;
         variable_list=variable_list->next;
     }
 
@@ -1044,7 +1046,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                 p, jamo, pos_in_jamo,
                 content_buffer);
         p->weight=old_weight;
-        p->stack->stack_pointer = stack_top;
+        p->literal_output->top = stack_top;
         set_output_variable_pending(p->output_variables,variable_list->variable_number);
         variable_list=variable_list->next;
     }
@@ -1067,7 +1069,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         p, jamo, pos_in_jamo,
                         content_buffer);
         p->weight=old_weight;
-        p->stack->stack_pointer = stack_top;
+        p->literal_output->top = stack_top;
         if (ctx == NULL) {
             /* We do not restore previous value if we are inside a context, in order
              * to allow extracting things from contexts (see the
@@ -1110,7 +1112,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         p, jamo, pos_in_jamo,
                         content_buffer);
         p->weight=old_weight;
-        p->stack->stack_pointer = stack_top;
+        p->literal_output->top = stack_top;
         if (ctx == NULL) {
             /* We do not restore previous value if we are inside a context, in order
              * to allow extracting things from contexts (see the
@@ -1142,7 +1144,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
     /**
      * TOKENS
      */
-    Transition* trans = current_state_old->transitions;
+    Transition* trans = p->fst2->states[current_state_index]->transitions;
     while (trans != NULL) {
         if (trans->tag_number < 0) {
             /* We don't take subgraph transitions into account */
@@ -1193,9 +1195,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         /* If we can match the tag's token, we process the output, if we have to */
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_output(tag->output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(tag->output,p,&r)) {
                                 continue;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
                             fatal_error(
@@ -1208,7 +1212,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                 new_pos_in_jamo, content_buffer);
                         p->weight=old_weight;
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
-                        p->stack->stack_pointer = stack_top;
+                        p->literal_output->top = stack_top;
                     }
                     /* End of KOREAN token matching */
                 } else {
@@ -1227,12 +1231,14 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         /* If we can match the tag's token, we process the output, if we have to */
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_output(tag->output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(tag->output,p,&r)) {
                                 continue;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
-                            push_input_substring(p->stack, current_token
+                            push_input_substring(p->literal_output, current_token
                                     + pos_in_chars, prefix_length,
                                     p->protect_dic_chars);
                         }
@@ -1251,7 +1257,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                 n_matches, ctx, p, jamo,
                                 pos_in_jamo, content_buffer);
                         p->weight=old_weight;
-                        p->stack->stack_pointer = stack_top;
+                        p->literal_output->top = stack_top;
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
                     } else {
                         /* No else here, because a grammar tag is not supposed to match a sequence that
@@ -1301,7 +1307,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         if (!is_entry_compatible_with_pattern(L->dic_entry,tag->pattern)) {
                             /* We take all <DIC> entries from the cache, and we compare them
                              * with the actual <X> pattern of the current tag */
-                            p->stack->stack_pointer = stack_top;
+                            p->literal_output->top = stack_top;
                             L = L->next;
                             continue;
                         }
@@ -1315,7 +1321,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                         filter_number,
                                         p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER));
                         if (!morpho_filter_OK) {
-                            p->stack->stack_pointer = stack_top;
+                            p->literal_output->top = stack_top;
                             L = L->next;
                             continue;
                         }
@@ -1327,9 +1333,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         captured_chars=0;
                         if(p->output_policy != IGNORE_OUTPUTS) {
                           if (!save_dic_entry) {
-                            if (!deal_with_output(tag->output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(tag->output,p,&r)) {
                               continue;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                           } else if (p->debug & save_dic_entry) {
                             if (!push_debug_mode_tag_without_output(tag->output,p)) {
                               continue;
@@ -1338,7 +1346,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         }
 
                         if (p->output_policy == MERGE_OUTPUTS) {
-                            push_input_string(p->stack, content2,
+                            push_input_string(p->literal_output, content2,
                                     p->protect_dic_chars);
                         }
                         unichar* reached_token =
@@ -1377,7 +1385,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                     &(p->dic_variables),0);
                         }
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
-                        p->stack->stack_pointer = stack_top;
+                        p->literal_output->top = stack_top;
                         L = L->next;
                     } while (L != NULL);
                     /* No free, because of the cache system
@@ -1412,7 +1420,7 @@ int state, /* current state in the grammar */
 int pos, /* position in the token buffer, relative to the current origin */
 //int depth, /* number of nested calls to 'locate' */
 struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
-int *n_matches, /* number of sequences that have matched. It may be different from
+struct locate_n_matches* n_matches, /* number of sequences that have matched. It may be different from
  * the length of the 'matches' list if a given sequence can be
  * matched in several ways. It is used to detect combinatory
  * explosions due to bad written grammars. */
@@ -1429,7 +1437,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
     int* var_backup = NULL;
     OutputVariablesBackup* output_variable_backup=NULL;
     int old_StackBase;
-    int stack_top = p->stack->stack_pointer;
+    int stack_top = p->literal_output->top;
     old_StackBase = p->stack_base;
     if (p->output_policy != IGNORE_OUTPUTS) {
         /* For better performance when ignoring outputs */
@@ -1439,7 +1447,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         }
     }
     struct parsing_info* L = NULL;
-    p->stack_base = p->stack->stack_pointer;
+    p->stack_base = p->literal_output->top;
     struct dic_variable* dic_variable_backup = NULL;
     if (p->dic_variables != NULL) {
         dic_variable_backup = clone_dic_variable_list(p->dic_variables);
@@ -1464,8 +1472,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         do {
             /* We restore the settings that we had at the end of the exploration in morphological mode */
             if (p->output_policy != IGNORE_OUTPUTS) {
-                u_strcpy(&(p->stack->stack[stack_top + 1]), L->stack);
-                p->stack->stack_pointer = L->stack_pointer;
+                u_strcpy(&(p->literal_output->buffer[stack_top + 1]), L->stack);
+                p->literal_output->top = L->stack_pointer;
                 install_variable_backup(p->input_variables, L->input_variable_backup);
                 if (p->nb_output_variables != 0) {
                     install_output_variable_backup(p->output_variables,L->output_variable_backup);
@@ -1515,7 +1523,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 
 
-            p->stack->stack_pointer = stack_top;
+            p->literal_output->top = stack_top;
             if (p->graph_depth == 0) {
                 /* If we are at the top graph level, we restore the variables */
                 if (p->output_policy != IGNORE_OUTPUTS) {
@@ -1534,7 +1542,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
     }
     /* Finally, we have to restore the stack and other backup stuff */
     p->weight=old_weight;
-    p->stack->stack_pointer = stack_top;
+    p->literal_output->top = stack_top;
     p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
     if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
         install_variable_backup(p->input_variables, var_backup);
@@ -2239,7 +2247,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
  * anything found in the dictionary will do. It is used to represent the <DIC>
  * pattern.
  */
-static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
+void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
         int pos_in_token, struct parsing_info* *matches,
         struct pattern* pattern, int save_dic_entry, unichar* jamo,
         int pos_in_jamo) {
@@ -2273,6 +2281,214 @@ static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
     free_Ustring(ustr);
     free_Ustring(line_buffer);
     free(buffer_line_buffer_inflected);
+}
+
+
+/**
+ * Tries to find something in the dictionary that match both text content and
+ * given pattern. This version of the function handles the all languages but Arabic.
+ */
+void explore_dic_in_morpho_mode_standard_with_token(
+        struct locate_parameters* p,
+        Dictionary* d,
+        int offset,
+        const unichar* current_token,
+        unichar* inflected,
+        int pos_in_current_token,
+        int pos_in_inflected,
+        struct parsing_info* *matches,
+        struct pattern* pattern,
+        int save_dic_entry,
+        unichar* jamo,
+        int pos_in_jamo,
+        Ustring *line_buffer,
+        Ustring* ustr,
+        int base) {
+
+int is_final_state;
+int n_transitions;
+int inf_number;
+int z=save_output(ustr);
+
+offset=read_dictionary_state(d,offset,&is_final_state,&n_transitions,&inf_number);
+
+  if (is_final_state) {
+    //error("\narriba!\n\n\n");
+    /* If this node is final, we get the INF line number */
+    inflected[pos_in_inflected] = '\0';
+    if (pattern == NULL && !save_dic_entry) {
+      /* If any word will do with no entry saving */
+      if (current_token[pos_in_current_token] == '\0') {
+        (*matches) = insert_morphological_match(-1,
+            pos_in_current_token, -1, (*matches), NULL, jamo,
+            pos_in_jamo, &p->al.pa);
+      }
+    } else {
+      /* If we have to check the pattern */
+
+
+      Abstract_allocator explore_dic_in_morpho_mode_standard_abstract_allocator=NULL;
+      explore_dic_in_morpho_mode_standard_abstract_allocator=create_abstract_allocator("explore_dic_in_morpho_mode_standard",
+                                                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
+                                                                  0);
+
+
+      struct list_ustring* tmp = d->inf->codes[inf_number];
+      while (tmp != NULL) {
+        /* For each compressed code of the INF line, we save the corresponding
+         * DELAF line in 'info->dlc' */
+        uncompress_entry(inflected, tmp->string, line_buffer);
+        //error("\non decompresse la ligne _%S_\n",line_buffer->str);
+        struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str, explore_dic_in_morpho_mode_standard_abstract_allocator);
+        if (dela_entry != NULL
+            && (pattern == NULL
+                || is_entry_compatible_with_pattern(dela_entry,
+                    pattern))) {
+          //error("et ca matche!!\n");
+          if (current_token[pos_in_current_token] == '\0') {
+          (*matches) = insert_morphological_match(-1,
+              pos_in_current_token, -1, (*matches),
+              save_dic_entry ? dela_entry : NULL, jamo,
+              pos_in_jamo, &p->al.pa);
+          }
+        }
+        free_dela_entry(dela_entry, explore_dic_in_morpho_mode_standard_abstract_allocator);
+        tmp = tmp->next;
+      }
+      close_abstract_allocator(explore_dic_in_morpho_mode_standard_abstract_allocator);
+    }
+    // Once we have finished to deal with the current final dictionary node,
+    // we go on because we may match a longer word
+    base=ustr->len;
+  }
+
+  // explore all others reachable states
+  // i.e. going on with the next letter
+  // i.e  examine each transition that goes out from the node
+  unichar c;
+  int adr;
+  for (int i = 0; i < n_transitions; ++i) {
+    offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
+    if (is_equal_or_uppercase(c, current_token[pos_in_current_token], p->alphabet)) {
+      // If the transition's letter is case compatible with the current letter
+      // of the word to analyze, copy it in inflected and follow it
+      inflected[pos_in_inflected] = c;
+      explore_dic_in_morpho_mode_standard_with_token(p, d, adr,
+          current_token, inflected, pos_in_current_token + 1,
+          pos_in_inflected + 1, matches, pattern,
+          save_dic_entry, jamo, pos_in_jamo, line_buffer, ustr, base);
+    }
+    restore_output(z,ustr);
+  }
+}
+
+// if the loaded morphological dictionaries are 0=zaz, 1=bar and 2=foo; and
+// if morpho_dic_list == "foo;zaz" then morpho_dic_indices = {2, 0}; or
+// if morpho_dic_list == "*"       then morpho_dic_indices = {0, 1, 2}
+void get_morphological_dictionaries_indices(const char* morpho_dic_list,
+                                            const struct locate_parameters* p,
+                                            struct list_int* *morpho_dic_indices) {
+  // when morpho_dic_list is equal to NULL or '*', then use all the
+  // morphological dictionaries
+  if (morpho_dic_list == NULL   || morpho_dic_list[0] == '\0' ||
+     (morpho_dic_list[0] == '*' && morpho_dic_list[1] == '\0')) {
+    for (int i = p->n_morpho_dics - 1; i >= 0; --i) {
+      *morpho_dic_indices = head_insert(i, *morpho_dic_indices);
+    }
+    return;
+  }
+
+  char name[FILENAME_MAX];
+  int pos = 0;
+  int index = -1;
+
+  // push dictionary indices on morpho_dic_indices
+  while (*morpho_dic_list != '\0') {
+    pos = 0;
+
+    while (*morpho_dic_list != '\0' && *morpho_dic_list != ';') {
+       name[pos++] = *morpho_dic_list;
+       ++morpho_dic_list;
+    }
+
+    name[pos]='\0';
+    if (*morpho_dic_list==';') {
+       morpho_dic_list++;
+    }
+
+    index = get_value_index(UnitexString(name).c_unichar(), p->morpho_dic_index, DONT_INSERT);
+
+    if(index > -1 && index < p->n_morpho_dics) {
+      *morpho_dic_indices = head_insert(index, *morpho_dic_indices);
+    }
+  }
+}
+
+/**
+ * This function tries to find something in p's morphological dictionary that
+ * matches the given token and pattern. If 'pattern' is NULL, anything found
+ * in the dictionary will do. It is used to represent the <DIC> pattern.
+ */
+void explore_dic_in_morpho_mode_with_token(
+        struct locate_parameters* p,
+        const unichar* token,
+        int pos_in_token,
+        struct parsing_info* *matches,
+        struct pattern* pattern,
+        int save_dic_entry,
+        unichar* jamo,
+        int pos_in_jamo,
+        const char* morpho_dic_list) {
+  unichar* buffer_line_buffer_inflected = (unichar*) malloc(sizeof(unichar) * (4096 + DIC_LINE_SIZE));
+
+  if (buffer_line_buffer_inflected == NULL) {
+    fatal_alloc_error("explore_dic_in_morpho_mode");
+  }
+
+  unichar* inflected = buffer_line_buffer_inflected;
+  Ustring* line_buffer=new_Ustring(4096);
+  Ustring* ustr=new_Ustring();
+
+  struct list_int* morpho_dic_indices = NULL;
+  get_morphological_dictionaries_indices(morpho_dic_list, p, &morpho_dic_indices);
+
+  int i = 0;
+  while (morpho_dic_indices != NULL) {
+    i = morpho_dic_indices->n;
+    if (p->morpho_dic[i] != NULL) {
+      /* Can't match anything in an empty dictionary */
+      if (p->arabic.rules_enabled) {
+// TODO(martinec) Complete the arabic implementation
+//        explore_dic_in_morpho_mode_arabic_with_token(p, p->morpho_dic[i],
+//            p->morpho_dic[i]->initial_state_offset,
+//            token,
+//            inflected, pos_in_token, 0, pos, matches, pattern,
+//            save_dic_entry, line_buffer, NOTHING_EXPECTED, '\0', ustr,0);
+      } else {
+        explore_dic_in_morpho_mode_standard_with_token(
+            p,
+            p->morpho_dic[i],
+            p->morpho_dic[i]->initial_state_offset,
+            token,
+            inflected,
+            pos_in_token,
+            0,
+            matches,
+            pattern,
+            save_dic_entry,
+            jamo,
+            pos_in_jamo,
+            line_buffer,
+            ustr,
+            0);
+      }
+    }
+    morpho_dic_indices = morpho_dic_indices->next;
+  }
+
+  free_Ustring(ustr);
+  free_Ustring(line_buffer);
+  free(buffer_line_buffer_inflected);
 }
 
 } // namespace unitex

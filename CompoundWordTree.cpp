@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -723,10 +723,10 @@ int compare_IntSequence(IntSequence a,IntSequence b) {
 if (a==NULL || b==NULL) {
    fatal_error("NULL error in compare_IntSequence\n");
 }
-register const int *a_p = a;
-register const int *b_p = b;
-register int a_c;
-register int b_c;
+const int *a_p = a;
+const int *b_p = b;
+int a_c;
+int b_c;
 do {
    a_c=(int)*a_p++;
    b_c=(int)*b_p++;

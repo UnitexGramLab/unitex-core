@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -138,6 +138,7 @@ int same_codes(const struct dela_entry*,const struct dela_entry*);
 void merge_inflectional_codes(struct dela_entry*,const struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int one_inflectional_codes_contains_the_other(const unichar*,const unichar*);
 int get_inf_code_exact_match(Dictionary*,unichar* str);
+int get_codes(const struct dela_entry* e,unichar* codes);
 
 void debug_print_entry(struct dela_entry*);
 void debug_println_entry(struct dela_entry*);

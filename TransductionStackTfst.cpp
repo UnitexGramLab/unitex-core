@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -448,7 +448,7 @@ if (!process_output_tfst(stack_foo,output,p,capture && p->debug)) {
     return 0;
 }
 if (capture) {
-    *captured_chars=add_raw_string_to_output_variables(p->output_variables,stack_foo->str);
+    *captured_chars=add_raw_string_to_output_variables(p->output_variables,stack_foo->str,u_strlen(stack_foo->str));
     free_Ustring(stack_foo);
 }
 return 1;

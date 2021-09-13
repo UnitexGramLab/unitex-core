@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -95,6 +95,19 @@ if (vec==NULL) return;
 if (release!=NULL) {
    for (int i=0;i<vec->nbelems;i++) {
       release(vec->tab[i]);
+   }
+}
+free(vec->tab);
+free(vec);
+}
+
+typedef void (*release_p) (void *, void *);
+
+inline void free_vector_ptr_element(vector_ptr* vec,release_p release_ptr=NULL, release_f release_element=NULL) {
+if (vec==NULL) return;
+if (release_ptr!=NULL) {
+   for (int i=0;i<vec->nbelems;i++) {
+     release_ptr(vec->tab[i], (void*) release_element);
    }
 }
 free(vec->tab);

@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,6 +43,7 @@
 /* ************************************************************************** */
 // Unitex headers
 #include "base/integer/integer.h"    // uint32_t, uint64_t, UINT32_C, UINT64_C
+#include "base/compiler/keyword/constexpr.h"  // UNITEX_CONSTEXPR
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -53,7 +54,7 @@ namespace helper {  // helper
  */
 template <typename T>
 struct is_bitshiftable {
-  static const bool value = (T) 1.5 == 1;
+  static UNITEX_CONSTEXPR bool value = (T) 1.5 == 1;
 };
 
 /**

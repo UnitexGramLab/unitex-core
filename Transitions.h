@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ namespace unitex {
 
 
 /* This enumeration is used to indicate if we use transitions tagged
- * by integers or bu pointers */
+ * by integers or by pointers */
 typedef enum {
    INT_TAGS,
    PTR_TAGS

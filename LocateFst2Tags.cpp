@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -204,7 +204,7 @@ for (int i=0;i<fst2->number_of_tags;i++) {
             }
             else if ((len_content == 6) && (!memcmp(content_start, content_meta_lettre, 6 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
-               tag[i]->meta=META_LETTRE;
+               tag[i]->meta=META_LETTER;
             }
             else if ((len_content == 4) && (!memcmp(content_start, content_meta_word, 4 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;

@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2020 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2021 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,6 +48,7 @@
 #include "Vector.h"
 #include "MappedFileHelper.h"
 #include "Arabic.h"
+#include "Stack_unichar.h"
 
 
 #ifndef HAS_UNITEX_NAMESPACE
@@ -56,8 +57,7 @@
 
 namespace unitex {
 
-
-
+class vm;
 
 struct counting_step_st
 {
@@ -120,12 +120,18 @@ struct locate_allocators {
    Abstract_allocator prv_alloc_recycle_morphlogical_content_buffer;
 };
 
+struct locate_n_matches {
+  int maingraph;
+  int subgraph;
+  float fail;
+  locate_n_matches(): maingraph(0), subgraph(0), fail(0){}
+};
+
 struct locate_parameters {
    struct locate_allocators al;
    /* The transduction variables of the fst2 */
-   Variables* input_variables;
+   InputVariables* input_variables;
    OutputVariables* output_variables;
-
 
    int graph_depth;
    int explore_depth;
@@ -136,9 +142,18 @@ struct locate_parameters {
     * the current subgraph. */
    int stack_base;
 
-   /* This is the stack used to process outputs */
-   struct stack_unichar* stack;
+   /* This is the stack used to process literal outputs,
+    * literal outputs consists only of terminal symbols
+    */
+   struct stack_unichar* literal_output;
 
+   /* This is the stack used to process extended outputs,
+    * extended outputs are constituted by terminal and nonterminal symbols,
+    * nonterminal symbols, including extended functions, are enclosed
+    * by dollars ($), and replaced by groups of terminal symbols after
+    * being evaluated
+    */
+   struct stack_unichar* extended_output;
 
    /**
     * This array is used to associate a control byte to each token.
@@ -205,15 +220,22 @@ struct locate_parameters {
    /* The text tokens */
    struct string_hash* tokens;
 
+   /* The text newlines */
+   // TODO(martinec) Implement as a sparse bitset instead
+   struct bit_array* enter_pos;
+   const char* enter_pos_filename;
+
    /* Current origin position in the token buffer */
    int current_origin;
+
+   /* Current origin position in the token buffer */
+   int last_origin;
 
    /* the maximum number of locate call for each token */
    int max_count_call;
    int max_count_call_warning;
 
    int is_in_cancel_state;
-   int is_in_trace_state;
 
    /* The token buffer used to parse the text. This is a pointer
     * that must be initialized after mapping the 'text.cod' file */
@@ -223,6 +245,8 @@ struct locate_parameters {
    /* A system-dependent object that represents the mapped' text.cod' file */
    ABSTRACTMAPFILE* text_cod;
 
+   /* Indicates if we are on the tokenized or morphological locate */
+   LocateMode locate_mode;
 
    /* Indicates if we work char by char or not */
    TokenizationPolicy tokenization_policy;
@@ -280,6 +304,10 @@ struct locate_parameters {
 
    /* Size of previous arrays */
    int n_morpho_dics;
+
+   /* For a given dictionary name, this array gives an index a to be used in
+    * the 'morpho_dic' array */
+   struct string_hash* morpho_dic_index;
 
    /* The DELAF entry variables filled in morphological mode */
    struct dic_variable* dic_variables;
@@ -344,6 +372,7 @@ struct locate_parameters {
    /* Arabic typographic rule configuration */
    ArabicTypoRules arabic;
 
+   locate_trace_info* lti;
    t_fnc_locate_trace_step fnc_locate_trace_step;
    void*private_param_locate_trace;
 
@@ -386,15 +415,25 @@ struct locate_parameters {
    int graph_depth_backup_nested;
 
    const char* graph_filename;
+
+   vm* elg;
+   struct stack_unichar* stack_elg;
+   // position in the token buffer, relative to the current origin
+   int pos_in_tokens;
+   // position in the token in characters
+   int pos_in_chars;
 };
 
+void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p);
+struct locate_parameters* new_locate_parameters(const char* elg_extensions_path);
+void free_locate_parameters(struct locate_parameters* p);
 
 int locate_pattern(const char*,const char*,const char*,const char*,const char*,const char*,const char*,
                    MatchPolicy,OutputPolicy, const VersatileEncodingConfig*,const char*,TokenizationPolicy,
                    SpacePolicy,int,const char*,AmbiguousOutputPolicy,
                    VariableErrorPolicy,int,int,int,int,
                    int stack_max, int max_matches_at_token_pos,int max_matches_per_subgraph,int max_errors,
-                   char*,int,int,int,char* const [],vector_ptr*);
+                   char*,int,int,int,char* const [],vector_ptr*,const char* elg_extensions_path = NULL,const char* enter_pos = NULL);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 unsigned char get_control_byte(const unichar*,const Alphabet*,struct string_hash*,TokenizationPolicy);
@@ -402,4 +441,5 @@ void compute_token_controls(const VersatileEncodingConfig*,Alphabet*,const char*
 
 } // namespace unitex
 
+#include "ELG.h"
 #endif
