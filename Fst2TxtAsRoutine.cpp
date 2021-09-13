@@ -1156,8 +1156,9 @@ static void scan_graph(
                         emit_output(p, etiq->output, pos);
                         if (p->output_policy == MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                             // if we are in MERGE mode, we add to ouput the char we have read
-                            if (p->convLFtoCRLF==0) // if we convert each LF to CRLF, we don't have to re push CR
+                            if (p->convLFtoCRLF==0) { // if we convert each LF to CRLF, we don't have to re push CR
                                 push(p->stack, '\r');
+                            }
                             push(p->stack, '\n');
                         }
                         scan_graph(n_graph, t->state_number, pos + 2, depth,
