@@ -16,6 +16,8 @@
 # language: instructs travis what compilers && environment to set up in build matrix
 language: cpp
 
+# the value of the $TRAVIS_OS_NAME variable is set to linux or osx according to
+# the operating system a particular build is running on
 os: linux
 
 # route builds to Ubuntu Xenial 16.04
