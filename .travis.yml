@@ -116,8 +116,8 @@ jobs:
       # OS X 12.3
       osx_image: xcode12u
       env: MACOSX_DEPLOYMENT_TARGET=12.0
-#  allow_failures:
-#    - os: osx
+  allow_failures:
+    - os: osx
 
 notifications:
   email:
@@ -146,7 +146,7 @@ script:
   # https://github.com/travis-ci/docs-travis-ci-com/commit/fbca7ce4
   - test -n $CC && unset CC
   # TODO() Put back -ansi -pedantic
-  - mkdir -p bin && cd build && make ADDITIONAL_CFLAG+=-DUNITEX_CORE_VERSION_GIT_COMMIT_HASH=${UNITEX_CORE_VERSION_GIT_COMMIT_HASH} ADDITIONAL_CFLAG+="-Wextra -Wno-type-limits -DNO_C99_VARIABLE_LENGTH_ARRAY" ADDITIONAL_YAML_OPTIONS+="-w" DEBUG=yes UNITEXTOOLLOGGERONLY=yes && cd ..
+  - mkdir -p bin && cd build && make ADDITIONAL_CFLAG+=-DUNITEX_CORE_VERSION_GIT_COMMIT_HASH=${UNITEX_CORE_VERSION_GIT_COMMIT_HASH} ADDITIONAL_CFLAG+="-Wextra -Wno-type-limits -DNO_C99_VARIABLE_LENGTH_ARRAY" ADDITIONAL_YAML_OPTIONS+="-w" 64BITS=yes DEBUG=yes UNITEXTOOLLOGGERONLY=yes && cd ..
   - export UNITEX_BIN="$PWD/bin/UnitexToolLogger" && echo ${UNITEX_BIN}
   - cd unitex-core-tests
   - "./unitex-core-test.sh -w80 -p1"
