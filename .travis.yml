@@ -51,7 +51,7 @@ addons_shortcuts:
       sources:    [ 'ubuntu-toolchain-r-test' ]
       packages:   [ 'g++-5', 'gcc-5', 'cmake', 'cppcheck', 'valgrind' ]      
 
-matrix:
+jobs:
   # if a rows in the build matrix fails, set
   # the build to finish as soon as possible
   fast_finish: true
