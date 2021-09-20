@@ -58,27 +58,30 @@
 // C system files                  (try to order the includes alphabetically)
 #include <stdlib.h>                           // size_t
 /* ************************************************************************** */
+// use stdint.h macros specified in the C99
+// standard that aren't in the C++ standard
+#ifndef __STDC_LIMIT_MACROS
+# define __STDC_LIMIT_MACROS
+#endif  //  __STDC_LIMIT_MACROS
+#ifndef __STDC_FORMAT_MACROS
+# define __STDC_FORMAT_MACROS
+#endif  //  __STDC_FORMAT_MACROS
+#ifndef __STDC_CONSTANT_MACROS
+# define __STDC_CONSTANT_MACROS
+#endif  // __STDC_CONSTANT_MACROS
+/* ************************************************************************** */
 // Portable integer types (for uint64_t, uint32_t types and literal macros)
 #if   UNITEX_COMPILER_COMPLIANT(CXX11)    ||\
       UNITEX_COMPILER_AT_LEAST(MSVC,16,0)
 #      include <cstdint>                   // C++11 standard integer types
-#elif ((UNITEX_COMPILER_IS(GCC)           ||\
-        UNITEX_COMPILER_IS(CLANG)         ||\
-        UNITEX_HAVE(STDINT_H)))
-// use stdint.h macros specified in the C99
-// standard that aren't in the C++ standard
-# ifndef __STDC_LIMIT_MACROS
-#  define __STDC_LIMIT_MACROS
-# endif  //  __STDC_LIMIT_MACROS
-# ifndef __STDC_FORMAT_MACROS
-#  define __STDC_FORMAT_MACROS
-# endif  //  __STDC_FORMAT_MACROS
-# ifndef __STDC_CONSTANT_MACROS
-#  define __STDC_CONSTANT_MACROS
-# endif  // __STDC_CONSTANT_MACROS
-#      include <stdint.h>               // standard integer types
+#elif ((UNITEX_COMPILER_IS(GCC)            &&\
+        UNITEX_COMPILER_AT_LEAST_GCC(4,9)) ||\
+        UNITEX_COMPILER_IS(CLANG))
+#      include <stdint.h>                  // standard integer types
+#elif UNITEX_COMPILER_IS(GCC)
+#      include <stdint-gcc.h>              // GCC version < 4.9
 #else    // !UNITEX_COMPILER_IS(GCC)...
-#      include "base/vendor/pstdint.h"  //  Paul Hsieh's portable stdint.h
+#      include "base/vendor/pstdint.h"     //  Paul Hsieh's portable stdint.h
 #endif  // UNITEX_COMPILER_COMPLIANT(CXX11)
 /* ************************************************************************** */
 // Portable inttypes.h implementing features such as printf and scanf format
