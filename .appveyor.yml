@@ -58,22 +58,22 @@ clone_depth: 3
 # 
 install:
   - '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64'
-  - cd C:\projects\unitex-core
+  - cd C:\projects\unitex-core\src
   - set PATH=%PATH%;C:\Program Files\7-Zip\
-  - 7z x C:\projects\unitex-core\vendor\tre-0.8.0.tar.gz   -so | 7z x -si -ttar > nul
-  - 7z x C:\projects\unitex-core\vendor\yaml-0.1.6.tar.gz  -so | 7z x -si -ttar > nul
-  - 7z x C:\projects\unitex-core\vendor\luajit-2.3.0.tar.gz -so | 7z x -si -ttar > nul
-  - patch -i C:\projects\unitex-core\vendor\patches\luajit-2.3.0\luaconf.h.patch luajit-2.3.0/src/luaconf.h
-  - cd C:\projects\unitex-core\luajit-2.3.0\src
+  - 7z x C:\projects\unitex-core\src\vendor\tre-0.8.0.tar.gz   -so | 7z x -si -ttar > nul
+  - 7z x C:\projects\unitex-core\src\vendor\yaml-0.1.6.tar.gz  -so | 7z x -si -ttar > nul
+  - 7z x C:\projects\unitex-core\src\vendor\luajit-2.3.0.tar.gz -so | 7z x -si -ttar > nul
+  - patch -i C:\projects\unitex-core\src\vendor\patches\luajit-2.3.0\luaconf.h.patch luajit-2.3.0/src/luaconf.h
+  - cd C:\projects\unitex-core\src\luajit-2.3.0\src
   - set LUA_PATH_DEFAULT=".\\\\?.lua;!\\\\..\\\\..\\\\?.lua;!\\\\..\\\\..\\\\?\\\\init.lua;.\\\\?.upp;!\\\\..\\\\..\\\\?.upp;!\\\\..\\\\..\\\\?\\\\init.upp"
   - set LUA_CPATH_DEFAULT=".\\\\?.dll;!\\\\lib\\\\?.dll"
   - msvcbuild static
-  - mkdir C:\projects\unitex-core\luajit-2.3.0\include
-  - cp lua.h lualib.h lauxlib.h luaconf.h lua.hpp luajit.h C:\projects\unitex-core\luajit-2.3.0\include
-  - cp lua51.lib luajit.lib C:\projects\unitex-core\build
+  - mkdir C:\projects\unitex-core\src\luajit-2.3.0\include
+  - cp lua.h lualib.h lauxlib.h luaconf.h lua.hpp luajit.h C:\projects\unitex-core\src\luajit-2.3.0\include
+  - cp lua51.lib luajit.lib C:\projects\unitex-core\src\build
   
 build_script:
-  - cd C:\projects\unitex-core\build
+  - cd C:\projects\unitex-core\src\build
   - set MSBuildLogger="C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - set MSBuildOptions=/v:m /t:Unitex4_vs2019 /p:Configuration=Debug /logger:%MSBuildLogger%
   - msbuild %MSBuildOptions% Unitex4_vs2019.sln
@@ -84,7 +84,7 @@ before_test:
 
 # to run our custom script instead of the automatic test
 test_script:
-  - cp "C:\projects\unitex-core\build\x64\Unitex4_vs2019\Debug\tmp\UnitexToolLogger.exe" "C:\projects\unitex-core\build\unitex-core-tests\UnitexToolLogger.exe"
+  - cp "C:\projects\unitex-core\src\build\x64\Unitex4_vs2019\Debug\tmp\UnitexToolLogger.exe" "C:\projects\unitex-core\src\build\unitex-core-tests\UnitexToolLogger.exe"
   - C:\msys64\usr\bin\bash -lc  "cd $APPVEYOR_BUILD_FOLDER; export UNITEX_CORE_VERSION_GIT_COMMIT_HASH=$(git describe --always HEAD); UNITEX_BIN=$APPVEYOR_BUILD_FOLDER/build/unitex-core-tests/UnitexToolLogger; cd $APPVEYOR_BUILD_FOLDER/build/unitex-core-tests; mkdir -p elg && touch elg/init.upp; ./unitex-core-test.sh -c0 -w60 -p1 Locate"
 
 notifications:
