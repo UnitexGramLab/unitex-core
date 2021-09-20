@@ -314,16 +314,19 @@ endif
 
 ifeq ($(TARGET_OSX),yes)
 CFLAGS   = -Wall #-pedantic
+DISABLE_GOLD_LINKER = yes
 else
 CFLAGS   = -Wall -D_POSIX_SOURCE #-pedantic
 endif
 
-ifeq ($(DEBUG), yes)
-ifeq ($(TARGET_OSX),yes)
-CFLAGS += -g3 -O0 -DDEBUG=1
+ifeq ($(DISABLE_GOLD_LINKER),yes)
+GOLD_LD_FLAG =
 else
-CFLAGS += -g3 -O0 -DDEBUG=1 -fuse-ld=gold -Wl,--disable-new-dtags
+GOLD_LD_FLAG = -fuse-ld=gold
 endif
+
+ifeq ($(DEBUG), yes)
+CFLAGS += -g3 -O0 -DDEBUG=1 $(GOLD_LD_FLAG) -Wl,--disable-new-dtags
 UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 # FOR LuaJIT
 ifeq ($(DEBUG_ELG), yes)
