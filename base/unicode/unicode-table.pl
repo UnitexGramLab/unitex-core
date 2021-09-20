@@ -582,17 +582,17 @@ my %decompositionTagDescription = (
 
 my $outName       = 'table';
 my $hdrFile       = "$outName.h";
-my $hdrFileIn     = "$outName.h.in";
+my $hdrFileIn     = "$outName.h.tpl";
 my $srcFile       = "$outName.cpp";
-my $srcFileIn     = "$outName.cpp.in";
+my $srcFileIn     = "$outName.cpp.tpl";
 
 my $normName      = "normalization";
 my $hdrNormFile   = "$normName.h";
-my $hdrNormFileIn = "$normName.h.in";
+my $hdrNormFileIn = "$normName.h.tpl";
 my $srcNormFile   = "$normName.cpp";
-my $srcNormFileIn = "$normName.cpp.in";
+my $srcNormFileIn = "$normName.cpp.tpl";
 
-my $testFileIn    = "test.h.in";
+my $testFileIn    = "test.h.tpl";
 my $testFile      = "test.h";
 
 my $maxValue      = sprintf("0x%02X", tableSize-1);
