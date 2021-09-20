@@ -6,7 +6,7 @@
  * @author   Paul Hsieh
  * @see      http://www.azillionmonkeys.com/qed/ninja.html
  *
- * @version  0.1.15.4
+ * @version  0.1.16.0
  * @date     2016
  */
 /*  A portable stdint.h
@@ -42,23 +42,23 @@
  *
  ****************************************************************************
  *
- *  Version 0.1.15.4
+ *  Version 0.1.16.0
  *
  *  The ANSI C standard committee, for the C99 standard, specified the
  *  inclusion of a new standard include file called stdint.h.  This is
  *  a very useful and long desired include file which contains several
- *  very precise definitions for integer scalar types that is
- *  critically important for making portable several classes of
- *  applications including cryptography, hashing, variable length
- *  integer libraries and so on.  But for most developers its likely
- *  useful just for programming sanity.
+ *  very precise definitions for integer scalar types that is critically
+ *  important for making several classes of applications portable
+ *  including cryptography, hashing, variable length integer libraries
+ *  and so on.  But for most developers its likely useful just for
+ *  programming sanity.
  *
  *  The problem is that some compiler vendors chose to ignore the C99
  *  standard and some older compilers have no opportunity to be updated.
  *  Because of this situation, simply including stdint.h in your code
  *  makes it unportable.
  *
- *  So that's what this file is all about.  Its an attempt to build a
+ *  So that's what this file is all about.  It's an attempt to build a
  *  single universal include file that works on as many platforms as
  *  possible to deliver what stdint.h is supposed to.  Even compilers
  *  that already come with stdint.h can use this file instead without
@@ -366,7 +366,7 @@
 #define _PSTDINT_H_INCLUDED
 
 #ifndef SIZE_MAX
-# define SIZE_MAX (~(size_t)0)
+# define SIZE_MAX ((size_t)-1)
 #endif
 
 /*
@@ -692,14 +692,12 @@
 #undef stdint_least_defined
 
 /*
- *  The ANSI C committee pretending to know or specify anything about
- *  performance is the epitome of misguided arrogance.  The mandate of
- *  this file is to *ONLY* ever support that absolute minimum
- *  definition of the fast integer types, for compatibility purposes.
- *  No extensions, and no attempt to suggest what may or may not be a
- *  faster integer type will ever be made in this file.  Developers are
- *  warned to stay away from these types when using this or any other
- *  stdint.h.
+ *  The ANSI C committee has defined *int*_fast*_t types as well.  This,
+ *  of course, defies rationality -- you can't know what will be fast
+ *  just from the type itself.  Even for a given architecture, compatible
+ *  implementations might have different performance characteristics.
+ *  Developers are warned to stay away from these types when using this
+ *  or any other stdint.h.
  */
 
 typedef   int_least8_t   int_fast8_t;
@@ -838,6 +836,8 @@ typedef uint_least32_t uint_fast32_t;
 
 #define REPORTERROR(msg) { err_n++; if (err_first <= 0) err_first = __LINE__; printf msg; }
 
+#define X_SIZE_MAX ((size_t)-1)
+
 int main () {
 	int err_n = 0;
 	int err_first = 0;
@@ -916,6 +916,13 @@ int main () {
 #ifdef INT64_MAX
 	Q(int64_t)
 #endif
+
+#if UINT_MAX < X_SIZE_MAX
+	printf ("UINT_MAX < X_SIZE_MAX\n");
+#else
+	printf ("UINT_MAX >= X_SIZE_MAX\n");
+#endif
+	printf ("%" PRINTF_INT64_MODIFIER "u vs %" PRINTF_INT64_MODIFIER "u\n", UINT_MAX, X_SIZE_MAX);
 
 	return EXIT_SUCCESS;
 }
