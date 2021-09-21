@@ -214,12 +214,17 @@ endif
 
 # LUA_PATH_DEFAULT is the default path that Lua uses to look for Lua libraries
 # LUA_CPATH_DEFAULT is the default path that Lua uses to look for C libraries
+# if USE_CUSTOM_LUA_PATH=yes the definition below is used, otherwise you need
+# to export each variable, e.g.:
+# export LUA_CPATH_DEFAULT='"./?.so;!/lib/?.so"'
+ifeq ($(USE_CUSTOM_LUA_PATH),yes)
 ifeq ($(SYSTEM),linux-like)
 export LUA_PATH_DEFAULT="./?.lua;!/../../?.lua;!/../../?/init.lua;./?.upp;!/../../?.upp;!/../../?/init.upp"
 export LUA_CPATH_DEFAULT="./?.so;!/lib/?.so"
 else
 export LUA_PATH_DEFAULT=".\\\\?.lua;!\\\\..\\\\..\\\\?.lua;!\\\\..\\\\..\\\\?\\\\init.lua;.\\\\?.upp;!\\\\..\\\\..\\\\?.upp;!\\\\..\\\\..\\\\?\\\\init.upp"
 export LUA_CPATH_DEFAULT=".\\\\?.dll;!\\\\lib\\\\?.dll"
+endif
 endif
 
 VIRTOPTIMIZATION_OBJECT=export_unitex_virtualwork.o FileTools.o MiniMutexPosix.o MiniMutexWin.o \
@@ -1692,8 +1697,12 @@ endif
 YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
-LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
-LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
+ifneq ($(LUA_PATH_DEFAULT),)
+	LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_PATH_DEFAULT='\"$(LUA_PATH_DEFAULT)\"'
+endif
+ifneq ($(LUA_CPATH_DEFAULT),)
+	LUAJIT_XCFLAGS+=XCFLAGS+=-DLUA_CPATH_DEFAULT='\"$(LUA_CPATH_DEFAULT)\"'
+endif
 LUAJIT_BUILDMODE=BUILDMODE="static"
 
 # LUAJIT_COMPILE_LDFLAGS and TARGET_SYS

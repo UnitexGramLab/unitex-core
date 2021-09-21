@@ -244,7 +244,7 @@ static int copy_values(lua_State* to, lua_State* from, int idx, int top) {
   int n_values = top - idx + 1;
   // make sure there is room on the new state for the values
   if (!lua_checkstack(to, n_values)) {
-    elg_error(from,"stack overflow!");
+    return elg_error(from,"stack overflow!");
   }
 
   // setup copy_state

@@ -44,9 +44,11 @@
 namespace unitex {
 /* ************************************************************************** */
 #if UNITEX_OS_IS(UNIX)
-# define UNITEX_EXTENSIONS_PATH "path = 'extensions/?.lua';cpath = 'extensions/?.so'\n"
+# define ELG_EXTENSIONS_FORMAT_PATH  ";%s?.upp;%s?.lua;%sshare/lua/5.1/?.lua;%sshare/lua/5.1/?/init.lua"
+# define ELG_EXTENSIONS_FORMAT_CPATH ";%s?.so;%slib/lua/5.1/?.so;%slib/lua/5.1/loadall.so"
 #else
-# define UNITEX_EXTENSIONS_PATH "path = 'extensions\\\\?.lua';cpath = 'extensions\\\\?.dll'\n"
+# define ELG_EXTENSIONS_FORMAT_PATH  ";%s?.upp;%s?.lua;%sshare\\lua\\5.1\\?.lua;%sshare\\lua\\5.1\\?\\init.lua"
+# define ELG_EXTENSIONS_FORMAT_CPATH ";%s?.dll;%slib\\lua\\5.1\\?.dll;%slib\\lua\\5.1\\loadall.dll"
 #endif
 /* ************************************************************************** */
 // LUA_REGISTRYINDEX  : interpreter environment
@@ -498,6 +500,38 @@ int process_extended_function_return_type(int type,
   return retval;
 }
 /* ************************************************************************** */
+// setup path and cpath relative to the elg extensions path
+void setup_relative_paths(lua_State* L, const char* binpath) {
+  // push package table onto the stack
+  // [-0, +1] > (+1)
+  lua_getglobal(L, "package");
+  elg_stack_dump(L);
+
+  // check if we have the package table
+  // note that luaL_openlibs(L) must have been already called
+  if (!lua_istable(L, -1)) {
+    elg_error(L,"'package' is not a table");
+  }
+
+  // update path
+  // [-0, +0] > (+1)
+  UnitexString path(UnitexString::format(ELG_EXTENSIONS_FORMAT_PATH,
+                                binpath, binpath, binpath, binpath));
+  elg::appendtofield(L, -1, "path", &path);
+  elg_stack_dump(L);
+
+  // update cpath
+  // [-0, +0] > (+1)
+  UnitexString cpath(UnitexString::format(ELG_EXTENSIONS_FORMAT_CPATH,
+                                 binpath, binpath, binpath, binpath));
+  elg::appendtofield(L, -1, "cpath", &cpath);
+  elg_stack_dump(L);
+
+  // pop package table off the stack
+  // [-1, +0] > (+0)
+  lua_pop(L, 1);
+}
+/* ************************************************************************** */
 }
 /* ************************************************************************** */
 }  // namespace details
@@ -542,10 +576,11 @@ class vm {
   // [-0, +0] > (+0)
   // create a new Lua environment
   // load the standard library
+  // setup path and cpath relative to the elg extensions path
   // load the elg library
   // setup the panic handler
-  // run the initialization script
   // register custom constants and functions
+  // run the initialization script
   // returns true if success; false otherwise
   // at the end the top of the stack is empty
   // [-0, +0] > (+0)
@@ -558,7 +593,7 @@ class vm {
 
     // create a new Lua environment
     if ((L = luaL_newstate()) == NULL) {
-      elg_error(L, "failed to create a new environment");
+      return elg_error(L, "failed to create a new environment");
     }
 
     if (is_running()) {
@@ -566,6 +601,10 @@ class vm {
       // [-0, +0] > (+0)
       luaL_openlibs(L);
       elg_stack_dump(L);
+
+      // setup path and cpath relative to the elg extensions path
+      // [-0, +0]
+      details::setup_relative_paths(L, elg_extensions_path_);
 
       // load the elg library
       // [-0, +0]
@@ -576,27 +615,6 @@ class vm {
       // [-0, +0] > (+0)
       lua_atpanic(L, panic);
 
-      // load and run the initialization script
-      // custom classes are not available right now from here
-      // prepare script_name and script_file variables
-      char script_init_name[MAX_TRANSDUCTION_VAR_LENGTH]   = { };
-      char script_init_file[MAX_TRANSDUCTION_VAR_LENGTH]   = { };
-
-      // script name = extension_name.upp
-      strcat(script_init_name, ELG_FUNCTION_DEFAULT_SCRIPT_INIT_NAME);
-      strcat(script_init_name, ELG_FUNCTION_DEFAULT_EXTENSION);
-
-      // script_file = /default/path/extension_name.upp
-      strcat(script_init_file, elg_extensions_path_);
-      strcat(script_init_file, script_init_name);
-
-      // [-0, +0] > (+0)
-      if (luaL_dofile(L,script_init_file)) {
-        const char* e =lua_tostring(L, -1);
-        lua_pop(L,1);
-        luaL_error(L,"Error running the initialization script: %s\n",e);
-      }
-
       // -------------------------------------------------------------------
       // register custom classes
       // -------------------------------------------------------------------
@@ -604,7 +622,8 @@ class vm {
       // Constants
       // [-0, +1] > (+1)
       lua_newtable(L);
-      set_literal("API_VERSION", "0.1.0");
+      set_literal("api_version", "0.1.1");
+      set_string("path", elg_extensions_path_);
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_CONSTANT);
 
@@ -762,6 +781,27 @@ class vm {
       // -------------------------------------------------------------------
       // end of register custom classes
       // -------------------------------------------------------------------
+
+      // prepapre the initialization script
+      // script_name and script_file variables
+      char script_init_name[MAX_TRANSDUCTION_VAR_LENGTH]   = { };
+      char script_init_file[MAX_TRANSDUCTION_VAR_LENGTH]   = { };
+
+      // script name = extension_name.upp
+      strcat(script_init_name, ELG_FUNCTION_DEFAULT_SCRIPT_INIT_NAME);
+      strcat(script_init_name, ELG_FUNCTION_DEFAULT_EXTENSION);
+
+      // script_file = /default/path/extension_name.upp
+      strcat(script_init_file, elg_extensions_path_);
+      strcat(script_init_file, script_init_name);
+
+      // load and run the initialization script
+      // [-0, +0] > (+0)
+      if (luaL_dofile(L,script_init_file)) {
+        const char* e =lua_tostring(L, -1);
+        lua_pop(L,1);
+        luaL_error(L,"Error running the initialization script: %s\n",e);
+      }
 
       // lua_pushcfunction(L, traceback);
 
@@ -1163,7 +1203,7 @@ class vm {
     if (index != -1) {
       if (lua_setfenv(state, index) == 0) {
         elg_stack_dump(state);
-        elg_error(state,lua_tostring(state, -1));
+        return elg_error(state,lua_tostring(state, -1));
       }
     }
     elg_stack_dump(state);

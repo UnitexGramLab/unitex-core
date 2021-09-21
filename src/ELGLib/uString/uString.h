@@ -426,19 +426,8 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len)
 /* ************************************************************************** */
 /* static */ int elg_ustring_encode(lua_State* L) {
   UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);
-  // buffer used to prepare strings
-  luaL_Buffer lb;
-  // initialize the buffer
-  luaL_buffinit(L, &lb);
-  // get the underlying buffer area
-  char* cb = luaL_prepbuffer(&lb);
-  // encode the ustring as a utf-8 string
-  int cb_length = str->encode(cb);
-  // if length == 0 push empty
-  // add to the buffer lb the string copied to the buffer area
-  luaL_addsize(&lb, cb_length);
-  // leave the final string on the top of the stack
-  luaL_pushresult(&lb);
+  // pushes onto the stack the string 'str'
+  elg::pushstring(L, str);
   // number of values returned
   return 1;
 }

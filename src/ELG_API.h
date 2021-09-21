@@ -98,7 +98,7 @@
 /* ************************************************************************** */
 #define ELG_GLOBAL_MATCH                       "uMatch"
 //#define ELG_GLOBAL_TEXT                        "uText"
-#define ELG_GLOBAL_CONSTANT                    "uConstant"
+#define ELG_GLOBAL_CONSTANT                    "elg"
 #define ELG_GLOBAL_STRING                      "uString"
 /* ************************************************************************** */
 #define ELG_GLOBAL_ENVIRONMENT                 "uEnvironment"

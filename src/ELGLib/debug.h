@@ -39,8 +39,8 @@
 #include "Unicode.h"
 #include "base/debug/elg_build_mode.h"
 /* ************************************************************************** */
-#define elg_error(L,message)                        \
-  return luaL_error(L,"[%s:%s:%d] Error: %s",       \
+#define elg_error(L,message)                         \
+          luaL_error(L,"[%s:%s:%d] Error: %s",       \
                     ELG_ENVIRONMENT_PREFIX,          \
                     UNITEX_COMPILER_IDENTIFIER_FUNC, \
                     UNITEX_FILE_LINE,                \

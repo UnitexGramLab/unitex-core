@@ -92,6 +92,58 @@ int GCMethod(lua_State* L) {
 namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
+// push a UnitexString into stack
+// [-0, +1, m] > (+1)
+void pushstring(lua_State* L, UnitexString* value) {
+  // buffer used to prepare strings
+  luaL_Buffer lb;
+  // initialize the buffer
+  luaL_buffinit(L, &lb);
+  // get the underlying buffer area
+  char* cb = luaL_prepbuffer(&lb);
+  // encode the UnitexString as a utf-8 string
+  int cb_length = value->encode(cb);
+  // if length == 0 push empty
+  // add to the buffer lb the string copied to the buffer area
+  luaL_addsize(&lb, cb_length);
+  // leave the final string on the top of the stack
+  luaL_pushresult(&lb);
+}
+/* ************************************************************************** */
+void updatefield(lua_State* L, int index, const char* k, UnitexString* value) {
+  // pushes onto the stack the string 'value'
+  // [-0, +1] > (+2)
+  elg::pushstring(L, value);
+  elg_stack_dump(L);
+
+  // update field t[k] = new_uvalue
+  // [-1, +0] > (+1)
+  lua_setfield(L, index, k);
+}
+/* ************************************************************************** */
+void appendtofield(lua_State* L, int index, const char* k, UnitexString* value) {
+  // push onto the stack the value t[k]
+  // [-0, +1] > (+2)
+  lua_getfield(L, index, k);
+  elg_stack_dump(L);
+
+  size_t current_length;
+  // [-0, +0] > (+2)
+  const char* current_value = luaL_checklstring(L, -1, &current_length);
+  elg_stack_dump(L);
+
+  UnitexString new_uvalue(current_value, current_length);
+  new_uvalue.append(*value);
+
+  // remove t[k] from the stack
+  // [-1, +0] > (+1)
+  lua_pop(L, 1);
+  elg_stack_dump(L);
+
+  // update field t[k] = new_uvalue
+  // [+1, -1] > (+1)
+  updatefield(L,-2, k, &new_uvalue);
+}
 /* ************************************************************************** */
 }  // namespace unitex::elg::{unnamed
 /* ************************************************************************** */
