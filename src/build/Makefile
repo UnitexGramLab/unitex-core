@@ -330,6 +330,7 @@ CFLAGS += -g3 -O0 -DDEBUG=1 $(GOLD_LD_FLAG) -Wl,--disable-new-dtags
 UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 # FOR LuaJIT
 ifeq ($(DEBUG_ELG), yes)
+CFLAGS += -DELG_DEBUG=1
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
 endif
 else
@@ -500,6 +501,7 @@ ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
 # FOR LuaJIT
 ifeq ($(DEBUG_ELG), yes)
+CFLAGS += -DELG_DEBUG=1
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
 endif
 else
@@ -669,6 +671,7 @@ ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
 # FOR LuaJIT
 ifeq ($(DEBUG_ELG), yes)
+CFLAGS += -DELG_DEBUG=1
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
 endif
 else
@@ -834,6 +837,7 @@ ifeq ($(DEBUG), yes)
 CFLAGS += -g3 -O0
 # FOR LuaJIT
 ifeq ($(DEBUG_ELG), yes)
+CFLAGS += -DELG_DEBUG=1
 LUAJIT_XCFLAGS+=XCFLAGS+=-DLUAJIT_USE_VALGRIND
 endif
 else
