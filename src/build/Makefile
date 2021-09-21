@@ -240,9 +240,15 @@ ifeq ($(LINUX_LIKE),yes)
 ###################
 ###################
 
+ifeq ($(USE_CCACHE),yes)
+CCACHE = ccache
+else
+CCACHE =
+endif
+
 ifneq ($(COMPILER_DEFINED),yes)
-CC      = g++
-CC_GCC  = gcc
+CC      = $(CCACHE) g++
+CC_GCC  = $(CCACHE) gcc
 endif
 
 AR      = ar
