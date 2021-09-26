@@ -164,6 +164,7 @@ endif
 ifeq ($(SYSTEM),osxcross)
 TRE_DIRECT_COMPILE = yes
 LDFLAGS += -lstdc++
+CFLAGS += -stdlib=libc++
 
 
 COMPILER_DEFINED = yes
@@ -324,10 +325,10 @@ YAML_GCC_OPTIONS = -DHAVE_CONFIG_H=1 $(CFLAGS)
 endif
 
 ifeq ($(TARGET_OSX),yes)
-CFLAGS   = -Wall #-pedantic
+CFLAGS   += -Wall #-pedantic
 DISABLE_GOLD_LINKER = yes
 else
-CFLAGS   = -Wall -D_POSIX_SOURCE #-pedantic
+CFLAGS   += -Wall -D_POSIX_SOURCE #-pedantic
 endif
 
 ifeq ($(DISABLE_GOLD_LINKER),yes)
