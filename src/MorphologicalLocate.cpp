@@ -2453,8 +2453,10 @@ void explore_dic_in_morpho_mode_with_token(
   get_morphological_dictionaries_indices(morpho_dic_list, p, &morpho_dic_indices);
 
   int i = 0;
-  while (morpho_dic_indices != NULL) {
-    i = morpho_dic_indices->n;
+  struct list_int* morpho_dic_indices_it = morpho_dic_indices;
+
+  while (morpho_dic_indices_it != NULL) {
+    i = morpho_dic_indices_it->n;
     if (p->morpho_dic[i] != NULL) {
       /* Can't match anything in an empty dictionary */
       if (p->arabic.rules_enabled) {
@@ -2483,12 +2485,13 @@ void explore_dic_in_morpho_mode_with_token(
             0);
       }
     }
-    morpho_dic_indices = morpho_dic_indices->next;
+    morpho_dic_indices_it = morpho_dic_indices_it->next;
   }
 
   free_Ustring(ustr);
   free_Ustring(line_buffer);
   free(buffer_line_buffer_inflected);
+  free_list_int(morpho_dic_indices);
 }
 
 } // namespace unitex
