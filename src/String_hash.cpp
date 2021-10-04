@@ -276,7 +276,10 @@ return NO_VALUE_INDEX;
  * not already present in the string_hash.
  */
 int get_value_index(const unichar* key,struct string_hash* hash,int insert_policy,const unichar* value) {
-return get_value_index_(key,0,hash->root,hash,insert_policy,value);
+  if (hash) {
+    return get_value_index_(key,0,hash->root,hash,insert_policy,value);
+  }
+  return NO_VALUE_INDEX;
 }
 
 
@@ -285,7 +288,10 @@ return get_value_index_(key,0,hash->root,hash,insert_policy,value);
  * tolerates values, the key will be used as value.
  */
 int get_value_index(const unichar* key,struct string_hash* hash,int insert_policy) {
-return get_value_index_(key,0,hash->root,hash,insert_policy,key);
+  if (hash) {
+    return get_value_index_(key,0,hash->root,hash,insert_policy,key);
+  }
+  return NO_VALUE_INDEX;
 }
 
 
@@ -294,7 +300,10 @@ return get_value_index_(key,0,hash->root,hash,insert_policy,key);
  * In that case, the key itself will be used as value.
  */
 int get_value_index(const unichar* key,struct string_hash* hash) {
-return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
+  if (hash) {
+    return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
+  }
+  return NO_VALUE_INDEX;
 }
 
 
@@ -303,7 +312,10 @@ return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
  * In that case, the key itself will be used as value.
  */
 int get_value_index(const unichar* key,struct string_hash* hash,const unichar* value) {
-return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,value);
+  if (hash) {
+    return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,value);
+  }
+  return NO_VALUE_INDEX;
 }
 
 
@@ -513,8 +525,11 @@ return index;
  * no key matches. If a key is found, its length is returned in 'key_length'.
  */
 int get_longest_key_index(const unichar* s,int *key_length,struct string_hash* hash) {
-(*key_length)=0;
-return get_longest_key_index_(s,0,key_length,hash->root);
+  if (hash) {
+    (*key_length)=0;
+    return get_longest_key_index_(s,0,key_length,hash->root);
+  }
+  return NO_VALUE_INDEX;
 }
 
 
@@ -573,7 +588,10 @@ free(s);
  * Returns the index value associated to the given key.
  */
 int get_value_index(const unichar* key,struct string_hash_ptr* hash,int insert_policy) {
-return get_value_index_(key,0,hash->hash->root,hash->hash,insert_policy,NULL);
+  if (hash && hash->hash) {
+    return get_value_index_(key,0,hash->hash->root,hash->hash,insert_policy,NULL);
+  }
+  return NO_VALUE_INDEX;
 }
 
 
@@ -581,7 +599,10 @@ return get_value_index_(key,0,hash->hash->root,hash->hash,insert_policy,NULL);
  * Returns the index value associated to the given key, inserting it if needed.
  */
 int get_value_index(const unichar* key,struct string_hash_ptr* hash) {
-return get_value_index_(key,0,hash->hash->root,hash->hash,INSERT_IF_NEEDED,NULL);
+  if (hash && hash->hash) {
+    return get_value_index_(key,0,hash->hash->root,hash->hash,INSERT_IF_NEEDED,NULL);
+  }
+  return NO_VALUE_INDEX;
 }
 
 
@@ -590,27 +611,30 @@ return get_value_index_(key,0,hash->hash->root,hash->hash,INSERT_IF_NEEDED,NULL)
  * the given key if the key is not already present in the string_hash_ptr.
  */
 int get_value_index(const unichar* key,struct string_hash_ptr* hash,int insert_policy,void* value) {
-int size=hash->hash->size;
-int index=get_value_index_(key,0,hash->hash->root,hash->hash,insert_policy,NULL);
-if (index==-1) {
-   /* If the key was neither found nor inserted, we return -1 */
-   return -1;
-}
-if (hash->hash->size!=size) {
-   hash->size=hash->hash->size;
-   /* If the key was inserted, we add the corresponding value into the 'value' array */
-   /* Otherwise: if there is a maximum capacity */
-   if (hash->hash->size==hash->capacity) {
-      /* We enlarge the 'value' array, doubling its capacity */
-      hash->capacity=2*hash->capacity;
-      hash->value=(void**)realloc(hash->value,sizeof(void*)*hash->capacity);
-      if (hash->value==NULL) {
-         fatal_alloc_error("get_value_index\n");
-      }
-   }
-   hash->value[index]=value;
-}
-return index;
+  if (hash && hash->hash) {
+    int size=hash->hash->size;
+    int index=get_value_index_(key,0,hash->hash->root,hash->hash,insert_policy,NULL);
+    if (index==-1) {
+       /* If the key was neither found nor inserted, we return -1 */
+       return -1;
+    }
+    if (hash->hash->size!=size) {
+       hash->size=hash->hash->size;
+       /* If the key was inserted, we add the corresponding value into the 'value' array */
+       /* Otherwise: if there is a maximum capacity */
+       if (hash->hash->size==hash->capacity) {
+          /* We enlarge the 'value' array, doubling its capacity */
+          hash->capacity=2*hash->capacity;
+          hash->value=(void**)realloc(hash->value,sizeof(void*)*hash->capacity);
+          if (hash->value==NULL) {
+             fatal_alloc_error("get_value_index\n");
+          }
+       }
+       hash->value[index]=value;
+    }
+    return index;
+  }
+  return NO_VALUE_INDEX;
 }
 
 
@@ -621,10 +645,14 @@ return index;
  * WARNING: NULL is also returned if it has been associated to the key, so
  *          it's not possible to distinguish the cases (key,NULL) and key not found.
  */
-void* get_value(const unichar* key,struct string_hash_ptr* hash) {
-int index=get_value_index(key,hash->hash,DONT_INSERT);
-if (index==-1) return NULL;
-return hash->value[index];
+void* get_value(const unichar* key, struct string_hash_ptr* hash) {
+  if (hash) {
+    int index = get_value_index(key, hash->hash, DONT_INSERT);
+    if (index != NO_VALUE_INDEX) {
+      return hash->value[index];
+    }
+  }
+  return NULL;
 }
 
 
@@ -633,6 +661,9 @@ return hash->value[index];
  * Returns the index of this value.
  */
 int add_value(void* value,struct string_hash_ptr* hash) {
+if (hash == NULL) {
+  fatal_error("NULL error in add_value\n");
+}
 if (hash->capacity==DONT_USE_VALUES) {
    fatal_error("Value array doesn't exist in add_value\n");
 }
