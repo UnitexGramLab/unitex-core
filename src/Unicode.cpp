@@ -1805,6 +1805,9 @@ int u_fgets_dynamic_buffer(Encoding encoding, unichar** line, size_t* buffer_siz
             fatal_alloc_error("u_fgets_dynamic_buffer");
         }
     }
+
+    // this is not supposed to happen
+    return EOF;
 }
 
 
@@ -2139,6 +2142,9 @@ size_t convert_utf8_to_unichar(unichar*dest, size_t nb_unichar_alloc_walk, size_
             return nb_utf8_bytes;
         }
     }
+
+    // this is not supposed to happen
+    return 0;
 }
 
 
@@ -3333,6 +3339,9 @@ unsigned int u_strlenWithConvLFtoCRLF(const unichar* s, int convLFtoCRLF) {
             return i + ((convLFtoCRLF != 0) ? nbLF : 0);
         i++;
     }
+
+    // this is not supposed to happen
+    return i + ((convLFtoCRLF != 0) ? nbLF : 0);
 }
 
 
@@ -3884,6 +3893,10 @@ void free_string_optional_buffer(unichar** allocated_buffer, Abstract_allocator 
 
 /**
  * Unicode version of strcmp that tolerates NULL strings.
+ * (a==NULL) && (b==NULL)  =>  0          : a is equal to b
+ * (a==NULL) && (b!=NULL)  => -1          : a is less than b
+ * (a!=NULL) && (b==NULL)  =>  1          : b is less than a
+ * (a!=NULL) && (b!=NULL)  =>  check
  */
 int u_strcmp(const unichar* a,const char* b) {
 if ((a!=NULL) && (b!=NULL)) {
@@ -3922,19 +3935,24 @@ if ((a!=NULL) && (b!=NULL)) {
            return -b_c;
        if (a_c-b_c!=0)
            return (a_c-b_c);
-    } ;
-} else {
-  if (a==NULL) {
-       if (b==NULL) return 0;
-       return 1;
     }
-  return -1;
-  }
+} else if (a==NULL && b==NULL) {
+  return 0;
+} else if (a!=NULL && b==NULL) {
+  return 1;
+}
+
+// (a==NULL) && (b!=NULL)
+return -1;
 }
 
 
 /**
  * Unicode version of strcmp that tolerates NULL strings, ignoring case.
+ * (a==NULL) && (b==NULL)  =>  0          : a is equal to b
+ * (a==NULL) && (b!=NULL)  => -1          : a is less than b
+ * (a!=NULL) && (b==NULL)  =>  1          : b is less than a
+ * (a!=NULL) && (b!=NULL)  =>  check
  */
 int u_strcmp_ignore_case(const unichar* a,const char* b) {
 if ((a!=NULL) && (b!=NULL)) {
@@ -3973,14 +3991,15 @@ if ((a!=NULL) && (b!=NULL)) {
            return -b_c;
        if (a_c-b_c!=0)
            return (a_c-b_c);
-    } ;
-} else {
-  if (a==NULL) {
-       if (b==NULL) return 0;
-       return 1;
     }
-  return -1;
-  }
+} else if (a==NULL && b==NULL) {
+  return 0;
+} else if (a!=NULL && b==NULL) {
+  return 1;
+}
+
+// (a==NULL) && (b!=NULL)
+return -1;
 }
 
 
@@ -4043,6 +4062,10 @@ unichar *u_strtok_r(unichar *str, const unichar *delim, unichar **saveptr) {
 
 /**
  * Returns 1 if a is the same as b; 0 otherwise.
+ * (a==NULL) && (b==NULL)  =>  1          : a is equal to b
+ * (a==NULL) && (b!=NULL)  =>  0          : a is not equal to b
+ * (a!=NULL) && (b==NULL)  =>  0          : a is not equal to b
+ * (a!=NULL) && (b!=NULL)  =>  check
  */
 int u_equal(const unichar* a, const unichar* b) {
     if ((a != NULL) && (b != NULL)) {
@@ -4081,15 +4104,12 @@ int u_equal(const unichar* a, const unichar* b) {
                 return (b_c == '\0') ? 1 : 0;
             if (a_c - b_c != 0)
                 return 0;
-        };
-    }
-    else {
-        if (a == NULL) {
-            if (b == NULL) return 1;
-            return 0;
         }
-        return 0;
+    } else if (a==NULL && b==NULL) {
+      return 1;
     }
+
+    return 0;
 }
 
 
@@ -4377,9 +4397,12 @@ while (*s) {
 return NULL;
 }
 
-
 /**
  * Returns 1 if s starts with the given prefix; 0 otherwise.
+ * (a==NULL) && (b==NULL)  => 1
+ * (a==NULL) && (b!=NULL)  => 0
+ * (a!=NULL) && (b==NULL)  => 0
+ * (a!=NULL) && (b!=NULL)  => check
  */
 int u_starts_with(const unichar* a,const unichar* b) {
 if ((a!=NULL) && (b!=NULL)) {
@@ -4418,18 +4441,21 @@ if ((a!=NULL) && (b!=NULL)) {
            return 1;
        if (a_c != b_c)
            return 0;
-    } ;
-} else {
-  if (b!=NULL) {
-       return 0;
     }
+} else if (a==NULL && b==NULL) {
   return 1;
-  }
+}
+
+return 0;
 }
 
 
 /**
  * Returns 1 if s starts with the given prefix; 0 otherwise.
+ * (a==NULL) && (b==NULL)  => 1
+ * (a==NULL) && (b!=NULL)  => 0
+ * (a!=NULL) && (b==NULL)  => 0
+ * (a!=NULL) && (b!=NULL)  => check
  */
 int u_starts_with(const unichar* a,const char* b) {
 if ((a!=NULL) && (b!=NULL)) {
@@ -4468,13 +4494,12 @@ if ((a!=NULL) && (b!=NULL)) {
            return 1;
        if (a_c != b_c)
            return 0;
-    } ;
-} else {
-  if (b!=NULL) {
-       return 0;
     }
+} else if (a==NULL && b==NULL) {
   return 1;
-  }
+}
+
+return 0;
 }
 
 
