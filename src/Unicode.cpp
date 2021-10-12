@@ -236,20 +236,20 @@ return u_fwrite(f->enc,t,N,f->f);
 
 static void fwriteString(U_FILE* f, const unichar* us, int convLFtoCRLF);
 
-void u_fputs_raw(Encoding, const unichar*, ABSTRACTFILE*);
+//void u_fputs_raw(Encoding, const unichar*, ABSTRACTFILE*);
 void u_fputs_raw(const unichar* t, U_FILE* f) {
     fwriteString(f, t, 0);
     //u_fputs_raw(f->enc, t, f->f);
 }
 
-void u_fputs(Encoding, const unichar*, ABSTRACTFILE*);
+//void u_fputs(Encoding, const unichar*, ABSTRACTFILE*);
 void u_fputs(const unichar* t, U_FILE* f) {
     fwriteString(f, t, 1);
     //u_fputs(f->enc, t, f->f);
 }
 
 
-void u_fputs_conv_lf_to_crlf_option(Encoding, const unichar*, ABSTRACTFILE*, int);
+//void u_fputs_conv_lf_to_crlf_option(Encoding, const unichar*, ABSTRACTFILE*, int);
 void u_fputs_conv_lf_to_crlf_option(const unichar*t, U_FILE* f, int conv_lf_to_crlf_option) {
     fwriteString(f, t, conv_lf_to_crlf_option);
     //return u_fputs_conv_lf_to_crlf_option(f->enc, t, f->f, conv_lf_to_crlf_option);
