@@ -1510,7 +1510,7 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatchField(void* privateDataPtr,
 
   while (EOF != readline(line, config_batch->fi)) {
     unsigned int pos1         = 0;
-    unsigned int pos_champ    = 0;
+    // unsigned int pos_champ    = 0;
     unsigned int nb_sep_found = 0;
     while ((pos1 < line->len) && (nb_sep_found < num_selected_field)) {
       if (line->str[pos1] == separator)
@@ -1523,7 +1523,7 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatchField(void* privateDataPtr,
       u_fprintf(fo, "%S\n", line->str);
     } else {
       unichar save_first_car;
-      pos_champ           = pos1 + 0;
+      // pos_champ           = pos1 + 0;
       save_first_car      = line->str[pos1 + 0];
       line->str[pos1 + 0] = '\0';
       u_fprintf(fo, "%S", line->str);
