@@ -1513,7 +1513,7 @@ while (matches!=NULL) {
         int size_skipped=0;
 
         int copied_begin_first_token = 0;
-        int pos_in_output_dummy      = NULL;
+        int pos_in_output_dummy      = 0;
 
         pos_in_enter_pos=move_in_text_with_writing(matches->m.start_pos_in_token,matches->m.end_pos_in_token,text,tokens,
                                                     current_global_position_in_token,output,convLFtoCRLF,
