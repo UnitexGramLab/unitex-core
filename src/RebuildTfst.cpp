@@ -130,8 +130,8 @@ if (only_verify_arguments) {
   return SUCCESS_RETURN_CODE;
 }
 
-char input_tfst[FILENAME_MAX];
-char input_tind[FILENAME_MAX];
+char input_tfst[UNITEX_FULLPATH_WOEXT_MAX];
+char input_tind[UNITEX_FULLPATH_WOEXT_MAX];
 strcpy(input_tfst,argv[options.vars()->optind]);
 remove_extension(input_tfst,input_tind);
 strcat(input_tind,".tind");
@@ -144,11 +144,11 @@ if (tfst==NULL) {
    return DEFAULT_ERROR_CODE;
 }
 
-char basedir[FILENAME_MAX];
+char basedir[UNITEX_DIRNAME_MAX];
 get_path(input_tfst,basedir);
-char output_tfst[FILENAME_MAX];
+char output_tfst[UNITEX_FULLPATH_MAX];
 sprintf(output_tfst, "%s.new.tfst",input_tfst);
-char output_tind[FILENAME_MAX];
+char output_tind[UNITEX_FULLPATH_MAX];
 sprintf(output_tind, "%s.new.tind",input_tfst);
 
 U_FILE* f_tfst;
@@ -176,7 +176,7 @@ for (int i = 1; i <= tfst->N; i++) {
    }
    load_sentence(tfst,i);
 
-   char grfname[FILENAME_MAX];
+   char grfname[UNITEX_FULLPATH_MAX];
    sprintf(grfname, "%ssentence%d.grf", basedir, i);
    unichar** tags=NULL;
    int n_tags=-1;
@@ -185,7 +185,7 @@ for (int i = 1; i <= tfst->N; i++) {
        * take it into account */
       if (0==pseudo_main_Grf2Fst2(&vec,grfname,0,NULL,1,1,NULL,NULL,0)) {
          /* We proceed only if the graph compilation was a success */
-         char fst2name[FILENAME_MAX];
+         char fst2name[UNITEX_FULLPATH_MAX];
          sprintf(fst2name, "%ssentence%d.fst2", basedir, i);
          struct FST2_free_info fst2_free;
          Fst2* fst2=load_abstract_fst2(&vec,fst2name,0,&fst2_free);
@@ -237,8 +237,8 @@ if (save_statistics) {
 free_hash_table(form_frequencies);
 
 /* make a backup and replace old automaton with new */
-char backup_tfst[FILENAME_MAX];
-char backup_tind[FILENAME_MAX];
+char backup_tfst[UNITEX_FULLPATH_MAX];
+char backup_tind[UNITEX_FULLPATH_MAX];
 sprintf(backup_tfst,"%s.bck",input_tfst);
 sprintf(backup_tind,"%s.bck",input_tind);
 /* We remove the existing backup files, if any */

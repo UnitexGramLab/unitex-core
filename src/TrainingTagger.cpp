@@ -93,10 +93,10 @@ if (argc==1) {
 
 int val,index=-1,binaries=1,r_forms=1,i_forms=1;
 int semitic=0;
-char text[FILENAME_MAX]="";
-char raw_forms[FILENAME_MAX]="";
-char inflected_forms[FILENAME_MAX]="";
-char output[FILENAME_MAX]="";
+char text[UNITEX_FULLPATH_MAX]="";
+char raw_forms[UNITEX_FULLPATH_MAX]="";
+char inflected_forms[UNITEX_FULLPATH_MAX]="";
+char output[UNITEX_BASENAME_WOEXT_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 bool only_verify_arguments = false;
 UnitexGetOpt options;
@@ -166,7 +166,7 @@ if(output[0]=='\0'){
   remove_path_and_extension(text,output);
 }
 
-char path[FILENAME_MAX],filename[FILENAME_MAX];
+char path[FILENAME_MAX],filename[UNITEX_FULLPATH_MAX];
 get_path(text,path);
 if(strlen(path) == 0){
     strcpy(path,".");

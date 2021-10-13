@@ -261,20 +261,20 @@ if (out==NULL) {
    fatal_error("cannot open file '%s'\n",outname);
 }
 /* Name of the file that contains the result automaton */
-char fstoutname[FILENAME_MAX];
+char fstoutname[UNITEX_FULLPATH_MAX];
 int nbRules=0;
-char buf[FILENAME_MAX];
+char buf[UNITEX_FULLPATH_MAX];
 time_t start_time=time(0);
 Fst2Automaton* res=NULL;
 Fst2Automaton* A;
 int fst_number=0;
 Ustring* ustr=new_Ustring();
 
-char buf2[FILENAME_MAX];
-char directory[FILENAME_MAX];
+char buf2[UNITEX_PARENT_N_DIR_MAX(UNITEX_DIRNAME_MAX,8)];
+char directory[UNITEX_PARENT_N_DIR_MAX(UNITEX_DIRNAME_MAX,8)];
 get_path(rulesname,directory);
 
-while (af_fgets(buf,FILENAME_MAX,frules->f)) {
+while (af_fgets(buf,UNITEX_FULLPATH_MAX,frules->f)) {
    /* We read one by one the Elag grammar names in the .lst file */
    chomp(buf);
    if (*buf=='\0') {
@@ -282,7 +282,7 @@ while (af_fgets(buf,FILENAME_MAX,frules->f)) {
       continue;
    }
    if (!is_absolute_path(buf)) {
-      strcpy(buf2,buf);
+      strncpy(buf2,buf,UNITEX_PARENT_N_DIR_MAX(UNITEX_DIRNAME_MAX,8));
       sprintf(buf,"%s%s",directory,buf2);
    }
 

@@ -98,11 +98,11 @@ if (argc==1) {
 }
 
 int save_statistics=1;
-char tfst[FILENAME_MAX]="";
-char tind[FILENAME_MAX]="";
-char output_tfst[FILENAME_MAX]="";
-char output_tind[FILENAME_MAX]="";
-char tagset[FILENAME_MAX]="";
+char tfst[UNITEX_FULLPATH_WOEXT_MAX]="";
+char tind[UNITEX_FULLPATH_WOEXT_MAX]="";
+char output_tfst[UNITEX_FULLPATH_MAX]="";
+char output_tind[UNITEX_FULLPATH_MAX]="";
+char tagset[UNITEX_FULLPATH_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 bool only_verify_arguments = false;

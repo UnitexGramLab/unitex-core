@@ -157,11 +157,11 @@ ProgramInvoker* invoker_Locate=new_ProgramInvoker(main_Locate,"Locate");
 ProgramInvoker* invoker_Concord=new_ProgramInvoker(main_Concord,"Concord");
 char* dic_list = (char*)malloc(1);
 *dic_list = '\0';
-char alphabet[FILENAME_MAX]="";
-char working_dir[FILENAME_MAX]="";
-char output[FILENAME_MAX]="";
-char fake_stdout[FILENAME_MAX]="";
-char resume_out_filename[FILENAME_MAX]="";
+char alphabet[UNITEX_FULLPATH_MAX]="";
+char working_dir[UNITEX_DIRNAME_MAX]="";
+char output[UNITEX_FULLPATH_MAX]="";
+char fake_stdout[UNITEX_FULLPATH_MAX]="";
+char resume_out_filename[UNITEX_FULLPATH_MAX]="";
 U_FILE* f_output=U_STDERR;
 U_FILE* backup_stdout=U_STDOUT;
 U_FILE* resume_out=NULL;
@@ -269,13 +269,13 @@ if (output[0]!='\0') {
     goto end;
   }
 }
-char txt[FILENAME_MAX];
-char snt[FILENAME_MAX];
-char ind[FILENAME_MAX];
-char concord[FILENAME_MAX];
-char fst2[FILENAME_MAX];
-char offsets_in[FILENAME_MAX];
-char offsets_out[FILENAME_MAX];
+char txt[UNITEX_FULLPATH_MAX];
+char snt[UNITEX_FULLPATH_MAX];
+char ind[UNITEX_FULLPATH_MAX];
+char concord[UNITEX_FULLPATH_MAX];
+char fst2[UNITEX_FULLPATH_MAX];
+char offsets_in[UNITEX_FULLPATH_MAX];
+char offsets_out[UNITEX_FULLPATH_MAX];
 if (alter_stdout==1) {
   if (fake_stdout[0]=='\0') {
     sprintf(fake_stdout,"%s%sstdout",working_dir,PATH_SEPARATOR_STRING);

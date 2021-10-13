@@ -158,33 +158,33 @@ int initialize_working_directory_before_tokenize(const char*text, int must_creat
 }
 
 int initialize_working_directory(const char *text,int must_create_directory){
-    char path[FILENAME_MAX];
+    char path[UNITEX_PARENT_N_DIR_MAX(UNITEX_DIRNAME_MAX,2)];
     get_path(text,path);
 
-    char canonical_name[FILENAME_MAX];
+    char canonical_name[UNITEX_BASENAME_WOEXT_MAX];
     remove_path_and_extension(text, canonical_name);
 
-    char extension[FILENAME_MAX];
+    char extension[UNITEX_EXTENSION_MAX];
     get_extension(text,extension);
 
-    char working_directory[FILENAME_MAX];
+    char working_directory[UNITEX_PARENT_N_DIR_MAX(UNITEX_DIRNAME_MAX,1)];
     sprintf(working_directory, "%s%s%s%c",path, canonical_name, CASSYS_DIRECTORY_EXTENSION, PATH_SEPARATOR_CHAR);
 
     if (must_create_directory != 0) {
         make_cassys_directory(working_directory);
     }
 
-    char text_in_wd[FILENAME_MAX];
+    char text_in_wd[UNITEX_FULLPATH_MAX];
     sprintf(text_in_wd, "%s%s_0_0%s",working_directory,canonical_name,extension );
     copy_file(text_in_wd,text);
 
-    char snt_dir_text_in_wd[FILENAME_MAX];
+    char snt_dir_text_in_wd[UNITEX_FULLPATH_MAX];
     get_snt_path(text_in_wd, snt_dir_text_in_wd);
     if (must_create_directory != 0) {
         make_cassys_directory(snt_dir_text_in_wd);
     }
 
-    char original_snt_dir[FILENAME_MAX];
+    char original_snt_dir[UNITEX_FULLPATH_MAX];
     get_snt_path(text,original_snt_dir);
     copy_directory_snt_content(snt_dir_text_in_wd, original_snt_dir,1);
 
@@ -202,29 +202,29 @@ char* create_labeled_files_and_directory(
         int must_create_directory,
         int must_copy_file) {
 
-    char path[FILENAME_MAX];
+    char path[UNITEX_PARENT_N_DIR_MAX(UNITEX_DIRNAME_MAX,2)];
     get_path(text, path);
 
-    char canonical_text_name[FILENAME_MAX];
+    char canonical_text_name[UNITEX_BASENAME_WOEXT_MAX];
     remove_path_and_extension(text, canonical_text_name);
 
-    char extension[FILENAME_MAX];
+    char extension[UNITEX_EXTENSION_MAX];
     get_extension(text, extension);
 
-    char working_directory[FILENAME_MAX];
+    char working_directory[UNITEX_PARENT_N_DIR_MAX(UNITEX_DIRNAME_MAX,1)];
     sprintf(working_directory, "%s%s%s%c", path, canonical_text_name,
             CASSYS_DIRECTORY_EXTENSION, PATH_SEPARATOR_CHAR);
 
     // copy the text label i- to i
-    char old_labeled_text_name[FILENAME_MAX];
+    char old_labeled_text_name[UNITEX_FULLPATH_MAX];
     sprintf(old_labeled_text_name, "%s%s_%d_%d%s", working_directory,
             canonical_text_name, previous_transducer_label, previous_iteration, extension);
 
-    char new_labeled_text_name[FILENAME_MAX];
+    char new_labeled_text_name[UNITEX_FULLPATH_MAX];
     sprintf(new_labeled_text_name, "%s%s_%d_%d%s", working_directory,
             canonical_text_name, next_transducer_label, next_iteration, extension);
 
-    char new_labeled_snt_directory[FILENAME_MAX];
+    char new_labeled_snt_directory[UNITEX_FULLPATH_MAX];
     get_snt_path(new_labeled_text_name, new_labeled_snt_directory);
     if (must_create_directory != 0) {
         make_cassys_directory(new_labeled_snt_directory);
@@ -284,13 +284,13 @@ char* create_updated_graph_filename(const char *text,
     const char* graph_name,
     const char* ext)
 {
-    char path[FILENAME_MAX];
+    char path[UNITEX_PARENT_N_DIR_MAX(UNITEX_DIRNAME_MAX,2)];
     get_path(text, path);
 
-    char canonical_text_name[FILENAME_MAX];
+    char canonical_text_name[UNITEX_BASENAME_WOEXT_MAX];
     remove_path_and_extension(text, canonical_text_name);
 
-    char working[FILENAME_MAX];
+    char working[UNITEX_FULLPATH_MAX];
     sprintf(working, "%s%s%s%c%s_%d_%d_snt%c", path, canonical_text_name,
         CASSYS_DIRECTORY_EXTENSION, PATH_SEPARATOR_CHAR,
         canonical_text_name, next_transducer_label, next_iteration, PATH_SEPARATOR_CHAR);

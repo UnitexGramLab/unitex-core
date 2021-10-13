@@ -502,8 +502,8 @@ void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* ve
 
     DISCARD_UNUSED_PARAMETER(lang);
 
-    char text_name_without_extension[FILENAME_MAX];
-    char result_file[FILENAME_MAX];
+    char text_name_without_extension[UNITEX_FULLPATH_WOEXT_MAX];
+    char result_file[UNITEX_FULLPATH_MAX];
     text_name_without_extension[0] = '\0';
     result_file[0] = '\0';
     size_t size_buffer_line = 0;
@@ -683,8 +683,8 @@ void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* ve
 
 void construct_istex_token(const char *text_name, VersatileEncodingConfig* vec,
         const char* original_file) {
-    char text_name_without_extension[FILENAME_MAX];
-    char result_file[FILENAME_MAX];
+    char text_name_without_extension[UNITEX_FULLPATH_WOEXT_MAX];
+    char result_file[UNITEX_FULLPATH_MAX];
     text_name_without_extension[0] = '\0';
     result_file[0] = '\0';
     size_t size_buffer_line = 0;

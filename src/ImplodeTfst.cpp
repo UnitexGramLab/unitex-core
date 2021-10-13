@@ -86,10 +86,10 @@ if (argc==1) {
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 int save_statistics=1;
-char input_tfst[FILENAME_MAX]="";
-char input_tind[FILENAME_MAX]="";
-char output_tfst[FILENAME_MAX]="";
-char output_tind[FILENAME_MAX]="";
+char input_tfst[UNITEX_FULLPATH_WOEXT_MAX]="";
+char input_tind[UNITEX_FULLPATH_WOEXT_MAX]="";
+char output_tfst[UNITEX_FULLPATH_MAX]="";
+char output_tind[UNITEX_FULLPATH_MAX]="";
 bool only_verify_arguments = false;
 UnitexGetOpt options;
 
@@ -142,7 +142,7 @@ if (only_verify_arguments) {
 strcpy(input_tfst,argv[options.vars()->optind]);
 remove_extension(input_tfst,input_tind);
 strcat(input_tind,".tind");
-char foo[FILENAME_MAX];
+char foo[UNITEX_FULLPATH_WOEXT_MAX];
 remove_path(input_tfst,foo);
 int elag=!strcmp(foo,"text-elag.tfst");
 int no_explicit_output=0;

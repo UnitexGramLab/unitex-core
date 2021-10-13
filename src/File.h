@@ -202,6 +202,91 @@ typedef enum {
 # endif  // !defined(F_OK)
 #endif  // _NOT_UNDER_WINDOWS
 
+
+/**
+ * FILENAME_MAX (C standard) and PATH_MAX (POSIX) are ambiguous constants
+ * and error-prone. We define some unambiguous boundaries macros around the
+ * following name convention:
+ *
+ * /foo/bar/baz.qux
+ *
+ *                                                                                 P         W
+ * fullpath:               /foo/bar/baz.qux        UNITEX_FULLPATH_MAX
+ * fullpath w/o extension: /foo/bar/baz            UNITEX_FULLPATH_WOEXT_MAX
+ * basename:               baz.qux                 UNITEX_BASENAME_MAX
+ * basename w/o extension: baz                     UNITEX_BASENAME_WOEXT_MAX
+ * extension:              qux                     UNITEX_EXTENSION_MAX
+ * dirname:                /foo/bar/               UNITEX_DIRNAME_MAX
+ *
+ * @author Cristian Martinez
+ */
+
+// PATH: a full path, relative path or basename (ambiguous)
+// PATH_MAX: POSIX constant representing the maximum number of
+// bytes in a pathname, including the terminating null character
+// failback for PATH_MAX if not already defined
+#if !defined(PATH_MAX)
+#define PATH_MAX  MAX_PATH
+#endif  //  !defined(PATH_MAX)
+
+// FILENAME: a fullpath or basename(ambiguous)
+// FILENAME_MAX: the longest file name string that the C implementation
+// implementation guarantees can be opened. As FILENAME_MAX can be a very
+// large number, its use to allocate memory is discouraged
+// @see https://www.gnu.org/software/libc/manual/html_node/Limits-for-Files.html
+
+// UNITEX_FULLPATH_LIMIT
+// The raw limit for the longest full path string
+#define UNITEX_FULLPATH_LIMIT      4096
+
+// UNITEX_FULLPATH_MAX:
+// The longest full path string
+// equal to min(UNITEX_FULLPATH_LIMIT,FILENAME_MAX,PATH_MAX)
+#define UNITEX_FULLPATH_MAX        (FILENAME_MAX > UNITEX_FULLPATH_LIMIT ? \
+                                    PATH_MAX     < UNITEX_FULLPATH_LIMIT ? \
+                                    PATH_MAX     : UNITEX_FULLPATH_LIMIT : FILENAME_MAX)
+
+// UNITEX_BASENAME_LIMIT
+// The raw limit for the longest basename string
+#define UNITEX_BASENAME_LIMIT      (UNITEX_FULLPATH_MAX / 16)
+
+// failback for NAME_MAX if not already defined
+#if !defined(NAME_MAX)
+# define NAME_MAX                  UNITEX_BASENAME_LIMIT
+#endif  //  !defined(PATH_MAX)
+
+// UNITEX_BASENAME_MAX
+// The longest basename string
+// equal to min(UNITEX_BASENAME_LIMIT,NAME_MAX)
+#define UNITEX_BASENAME_MAX        (NAME_MAX < (UNITEX_BASENAME_LIMIT) ? \
+                                    NAME_MAX : (UNITEX_BASENAME_LIMIT))
+
+// UNITEX_ROOTNAME_MAX
+// The longest rootname string
+#define UNITEX_BASENAME_WOEXT_MAX  (UNITEX_BASENAME_MAX / 2)
+
+// UNITEX_EXTENSION_MAX
+// The longest extension string
+// equal to len(basename) - len(rootname)
+#define UNITEX_EXTENSION_MAX       UNITEX_BASENAME_MAX - UNITEX_BASENAME_WOEXT_MAX
+
+// UNITEX_PARENT_DIR_MAX
+// The longest n-parent path string of a given path size
+#define UNITEX_PARENT_N_DIR_MAX(PATH_SIZE, N) (PATH_SIZE - (N*UNITEX_BASENAME_MAX))
+
+// UNITEX_PARENT_DIR_MAX
+// The longest parent path string of a given path size
+#define UNITEX_PARENT_DIR_MAX(PATH_SIZE) UNITEX_PARENT_N_DIR_MAX(PATH_SIZE, 1)
+
+// UNITEX_DIRNAME_MAX
+// The longest dirname string
+// equal to len(fullpath) - len(basename)
+#define UNITEX_DIRNAME_MAX         UNITEX_PARENT_DIR_MAX(UNITEX_FULLPATH_MAX)
+
+// UNITEX_ROOTPATH_MAX
+// The longest rootpath (full path without extension) string
+#define UNITEX_FULLPATH_WOEXT_MAX  UNITEX_FULLPATH_MAX - UNITEX_EXTENSION_MAX
+
 void add_suffix_to_file_name(char*,const char*,const char*);
 void add_prefix_to_file_name(char*,const char*,const char*);
 void get_extension(const char*,char*);

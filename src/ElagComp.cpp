@@ -93,11 +93,11 @@ if (argc==1) {
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-char compilename[FILENAME_MAX]="";
-char directory[FILENAME_MAX]="";
-char grammar[FILENAME_MAX]="";
-char rule_file[FILENAME_MAX]="";
-char lang[FILENAME_MAX]="";
+char compilename[UNITEX_FULLPATH_MAX]="";
+char directory[UNITEX_DIRNAME_MAX]="";
+char grammar[UNITEX_FULLPATH_MAX]="";
+char rule_file[UNITEX_FULLPATH_WOEXT_MAX]="";
+char lang[UNITEX_FULLPATH_MAX]="";
 bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_ElagComp,lopts_ElagComp,&index))) {
