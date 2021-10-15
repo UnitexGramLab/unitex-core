@@ -68,6 +68,10 @@ namespace unitex {
 #define NOT_IN_DICTIONARY -1
 
 
+#define UNITEX_DICENTRY_NEGATIVE_POLARITY 0
+#define UNITEX_DICENTRY_POSITIVE_POLARITY 1
+#define UNITEX_DICENTRY_NO_POLARITY       127
+
 /*
  * This structure is used to represent an entry of a DELA dictionary.
  * Special characters are supposed to have been unprotected, and comments
@@ -105,6 +109,7 @@ struct dela_entry {
 };
 
 
+struct dela_entry* new_dela_entry(Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* new_dela_entry(const unichar*,const unichar*,const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* clone_dela_entry(const struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int equal(const struct dela_entry*,const struct dela_entry*);

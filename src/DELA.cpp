@@ -31,6 +31,31 @@
 
 namespace unitex {
 
+
+/**
+ * Allocates, initializes and empty dela_entry.
+ */
+struct dela_entry* new_dela_entry(Abstract_allocator prv_alloc) {
+  struct dela_entry* entry = (struct dela_entry*) malloc_cb(
+      sizeof(struct dela_entry), prv_alloc);
+
+  if (entry == NULL) {
+    fatal_alloc_error("new_dela_empty_entry");
+  }
+
+  entry->inflected = NULL;
+  entry->lemma = NULL;
+  entry->n_semantic_codes = 0;
+  entry->semantic_codes[0] = NULL;
+  entry->n_inflectional_codes = 0;
+  entry->inflectional_codes[0] = NULL;
+  entry->n_filter_codes = 0;
+  entry->filter_codes[0] = NULL;
+  entry->filter_polarity = UNITEX_DICENTRY_NO_POLARITY;
+
+  return entry;
+}
+
 /**
  * Allocates, initializes and returns a dela_entry.
  */
@@ -44,16 +69,16 @@ res->lemma=u_strdup(lemma,prv_alloc);
 res->n_semantic_codes=1;
 res->semantic_codes[0]=u_strdup(code,prv_alloc);
 res->n_inflectional_codes=0;
+res->inflectional_codes[0] = NULL;
 res->n_filter_codes=0;
 res->filter_codes[0]= NULL;
+res->filter_polarity = UNITEX_DICENTRY_NO_POLARITY;
 return res;
 }
 
 
 /**
- * Returns a copy of the given entry.
- * WARNING: filters are not taken into account since they aren't
- *          used, except in the inflection module
+ * Returns a deep copy of the given entry.
  */
 struct dela_entry* clone_dela_entry(const struct dela_entry* entry,Abstract_allocator prv_alloc) {
 if (entry==NULL) return NULL;
@@ -76,6 +101,7 @@ res->n_filter_codes= entry->n_filter_codes;
 for (i=0;i<res->n_filter_codes;i++) {
    res->filter_codes[i]=u_strdup(entry->filter_codes[i],prv_alloc);
 }
+res->filter_polarity = entry->filter_polarity;
 return res;
 }
 
@@ -126,11 +152,11 @@ return 0;
  * function must print messages if there is an error; otherwise, the function prints
  * no error message and stores an error code in '*verbose'.
  * if strict_unprotected is not 0, we don't accept unprotected comma and dot (for CheckDic)
+ *
+ * modified by Cristian Martinez
  */
 static struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,
                                               int *verbose, int strict_unprotected,Abstract_allocator prv_alloc) {
-struct dela_entry* res;
-int i,val;
 if (line==NULL) {
     if (!verbose) error("Internal NULL error in tokenize_DELAF_line\n");
    else (*verbose)=P_NULL_STRING;
@@ -141,23 +167,13 @@ if (temp==NULL) {
     fatal_alloc_error("tokenize_DELAF_line");
 }
 /* Initialization of the result structure */
-res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
-if (res==NULL) {
-    fatal_alloc_error("tokenize_DELAF_line");
-}
-res->inflected=NULL;
-res->lemma=NULL;
-res->n_semantic_codes=1;   /* 0 would be an error (no grammatical code) */
-res->semantic_codes[0]=NULL;
-res->n_inflectional_codes=0;
-res->inflectional_codes[0]=NULL;
-res->n_filter_codes=0;
-res->filter_codes[0]=NULL;
-i=0;
+struct dela_entry* res = new_dela_entry(prv_alloc);
+
 /*
  * We read the inflected part
  */
-val=parse_string(line,&i,temp,P_COMMA,strict_unprotected ? P_DOT : P_EMPTY,P_EMPTY);
+int i=0;
+int val=parse_string(line,&i,temp,P_COMMA,strict_unprotected ? P_DOT : P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
@@ -236,6 +252,8 @@ if (temp[0]=='\0') {
    goto error;
 }
 res->semantic_codes[0]=u_strdup(temp,prv_alloc);
+res->n_semantic_codes=1; /* 0 would be an error (no grammatical code) */
+
 /*
  * Now we read the other gramatical and semantic codes if any
  */
@@ -629,11 +647,11 @@ res->semantic_codes[0]=u_strdup(temp,prv_alloc);
  */
 if (line[i] == '!' && line[i+1] == '[') {//Negative filter
     /* Initialization of the result structure */
-    res->filter_polarity = 0;
+    res->filter_polarity = UNITEX_DICENTRY_NEGATIVE_POLARITY;
     i=i+2; //we skip !
 }
 else if (line[i] == '[' ) {//Positive filter
-    res->filter_polarity = 1;
+    res->filter_polarity = UNITEX_DICENTRY_POSITIVE_POLARITY;
     i++;
 }
 /*
