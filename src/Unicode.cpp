@@ -4553,10 +4553,6 @@ int u_substr(const unichar *str, const unichar *target) {
   return 0;
 }
 
-
-
-
-
 /**
  * Converts the unichar* src into a char* dest
  * Note that wide characters (> 8-bit) are skipped
@@ -4565,14 +4561,20 @@ int u_substr(const unichar *str, const unichar *target) {
  * Modified by Sébastian Nagel
  * Modified by Cristian Martinez
  */
-void u_to_char(char *dest,unichar *src) {
+size_t u_encode_char(char *dest,const unichar *src) {
+  size_t length = 0;
   // C-style reinterpret cast, @see http://stackoverflow.com/a/5042335/2042871
   unsigned char* dest_unsigned_char = (unsigned char*) dest;
   unichar c;
   do {
     c = *src++;
-    if (c <= 0xFF) *(dest_unsigned_char++) = (unsigned char) c;
+    if (c <= 0xFF) {
+      *(dest_unsigned_char++) = (unsigned char) c;
+      ++length;
+    }
   } while (c != '\0');
+
+  return length;
 }
 
 
@@ -4580,22 +4582,29 @@ void u_to_char(char *dest,unichar *src) {
  * Converts up to n unichar* src characters into a char* dest
  * Note that wide characters (> 8-bit) are skipped
  */
-void u_to_char_n(char* dest, const unichar* src, unsigned int n) {
+size_t u_encode_char_n(char* dest, const unichar* src, unsigned int n) {
+    size_t length = 0;
+    // C-style reinterpret cast, @see http://stackoverflow.com/a/5042335/2042871
     unsigned char* dest_unsigned_char = (unsigned char*)dest;
     if (n == 0) {
         dest[0] = '\0';
-        return;
+        return 0;
     }
     unichar c;
     do {
         c = *src++;
-        if (c<=0xFF) *(dest_unsigned_char++) = (unsigned char)c;
+        if (c<=0xFF) {
+          *(dest_unsigned_char++) = (unsigned char)c;
+          ++length;
+        }
         --n;
         if (n == 0) {
-            *(dest_unsigned_char++) = '\0';
-            return;
+          *(dest_unsigned_char++) = '\0';
+          return length;
         }
     } while (c != '\0');
+
+    return length;
 }
 
 

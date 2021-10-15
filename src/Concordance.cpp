@@ -551,14 +551,14 @@ while ((c=u_fgetc(f))!=EOF) {
       }
       else if (options->result_mode==UIMA_) {
          char tmp1[100];
-         u_to_char(tmp1,indices);
+         u_encode_char(tmp1,indices);
          int start,end;
          sscanf(tmp1,"%d %d",&start,&end);
          u_fprintf(out,"%d %d\t%S\n",start,end,middle);
       }
       else if ((options->result_mode==XML_) || (options->result_mode==XML_WITH_HEADER_)) {
          char tmp1[100];
-         u_to_char(tmp1,indices);
+         u_encode_char(tmp1,indices);
          int start,end;
          sscanf(tmp1,"%d %d",&start,&end);
          if (options->escape_matches) {
@@ -579,7 +579,7 @@ while ((c=u_fgetc(f))!=EOF) {
       */
       else if (options->result_mode==AXIS_) {
          char tmp1[100];
-         u_to_char(tmp1,indices);
+         u_encode_char(tmp1,indices);
          float f1,f2,len,med;
          sscanf(tmp1,"%f %f",&f1,&f2);
          len=(f2+1)-f1;

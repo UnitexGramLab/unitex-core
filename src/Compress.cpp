@@ -197,7 +197,7 @@ static int build_tree_from_dictionary(
   char* filename_as_char           = (heap_buffer + (step_filename_buffer * 0));
 
   // this is because u_fopen do not deal for now with unicode filenames
-  u_to_char_n(filename_as_char, filename, step_filename_buffer);
+  u_encode_char_n(filename_as_char, filename, step_filename_buffer);
 
   // try to open the dictionary
   U_FILE* file_handler = u_fopen(vec, filename_as_char, U_READ);
@@ -274,7 +274,7 @@ static int build_tree_from_dictionary(
           // if it's not an empty line
           if (j > i) {
             // copy the trimmed line into the meta-comment buffer
-            u_to_char_n(meta_comment, line->str+i, j-i);
+            u_encode_char_n(meta_comment, line->str+i, j-i);
 
             // meta-comment processing
 

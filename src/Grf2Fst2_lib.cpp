@@ -376,7 +376,7 @@ if (pos2!=-1) {
 }
 u_strcat(temp,".grf");
 /* Finally, we turn the file name into ISO-8859-1 */
-u_to_char(name,temp);
+u_encode_char(name,temp);
 if (abs_path_name_warning!=0) {
    error("Absolute path name detected (%s):\n"
          "%s\n"

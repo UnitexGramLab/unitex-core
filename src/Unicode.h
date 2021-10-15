@@ -352,8 +352,8 @@ size_t u_quotize(const T* source, T* destination);
 #endif
 
 
-void u_to_char(char*,unichar*);
-void u_to_char_n(char *, const unichar *, unsigned int);
+size_t u_encode_char(char*,const unichar*);
+size_t u_encode_char_n(char *, const unichar *, unsigned int);
 void u_chomp_new_line(unichar*);
 size_t u_jsonize(const unichar* source,unichar* destination);
 int XMLize(const unichar* source,unichar* destination);

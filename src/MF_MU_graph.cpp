@@ -916,7 +916,7 @@ int MU_graph_scan_label_in(MultiFlex_ctx* p_multiFlex_ctx,
             return 1;
         }
         char tmp_char[MAX_GRAPH_NODE];
-        u_to_char(tmp_char, tmp);
+        u_encode_char(tmp_char, tmp);
         MU_label_in->unit.u.num = atoi(tmp_char);
         pos = pos + l;
 

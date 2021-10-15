@@ -90,7 +90,7 @@ int read_language_morpho(const VersatileEncodingConfig* vec,struct l_morpho_t* p
 
   //scan the following pL_MORPHO->line
   u_fgets(pL_MORPHO->line,MAX_LANG_MORPHO_LINE-1,pL_MORPHO->lf);
-  u_to_char(pL_MORPHO->line_ch,pL_MORPHO->line);
+  u_encode_char(pL_MORPHO->line_ch,pL_MORPHO->line);
   sscanf(pL_MORPHO->line_ch,"%s",pL_MORPHO->word_ch);
   pL_MORPHO->line_no++;
 
@@ -122,7 +122,7 @@ int read_cats(struct l_morpho_t* pL_MORPHO) {
 
   //Scan categories
   l = u_fgets(pL_MORPHO->line,MAX_LANG_MORPHO_LINE-1,pL_MORPHO->lf);
-  u_to_char(pL_MORPHO->line_ch,pL_MORPHO->line);
+  u_encode_char(pL_MORPHO->line_ch,pL_MORPHO->line);
   sscanf(pL_MORPHO->line_ch,"%s",pL_MORPHO->word_ch);
   pL_MORPHO->line_no++;
   cat_no = 0;
@@ -130,7 +130,7 @@ int read_cats(struct l_morpho_t* pL_MORPHO) {
     if (read_cat_line(pL_MORPHO,cat_no))
       return 1;
     l = u_fgets(pL_MORPHO->line,MAX_LANG_MORPHO_LINE-1,pL_MORPHO->lf);
-    u_to_char(pL_MORPHO->line_ch,pL_MORPHO->line);
+    u_encode_char(pL_MORPHO->line_ch,pL_MORPHO->line);
     sscanf(pL_MORPHO->line_ch,"%s",pL_MORPHO->word_ch);
     pL_MORPHO->line_no++;
     cat_no++;
@@ -207,7 +207,7 @@ int read_classes(struct l_morpho_t* pL_MORPHO) {
 
  //Scan classes
   l = u_fgets(pL_MORPHO->line,MAX_LANG_MORPHO_LINE-1,pL_MORPHO->lf);
-  u_to_char(pL_MORPHO->line_ch,pL_MORPHO->line);
+  u_encode_char(pL_MORPHO->line_ch,pL_MORPHO->line);
   sscanf(pL_MORPHO->line_ch,"%s",pL_MORPHO->word_ch);
   pL_MORPHO->line_no++;
 
@@ -216,7 +216,7 @@ int read_classes(struct l_morpho_t* pL_MORPHO) {
     if (read_class_line(pL_MORPHO,class_no))
       return 1;
     l = u_fgets(pL_MORPHO->line,MAX_LANG_MORPHO_LINE-1,pL_MORPHO->lf);
-    u_to_char(pL_MORPHO->line_ch,pL_MORPHO->line);
+    u_encode_char(pL_MORPHO->line_ch,pL_MORPHO->line);
     sscanf(pL_MORPHO->line_ch,"%s",pL_MORPHO->word_ch);
     pL_MORPHO->line_no++;
     class_no++;

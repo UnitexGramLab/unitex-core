@@ -1647,7 +1647,7 @@ if (s[i]=='\0') {
    /* If the whole string is made of ANSI letters, then the inflection and
     * grammmatical codes are identical */
     u_strcpy(code_gramm,&(s[*semitic]));
-    u_to_char(inflection_code,&(s[*semitic]));
+    u_encode_char(inflection_code,&(s[*semitic]));
     return;
 }
 if (s[i]=='(' && s[u_strlen(s)-1]==')') {
@@ -1664,7 +1664,7 @@ if (s[i]=='(' && s[u_strlen(s)-1]==')') {
    return;
 }
 /* If we are in the case "N32" */
-u_to_char(inflection_code,&(s[*semitic]));
+u_encode_char(inflection_code,&(s[*semitic]));
 u_strcpy(code_gramm,&(s[*semitic]));
 code_gramm[i-(*semitic)]='\0';
 }

@@ -666,7 +666,7 @@ char current_graph_char[FILENAME_MAX];
 u_strcpy(tmp,name_result);
 current_graph[0]='\0';
 convert(current_graph,tmp,line,n_fields,current_line);
-u_to_char(current_graph_char,current_graph);
+u_encode_char(current_graph_char,current_graph);
 if (!clean_graph(res)) {
   // if the graph has been emptied, we return
   error("%S has been emptied\n",current_graph);
