@@ -22,7 +22,7 @@
  * @file      unicode.h
  * @brief     Unicode library
  *
- * @author    cristian.martinez@univ-paris-est.fr (martinec)
+ * @author    cristian.martinez@unitexgramlab.org (martinec)
  *
  * @attention Do not include this file directly, rather include the
  *            base/common.h header file to gain this file's functionality
@@ -40,5 +40,6 @@
 #include "base/unicode/test.h"
 #include "base/unicode/case.h"
 #include "base/unicode/utf8.h"
+#include "base/unicode/encode.h"
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_UNICODE_UNICODE_H_                           // NOLINT

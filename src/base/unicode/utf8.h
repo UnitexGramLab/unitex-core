@@ -22,7 +22,7 @@
  * @file      utf8.h
  * @brief     Functions to handle UTF-8
  *
- * @author    cristian.martinez@univ-paris-est.fr (martinec)
+ * @author    cristian.martinez@unitexgramlab.org (martinec)
  *
  * @attention Do not include this file directly, rather include the
  *            base/common.h header file to gain this file's functionality
@@ -42,6 +42,26 @@
 #include "base/unicode/test.h"
 /* ************************************************************************** */
 namespace unitex {
+/* ************************************************************************** */
+/**
+ * @def      U_MAX_WIDTH_UTF8
+ * @brief    Maximal numbers of UTF8 bytes that a unichar can encode
+ * @see      U_MAX_VALUE
+ */
+#define U_MAX_WIDTH_UTF8 3
+
+/**
+ * Test if the code point is valid
+ */
+#define u_has_valid_utf8_width(n) UNITEX_LIKELY(n > 0 && n <= U_MAX_WIDTH_UTF8)
+
+/**
+ * @def      kUTF8ReplacementChar
+ * @brief    The unicode replacement character used when decoding byte sequences
+ *           that cannot be successfully converted
+ * @see      U_REPLACEMENT_CHAR
+ */
+const uint8_t kUTF8ReplacementChar[] = {0xEF, 0xBF, 0xBD};
 /* ************************************************************************** */
 /**
  * UTF-8 info
@@ -71,27 +91,7 @@ extern const u_info_utf8_t kUTF8ByteInfo[];
  *
  */
 extern const uint8_t kUTF8ByteInfoIndex[];
-
-/**
- *
- *
- * @param source
- * @param destination
- * @return the length of the destination string
- */
-int u_encode_utf8(const unichar* source, char* destination) UNITEX_PARAMS_NON_NULL;
-
-/**
- *
- *
- * @param source
- * @param destination
- * @return
- */
-size_t u_decode_utf8(const char* source, unichar* destination) UNITEX_PARAMS_NON_NULL;
-
-size_t u_decode_utf8_n(const char* source, unichar* destination, size_t n) UNITEX_PARAMS_NON_NULL;
-
+/* ************************************************************************** */
 size_t u_strlen(const unichar* s);
 
 int u_strcmp(const unichar* s1, const unichar* s2);
