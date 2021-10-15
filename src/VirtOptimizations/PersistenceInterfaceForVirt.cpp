@@ -51,6 +51,12 @@
 using namespace unitex;
 #endif
 
+
+#if defined(UNITEX_PREVENT_EXPOSE_MINI_PERSISTANCE_IN_INTERFACE)
+
+
+
+
 #include "Unicode.h"
 #include "DELA.h"
 // VersatileEncodingConfigDefined was defined in Unitex near same time than introduce LoadInf.h
@@ -220,5 +226,8 @@ extern "C" void standard_unload_persistence_alphabet(const char*filename)
 }
 
 }
+
+#endif
+
 
 #endif

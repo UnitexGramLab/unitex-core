@@ -53,6 +53,9 @@
 #    make DEBUG=yes UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 # request freeing all memory possible at exit and produce debug version (useful for valgrind)
 #
+#    make VIRTOPTIMIZATION=yes
+# compile using virtual and memory performances optimizations (see folder VirtOptimizations)
+#
 #
 #  UNITEX AS A JNI:
 #
@@ -228,12 +231,15 @@ export LUA_CPATH_DEFAULT=".\\\\?.dll;!\\\\lib\\\\?.dll"
 endif
 endif
 
+ifeq ($(VIRTOPTIMIZATION),yes)
 VIRTOPTIMIZATION_OBJECT=export_unitex_virtualwork.o FileTools.o MiniMutexPosix.o MiniMutexWin.o \
                         PersistenceInterfaceForVirt.o VirtAllocator.o VirtDela.o VirtFileSystem.o \
                         VirtFst2.o VirtualSpaceManager.o VirtualTimeoutCancel.o 
 
 VIRTOPTIMIZATION_OPTIONS=-I../VirtOptimizations -I../logger
 
+ADDITIONAL_DEFFLAGS += -DUNITEX_PREVENT_EXPOSE_MINI_PERSISTANCE_IN_INTERFACE
+endif
 
 OBJ_DIR = build/
 BIN_DIR = ../../bin/
@@ -338,7 +344,10 @@ GOLD_LD_FLAG = -fuse-ld=gold
 endif
 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g3 -O0 -DDEBUG=1 $(GOLD_LD_FLAG) -Wl,--disable-new-dtags
+CFLAGS += -g3 -O0 -DDEBUG=1 $(GOLD_LD_FLAG)
+ifneq ($(TARGET_OSX),yes)
+CFLAGS += -fno-eliminate-unused-debug-types -Wl,--disable-new-dtags
+endif
 UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 # FOR LuaJIT
 ifeq ($(DEBUG_ELG), yes)
@@ -420,7 +429,7 @@ TRE_LIBS = -Llibtre/lib $(TRE_LINK_LIB)
 LUAJIT_LIBS = $(LUAJIT_LDFLAGS) -Llibluajit/lib $(LUAJIT_LINK_LIB)
 LIBS = $(TRE_LIBS) $(LUAJIT_LIBS) $(EXTRA_LIBS)
 
-OPTIONS = $(CFLAGS) $(LDFLAGS)
+OPTIONS += $(CFLAGS) $(LDFLAGS)
 
 ifneq ($(strip $(ADDITIONAL_OPTIONS)),)
 OPTIONS += $(ADDITIONAL_OPTIONS)
@@ -596,7 +605,7 @@ SYSLIBDIRIO = UnitexLibDirWin.o
 
 APPDIR = ../../../App
 
-OPTIONS = $(CFLAGS) $(LDFLAGS)
+OPTIONS += $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
 
 
@@ -766,7 +775,7 @@ SYSLIBDIRIO = UnitexLibDirPosix.o
 
 APPDIR = ../../../App
 
-OPTIONS = $(CFLAGS) $(LDFLAGS)
+OPTIONS += $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
 
 #####################
@@ -923,7 +932,7 @@ ifneq ($(SVN_REVISION),)
 CFLAGS += -DSVN_REVISION=$(SVN_REVISION)
 endif
 
-OPTIONS = $(CFLAGS) $(LDFLAGS)
+OPTIONS += $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
 
 ###################
