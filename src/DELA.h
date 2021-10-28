@@ -46,6 +46,9 @@ namespace unitex {
 /* Maximum number of semantic codes (Hum,Conc,z1,...) per line */
 #define MAX_SEMANTIC_CODES 100
 
+/* Separator for (key, value) pairs in semantic codes */
+#define DIC_SEMANTIC_CODE_KEY_VALUE_CHAR_SEP  '='
+
 /* Maximum number of flexional codes (ms,Kf,W,...) per line
  *
  * For languages with rich inflection this number must be considerably high,
@@ -68,9 +71,23 @@ namespace unitex {
 #define NOT_IN_DICTIONARY -1
 
 
-#define UNITEX_DICENTRY_NEGATIVE_POLARITY 0
-#define UNITEX_DICENTRY_POSITIVE_POLARITY 1
-#define UNITEX_DICENTRY_NO_POLARITY       127
+#define U_DICENTRY_POLARITY_NEGATIVE 0
+#define U_DICENTRY_POLARITY_POSITIVE 1
+#define U_DICENTRY_POLARITY_NONE     127
+
+/**
+ *
+ */
+typedef enum {
+   U_DICENTRY_UNIT_INFLECTED_FORM   = 0,
+   U_DICENTRY_UNIT_LEMMA,
+   U_DICENTRY_UNIT_GRAMMATICAL_CODE,
+   U_DICENTRY_UNIT_SEMANTIC_CODES,
+   U_DICENTRY_UNIT_INFLECTIONAL_CODES,
+   U_DICENTRY_UNIT_FILTER,
+   U_DICENTRY_UNIT_FILTER_CODES,
+   U_DICENTRY_UNIT_COMMENT
+} DicEntryUnit;
 
 /*
  * This structure is used to represent an entry of a DELA dictionary.

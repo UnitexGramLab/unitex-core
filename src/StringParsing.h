@@ -52,6 +52,7 @@ namespace unitex {
 #define P_DUPLICATE_SEMANTIC_CODE 13
 #define P_UNPROTECTED_DOT 14
 #define P_UNPROTECTED_COMMA 15
+#define P_EMPTY_GRAMMATICAL_CODE 16
 
 #define PROTECTION_CHAR '\\'
 
@@ -94,7 +95,7 @@ extern const unichar P_COMMA_DOT_EQUAL_BACKSLASH[] ;
 
 
 int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
-      const unichar* forbidden_chars,const unichar* chars_to_keep_protected);
+      const unichar* forbidden_chars,const unichar* chars_to_keep_protected, int* readed = NULL);
 int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars);
 int parse_string(const unichar* s,int *ptr,unichar* result,const char* stop_chars);
 int parse_string(const unichar* s,unichar* result,const unichar* stop_chars);

@@ -20,6 +20,7 @@
  */
 
 #include "StringParsing.h"
+#include "base/unicode/operations.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -85,35 +86,24 @@ const unichar STRING_EMPTY[] = { 0 };
  */
 
 static inline int string_contains_unichar(const unichar* s,unichar c) {
-for (;;) {
-    if ((*(s)) == 0) return 0;
-    if ((*(s)) == c) return 1;
-    if ((*(s + 1)) == 0) return 0;
-    if ((*(s + 1)) == c) return 1;
-    if ((*(s + 2)) == 0) return 0;
-    if ((*(s + 2)) == c) return 1;
-    if ((*(s + 3)) == 0) return 0;
-    if ((*(s + 3)) == c) return 1;
-    s += 4;
-}
- return 0;
+  return u_strchr(s, c) != NULL;
 }
 
-
+#define U__PARSE__STRING__UPDATE__RESLEN__AND__RETURN(v) if (reslen) { *reslen = j; } return v
 int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
-                 const unichar* forbidden_chars,const unichar* chars_to_keep_protected) {
+                 const unichar* forbidden_chars,const unichar* chars_to_keep_protected, int* reslen) {
 stop_chars = (stop_chars == NULL) ? STRING_EMPTY : stop_chars;
 forbidden_chars = (forbidden_chars == NULL) ? STRING_EMPTY : forbidden_chars;
 int j=0;
 result[0]='\0';
-if (s[*ptr]=='\0') return P_EOS;
+if (s[*ptr]=='\0') { U__PARSE__STRING__UPDATE__RESLEN__AND__RETURN(P_EOS); }
 while (s[*ptr]!='\0') {
    if (s[*ptr]==PROTECTION_CHAR) {
       /* If there is a protection character (backslash) */
       if (s[(*ptr)+1]=='\0') {
          /* It must not appear at the end of the string */
          result[j]='\0';
-         return P_BACKSLASH_AT_END;
+         U__PARSE__STRING__UPDATE__RESLEN__AND__RETURN(P_BACKSLASH_AT_END);
       }
       if (chars_to_keep_protected==NULL || string_contains_unichar(chars_to_keep_protected,s[(*ptr)+1])) {
          /* If the character must keep its backslash */
@@ -126,12 +116,12 @@ while (s[*ptr]!='\0') {
       if (string_contains_unichar(stop_chars,s[*ptr])) {
          /* If it is a stop char, we have finished */
          result[j]='\0';
-         return P_OK;
+         U__PARSE__STRING__UPDATE__RESLEN__AND__RETURN(P_OK);
       }
       if (string_contains_unichar(forbidden_chars,s[*ptr])) {
          /* If it is a forbidden char, it's an error */
          result[j]='\0';
-         return P_FORBIDDEN_CHAR;
+         U__PARSE__STRING__UPDATE__RESLEN__AND__RETURN(P_FORBIDDEN_CHAR);
       }
       /* If it's a normal char, we copy it */
       result[j++]=s[(*ptr)++];
@@ -139,8 +129,9 @@ while (s[*ptr]!='\0') {
 }
 /* If we arrive here, we have reached the end of the string without error */
 result[j]='\0';
-return P_OK;
+U__PARSE__STRING__UPDATE__RESLEN__AND__RETURN(P_OK);
 }
+#undef U__PARSE__STRING__UPDATE__RESLEN__AND__RETURN
 
 
 /**
