@@ -78,14 +78,14 @@ unichar* get_output_variable_content_str(const unichar* name, struct locate_para
 
 
 Ustring* get_dic_variable_content_Ustring(const unichar* name,struct locate_parameters* p) {
-struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
+const struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
 if (entry==NULL) return NULL;
 return new_Ustring(entry->inflected);
 }
 
 
 unichar* get_dic_variable_content_str(const unichar* name, struct locate_parameters* p) {
-    struct dela_entry* entry = get_dic_variable(name, p->dic_variables);
+    const struct dela_entry* entry = get_dic_variable(name, p->dic_variables);
     if (entry == NULL) return NULL;
     return entry->inflected;
 }
