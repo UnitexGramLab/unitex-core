@@ -314,6 +314,7 @@ unichar *u_strtok_r(unichar *str, const unichar *delim, unichar **saveptr);
 typedef int (*EQUAL_UNICHAR_FUNCTION)(const unichar*,const unichar*);
 int u_equal(const unichar*, const unichar*);
 int u_equal_ignore_case(const unichar*, const unichar*);
+
 unichar* u_strdup(const unichar*);
 unichar* u_strndup(const unichar*,int);
 unichar* u_strndup(const char*,int);
@@ -321,7 +322,9 @@ unichar* keycopy(unichar*);
 unichar* u_strdup(const unichar*,unsigned int);
 unichar* u_strdup(const char*);
 const unichar* u_strchr(const unichar*,unichar,int);
+#if !UNITEX_USE(BASE_UNICODE)
 const unichar* u_strchr(const unichar*,unichar);
+#endif
 unichar* u_strchr(unichar*,unichar);
 int u_strrchr(const unichar*,unichar);
 int u_strrchr(const unichar*,char);
@@ -334,7 +337,7 @@ int u_ends_with(const unichar*,const unichar*);
 int u_ends_with(const unichar*,const char*);
 int u_substr(const unichar*,const unichar*);
 
-
+unichar* u_memdup(const unichar* str, size_t len, Abstract_allocator prv_alloc);
 unichar* u_strdup(const unichar* str,Abstract_allocator prv_alloc);
 unichar* u_strdup(const char* str,Abstract_allocator prv_alloc);
 unichar* u_strdup(const unichar* str,int n,Abstract_allocator prv_alloc);

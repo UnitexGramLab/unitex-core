@@ -4167,6 +4167,35 @@ if (res==NULL) {
 return (unichar*)memcpy(res,str,buflen);
 }
 
+/**
+ * @brief  Allocate a block of memory of a specific length then copy the contents of str
+ *         into the allocated space
+ *
+ * @return A pointer to the newly allocated space.
+ *
+ * @note   This function doesn't guarantee a null-terminated string, use u_strdup()
+ *         instead
+ *
+ * @author Cristian Martinez
+ */
+unichar* u_memdup(const unichar* str, size_t len, Abstract_allocator prv_alloc) {
+  if (str == NULL) {
+    return NULL;
+  }
+
+  size_t bufflen = len * sizeof(unichar);
+
+  void* memptr = malloc_cb(bufflen, prv_alloc);
+
+  if (memptr == NULL) {
+    fatal_alloc_error("u_memdup");
+  }
+
+  memcpy(memptr, str, bufflen);
+
+  return reinterpret_cast<unichar *>(memptr);
+}
+
 
 /**
  * This version has the correct prototype to be used as a keycopy function for
@@ -4291,7 +4320,7 @@ while (*s) {
 return NULL;
 }
 
-
+#if !UNITEX_USE(BASE_UNICODE)
 /**
  * Unicode version of strchr.
  * This function returns a pointer on the first occurrence of 'c' in 's', or
@@ -4310,6 +4339,7 @@ while ((*s)) {
 
 return NULL;
 }
+#endif
 
 unichar* u_strchr(unichar* s,unichar c) {
 if (s==NULL) return NULL;
