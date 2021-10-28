@@ -58,21 +58,7 @@
 /* ************************************************************************** */
 // Select a threading model
 #if  UNITEX_USE(THREADS)
-# if   UNITEX_USE(ISO_THREADS)                      // ISO_THREADS
-#  if  UNITEX_COMPILER_COMPLIANT(CXX11)
-#       include <mutex>
-#       include <sstream>
-#       include <thread>
-# else    // !UNITEX_COMPILER_COMPLIANT(CX11)
-#       error "[Co] UNITEX_USE_ISO_THREADS without UNITEX_COMPILER_COMPLIANT_CXX11"
-# endif  // UNITEX_COMPILER_COMPLIANT(CXX11)
-# elif UNITEX_USE(BOOST_THREADS)                    // BOOST_THREADS
-#  if   UNITEX_HAVE(BOOST_THREAD)
-#       include <boost/thread.hpp>
-#  else    // !UNITEX_HAVE(BOOST_THREAD)
-#       error "[Co] UNITEX_USE_BOOST_THREADS without HAVE_BOOST_THREAD"
-#  endif  // UNITEX_HAVE(BOOST_THREAD)
-# elif UNITEX_USE(POSIX_THREADS)                    // POSIX_THREADS
+# if UNITEX_USE(POSIX_THREADS)                      // POSIX_THREADS
 #       include <pthread.h>
 # elif UNITEX_USE(WIN32_THREADS)                    // WIN32_THREADS
 #  if  UNITEX_OS_IS(WINDOWS)
@@ -80,8 +66,28 @@
 #  else    // !UNITEX_OS_IS(WINDOWS)
 #       error "[Co] UNITEX_USE_WIN32_THREADS without UNITEX_OS_IS_WINDOWS"
 #  endif  // UNITEX_OS_IS(WINDOWS)
+# elif UNITEX_USE(ISO_THREADS)                      // ISO_THREADS
+#  if  UNITEX_COMPILER_COMPLIANT(CXX11)
+#       include <mutex>
+#       include <sstream>
+#       include <thread>
+#  else    // !UNITEX_COMPILER_COMPLIANT(CX11)
+#       error "[Co] UNITEX_USE_ISO_THREADS without UNITEX_COMPILER_COMPLIANT_CXX11"
+#  endif  // UNITEX_COMPILER_COMPLIANT(CXX11)
+# elif UNITEX_USE(BOOST_THREADS)                    // BOOST_THREADS
+#  if   UNITEX_HAVE(BOOST_THREAD)
+#       include <boost/thread.hpp>
+#  else    // !UNITEX_HAVE(BOOST_THREAD)
+#       error "[Co] UNITEX_USE_BOOST_THREADS without HAVE_BOOST_THREAD"
+#  endif  // UNITEX_HAVE(BOOST_THREAD)
 # else  // No preselect threading model detected
-#  if   UNITEX_COMPILER_COMPLIANT(CXX11)
+#  if UNITEX_OS_IS(UNIX)
+#        include <pthread.h>
+#        define UNITEX_USE_POSIX_THREADS         1  // POSIX_THREADS
+#  elif UNITEX_OS_IS(WINDOWS)
+#        include <windows.h>
+#        define UNITEX_USE_WIN32_THREADS         1  // WIN32_THREADS
+#  elif UNITEX_COMPILER_COMPLIANT(CXX11)
 #        include <mutex>
 #        include <sstream>
 #        include <thread>
@@ -89,15 +95,9 @@
 #  elif UNITEX_HAVE(BOOST_THREAD)
 #        include <boost/thread.hpp>
 #        define UNITEX_USE_BOOST_THREADS         1  // BOOST_THREADS
-#  elif UNITEX_OS_IS(UNIX)
-#        include <pthread.h>
-#        define UNITEX_USE_POSIX_THREADS         1  // POSIX_THREADS
-#  elif UNITEX_OS_IS(WINDOWS)
-#        include <windows.h>
-#        define UNITEX_USE_WIN32_THREADS         1  // WIN32_THREADS
-#  else     // !UNITEX_COMPILER_COMPLIANT(CXX11)
+#  else     // !UNITEX_OS_IS(UNIX)
 #        define UNITEX_USE_SINGLE_THREADED       1  // SINGLE_THREADED
-#  endif   // UNITEX_COMPILER_COMPLIANT(CXX11)
+#  endif   // UNITEX_OS_IS(UNIX)
 # endif   // UNITEX_USE(ISO_THREADS) ...
 # else   // ! UNITEX_USE(THREADS)
 #        define UNITEX_USE_SINGLE_THREADED       1  // SINGLE_THREADED
