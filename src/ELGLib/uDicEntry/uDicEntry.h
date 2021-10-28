@@ -61,15 +61,15 @@ namespace {   // namespace elg::udicentry::{unnamed}, enforce one-definition-rul
 U__DECLARE__ELG__EXTENSION__METHOD__PUSHLIGHT__(UnitexDicEntry, inflected, UnitexString)
 U__DECLARE__ELG__EXTENSION__METHOD__PUSHLIGHT__(UnitexDicEntry, lemma, UnitexString)
 /* ************************************************************************** */
-/* static */ int elg_uDicEntry_encode(lua_State* L) {
-  //UnitexDicEntry* o = lua_checkudata_cast(L, 1, UnitexDicEntry);
-
-  // pushes onto the stack the string 'str'
-  // elg::pushstring(L, str);
-  // lua_pushstring(L,"Test");
-  // number of values returned
-  return 1;
-}
+///* static */ int elg_uDicEntry_encode(lua_State* L) {
+//  //UnitexDicEntry* o = lua_checkudata_cast(L, 1, UnitexDicEntry);
+//
+//  // pushes onto the stack the string 'str'
+//  // elg::pushstring(L, str);
+//  // lua_pushstring(L,"Test");
+//  // number of values returned
+//  return 1;
+//}
 /* ************************************************************************** */
 /* static */ int elg_uDicEntry_decode(lua_State* L) {
   //  if we are dealing with a string, converts it first to a uString
@@ -131,14 +131,14 @@ U__DECLARE__ELG__EXTENSION__METHOD__PUSHLIGHT__(UnitexDicEntry, lemma, UnitexStr
 
   //
   U__DECLARE__FUNCTION__ENTRY__(UDICENTRY, decode),
-  U__DECLARE__FUNCTION__ENTRY__(UDICENTRY, encode),
-  U__DECLARE__FUNCTION__ENTRY__ALIAS__(UDICENTRY, encode, string),
+  //U__DECLARE__FUNCTION__ENTRY__(UDICENTRY, encode),
+  //U__DECLARE__FUNCTION__ENTRY__ALIAS__(UDICENTRY, encode, string),
 
   // methamethods
   // allow to treat a table like a function,
   U__DECLARE__FUNCTION__ENTRY__(UDICENTRY, __call),
   //U__DECLARE__FUNCTION__ENTRY__ALIAS__(UDICENTRY, len, __len),
-  U__DECLARE__FUNCTION__ENTRY__ALIAS__(UDICENTRY, encode, __tostring),
+  //U__DECLARE__FUNCTION__ENTRY__ALIAS__(UDICENTRY, encode, __tostring),
 
   // allow to release any resource associated with the userdata object
   U__DECLARE__GC__ENTRY__(UnitexDicEntry),

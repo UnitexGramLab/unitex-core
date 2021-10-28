@@ -604,29 +604,29 @@ size_t u_reverse(const unichar* UNITEX_RESTRICT usrc, unichar* UNITEX_RESTRICT u
  * @note   As this function always writes a single NULL byte to the destination, the resulting
  *         string is guaranteed to be NULL-terminated even if truncated
  */
-size_t u_strlncpy(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT usrc,
-                  size_t* readlen, size_t maxlen, size_t dstsize) {
-  // we need to known the length of the source string
-  const size_t srclen = strlen(usrc);
+//size_t u_strlncpy(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT usrc,
+//                  size_t* readlen, size_t maxlen, size_t dstsize) {
+//  // we need to known the length of the source string
+//  const size_t srclen = strlen(usrc);
+//
+//  // continue only if maxlen is positive
+//  if (maxlen > 0) {
+//    // compute the max number of characters that we can copy
+//    const size_t max_count = srclen + 1 < maxlen ? srclen + 1 : maxlen - 1;
+//    // copy max_count characters from source to the destination
+//    unichar* result = u_memccpy(udst, usrc, '\0', max_count);
+//    // always writes a single NULL byte at the end
+//    *result = '\0';
+//  }
+//
+//  // return the length of the source C-string
+//  return srclen;
+//}
 
-  // continue only if maxlen is positive
-  if (maxlen > 0) {
-    // compute the max number of characters that we can copy
-    const size_t max_count = srclen + 1 < maxlen ? srclen + 1 : maxlen - 1;
-    // copy max_count characters from source to the destination
-    unichar* result = u_memccpy(udst, usrc, '\0', max_count);
-    // always writes a single NULL byte at the end
-    *result = '\0';
-  }
-
-  // return the length of the source C-string
-  return srclen;
-}
-
-size_t u_strlcpy(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT usrc,
-                 size_t* readlen, size_t maxlen) {
-  return u_strlncpy(udst, usrc, readlen, maxlen, U_MAX_STRING_LENGTH);
-}
+//size_t u_strlcpy(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT usrc,
+//                 size_t* readlen, size_t maxlen) {
+//  return u_strlncpy(udst, usrc, readlen, maxlen, U_MAX_STRING_LENGTH);
+//}
 
 /**
  * @brief  Append at most (maxlen-strlen(destination)-1) characters of the source C-string
@@ -641,22 +641,22 @@ size_t u_strlcpy(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT usrc
  * @note   As this function always writes a single NULL byte to the destination, the resulting
  *         string is guaranteed to be NULL-terminated even if truncated
  */
-size_t u_strlncat(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT usrc,
-                  size_t* readlen, size_t maxlen, size_t dstsize) {
-  // the initial length of the destination string
-  const size_t dstlen = u_strnlen(udst, maxlen);
-  // copy at least count characters at end of the destination string
-  const size_t srclen = u_strlncpy(udst + dstlen, usrc, readlen, maxlen, dstsize);
+//size_t u_strlncat(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT usrc,
+//                  size_t* readlen, size_t maxlen, size_t dstsize) {
+//  // the initial length of the destination string
+//  const size_t dstlen = u_strnlen(udst, maxlen);
+//  // copy at least count characters at end of the destination string
+//  const size_t srclen = u_strlncpy(udst + dstlen, usrc, readlen, maxlen, dstsize);
+//
+//  // return the length of both strings
+//  // FIXME(martinec) Avoid MIN Macro
+//  // @see https://dustri.org/b/min-and-max-macro-considered-harmful.html
+//  return srclen + MIN(maxlen, dstlen);
+//}
 
-  // return the length of both strings
-  // FIXME(martinec) Avoid MIN Macro
-  // @see https://dustri.org/b/min-and-max-macro-considered-harmful.html
-  return srclen + MIN(maxlen, dstlen);
-}
-
-size_t u_strlcat(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT usrc,
-    size_t* readlen, size_t maxlen) {
-  return u_strlncat(udst, usrc, readlen, maxlen, U_MAX_STRING_LENGTH);
-}
+//size_t u_strlcat(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT usrc,
+//    size_t* readlen, size_t maxlen) {
+//  return u_strlncat(udst, usrc, readlen, maxlen, U_MAX_STRING_LENGTH);
+//}
 /* ************************************************************************** */
 }  // namespace unitex

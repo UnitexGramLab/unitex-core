@@ -279,10 +279,10 @@ class UnitexDicEntry {
    *                is parsed as the new value for the entry.
    * @return *this
    */
-  UnitexDicEntry& operator=(const char* rhs) {
-    //unitex::u_strcpy(data_, rhs);
-    return *this;
-  }
+//  UnitexDicEntry& operator=(const char* rhs) {
+//    //unitex::u_strcpy(data_, rhs);
+//    return *this;
+//  }
 
   /**
    * @brief  Entry assignment from a unichar-string
@@ -293,12 +293,12 @@ class UnitexDicEntry {
    *                value for the entry.
    * @return *this
    */
-  UnitexDicEntry& operator=(const unichar* rhs) {
-    //if (data_->str != rhs) {
-       //unitex::u_strcpy(data_, rhs);
-    //}
-    return *this;
-  }
+//  UnitexDicEntry& operator=(const unichar* rhs) {
+//    //if (data_->str != rhs) {
+//       //unitex::u_strcpy(data_, rhs);
+//    //}
+//    return *this;
+//  }
 
   /**
    * @brief  Entry assignment from a dela_entry
@@ -339,9 +339,9 @@ class UnitexDicEntry {
    * @param  rhs    A null-terminated character sequence (C-string)
    * @return True if this->compare(rhs) == 0.  False otherwise
    */
-  bool operator==(const char* rhs) const {
-    return this->compare(rhs) == 0;
-  }
+//  bool operator==(const char* rhs) const {
+//    return this->compare(rhs) == 0;
+//  }
 
   /**
    * @brief  Test equivalence of unichar-string and UnitexDicEntry
@@ -349,9 +349,9 @@ class UnitexDicEntry {
    * @param  rhs    A Unitex unichar-string
    * @return True if this->compare(rhs) == 0.  False otherwise
    */
-  bool operator==(const unichar* rhs) const {
-    return this->compare(rhs) == 0;
-  }
+//  bool operator==(const unichar* rhs) const {
+//    return this->compare(rhs) == 0;
+//  }
 
   /**
    * @brief  Test equivalence of dela_entry and UnitexDicEntry
@@ -359,10 +359,10 @@ class UnitexDicEntry {
    * @param  rhs    A Unitex dela_entry
    * @return True if this->compare(rhs) == 0.  False otherwise
    */
-  bool operator==(const_pointer_t rhs) const {
-//  return u_equal(this->data_, rhs);
-    return 1;
-  }
+//  bool operator==(const_pointer_t rhs) const {
+////  return u_equal(this->data_, rhs);
+//    return 1;
+//  }
 
   /**
    * @brief  Test equivalence between two UnitexDicEntry objects
@@ -370,10 +370,10 @@ class UnitexDicEntry {
    * @param  rhs    A UnitexDicEntry object
    * @return True if both strings are equals.  False otherwise
    */
-  bool operator==(const UnitexDicEntry& rhs) const {
-// return u_equal(this->data_, rhs.data_);
-    return 1;
-  }
+//  bool operator==(const UnitexDicEntry& rhs) const {
+//// return u_equal(this->data_, rhs.data_);
+//    return 1;
+//  }
 
   // boolean not equal operands
 
@@ -383,9 +383,9 @@ class UnitexDicEntry {
    * @param  rhs    A null-terminated character sequence (C-string)
    * @return True if this->compare(rhs) != 0.  False otherwise
    */
-  bool operator!=(const char* rhs) const {
-    return !(*this == rhs);
-  }
+//  bool operator!=(const char* rhs) const {
+//    return !(*this == rhs);
+//  }
 
   /**
    * @brief  Test difference of unichar-string and UnitexDicEntry
@@ -393,9 +393,9 @@ class UnitexDicEntry {
    * @param  rhs    A Unitex unichar-string
    * @return True if this->compare(rhs) != 0.  False otherwise
    */
-  bool operator!=(const unichar* rhs) const {
-    return !(*this == rhs);
-  }
+//  bool operator!=(const unichar* rhs) const {
+//    return !(*this == rhs);
+//  }
 
   /**
    * @brief  Test difference of dela_entry and UnitexDicEntry
@@ -403,9 +403,9 @@ class UnitexDicEntry {
    * @param  rhs    A Unitex dela_entry
    * @return True if this->compare(rhs) != 0.  False otherwise
    */
-  bool operator!=(const_pointer_t rhs) const {
-    return !(*this == rhs);
-  }
+//  bool operator!=(const_pointer_t rhs) const {
+//    return !(*this == rhs);
+//  }
 
   /**
    * @brief  Test difference between two UnitexDicEntry objects
@@ -413,9 +413,9 @@ class UnitexDicEntry {
    * @param  rhs    A UnitexDicEntry object
    * @return True if this->compare(rhs) != 0.  False otherwise
    */
-  bool operator!=(const UnitexDicEntry& rhs) const {
-    return !(*this == rhs);
-  }
+//  bool operator!=(const UnitexDicEntry& rhs) const {
+//    return !(*this == rhs);
+//  }
 
   // Static methods
 
@@ -575,10 +575,10 @@ class UnitexDicEntry {
    *
    * @note   Null strings are allowed
    */
-  int icompare(const char* string) const {
-//    return unitex::u_strcmp_ignore_case(data_->str, string);
-    return 1;
-  }
+//  int icompare(const char* string) const {
+////    return unitex::u_strcmp_ignore_case(data_->str, string);
+//    return 1;
+//  }
 
   /**
    * @brief  Case insensitive compare to a unichar-string
@@ -589,10 +589,10 @@ class UnitexDicEntry {
    *
    * @see    UnitexDicEntry::icompare(const char* string) const
    */
-  int icompare(const unichar* string) const {
-//    return unitex::u_strcmp_ignore_case(data_->str, string);
-    return 1;
-  }
+//  int icompare(const unichar* string) const {
+////    return unitex::u_strcmp_ignore_case(data_->str, string);
+//    return 1;
+//  }
 
   /**
    * @brief  Case insensitive compare to a dela_entry
@@ -603,10 +603,10 @@ class UnitexDicEntry {
    *
    * @see    UnitexDicEntry::icompare(const char* string) const
    */
-  int icompare(const struct dela_entry* string) const {
-//    return this->icompare(string->str);
-    return 1;
-  }
+//  int icompare(const struct dela_entry* string) const {
+////    return this->icompare(string->str);
+//    return 1;
+//  }
 
   /**
    * @brief  Case insensitive compare to a UnitexDicEntry object
@@ -617,10 +617,10 @@ class UnitexDicEntry {
    *
    * @see    UnitexDicEntry::icompare(const char* string) const
    */
-  int icompare(const UnitexDicEntry& string) const {
-//    return this->compare(string.data_->str);
-    return 1;
-  }
+//  int icompare(const UnitexDicEntry& string) const {
+////    return this->compare(string.data_->str);
+//    return 1;
+//  }
 
   /**
    * @brief  Get dela_entry equivalent

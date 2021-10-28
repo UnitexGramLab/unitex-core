@@ -73,14 +73,14 @@ UNITEX_PARAMS_NON_NULL_(1);
 size_t u_strnlen(const unichar* ustr, size_t maxlen)
 UNITEX_PARAMS_NON_NULL_(1);
 /* ************************************************************************** */
-size_t u_strlncpy(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen, size_t udstsize)
-UNITEX_PARAMS_NON_NULL_(1, 2);
-size_t u_strlncat(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen, size_t udstsize)
-UNITEX_PARAMS_NON_NULL_(1, 2);
-size_t u_strlcpy(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen)
-UNITEX_PARAMS_NON_NULL_(1, 2);
-size_t u_strlcat(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen)
-UNITEX_PARAMS_NON_NULL_(1, 2);
+//size_t u_strlncpy(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen, size_t udstsize)
+//UNITEX_PARAMS_NON_NULL_(1, 2);
+//size_t u_strlncat(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen, size_t udstsize)
+//UNITEX_PARAMS_NON_NULL_(1, 2);
+//size_t u_strlcpy(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen)
+//UNITEX_PARAMS_NON_NULL_(1, 2);
+//size_t u_strlcat(unichar* UNITEX_RESTRICT udst, const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen)
+//UNITEX_PARAMS_NON_NULL_(1, 2);
 /* ************************************************************************** */
 int u_strcmp(const unichar* ustr1, const unichar* ustr2);
 int u_strncmp(const unichar* ustr1, const unichar*  ustr2, size_t maxlen);

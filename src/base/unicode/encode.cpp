@@ -72,7 +72,7 @@ size_t u_decode_ns(u_encode_t encoding, unichar* UNITEX_RESTRICT udst,
   switch (encoding) {
     case U_ENCODE_BINARY:
     case U_ENCODE_ASCII:
-      length = u_strlncpy(udst, csrc, readlen, maxlen, dstsize);
+      //length = u_strlncpy(udst, csrc, readlen, maxlen, dstsize);
       break;
     case U_ENCODE_UTF8:
       // decode from UTF-8
