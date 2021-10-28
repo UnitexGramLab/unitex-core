@@ -22,10 +22,10 @@
  * @file      clz.h
  * @brief     Count leading zeros (clz) routine
  *
- * @author    cristian.martinez@univ-paris-est.fr (martinec)
+ * @author    cristian.martinez@unitexgramlab.org (martinec)
  *
  * @attention Do not include this file directly, rather include the base/common.h
- *             header file to gain this file's functionality
+ *            header file to gain this file's functionality
  *
  * @note      Use cpplint.py tool to detect style errors:
  *            `cpplint.py --linelength=120 clz.h`
@@ -45,6 +45,53 @@
 #include "base/integer/types.h"               // uint32_t, uint64_t
 #include "base/integer/wordsize.h"            // UNITEX_WORDSIZE_IS()
 /* ************************************************************************** */
+/**
+ * @def    unitex_builtin_clz_16
+ * @brief  Count the number of leading 0-bits on a 16-bits data type
+ */
+#if UNITEX_COMPILER_AT_LEAST(MSVC,14,0)
+#pragma intrinsic(_BitScanReverse)
+#endif  // UNITEX_COMPILER_AT_LEAST(MSVC,14,0)
+UNITEX_FORCE_INLINE
+uint16_t unitex_builtin_clz_16(uint16_t n) {
+// GNU C/C++ compiler
+// LLVM native C/C++ compiler
+#if UNITEX_COMPILER_AT_LEAST(GCC,3,4)                                  ||\
+    UNITEX_COMPILER_AT_LEAST(CLANG,1,5)
+#  define UNITEX_HAS_BUILTIN_CLZ                   1
+   return UNITEX_LIKELY(n) ? __builtin_clz(n) - 16 : 16;
+// Visual Studio 2005 and later
+#elif UNITEX_COMPILER_AT_LEAST(MSVC,14,0)
+#  define UNITEX_HAS_BUILTIN_CLZ                   1
+   uint16_t count = 16;
+   if (UNITEX_LIKELY(n)) {
+     _BitScanReverse((uint16_t*)&count, n);
+     count ^= 15;
+   }
+   return count;
+// Intel Compiler
+#elif UNITEX_COMPILER_IS(INTEL)
+#  define UNITEX_HAS_BUILTIN_CLZ                   1
+   return UNITEX_LIKELY(n) ? _bit_scan_reverse(static_cast<uint16_t>(n)) ^ 15 : 16;
+#else
+#  define UNITEX_HAS_BUILTIN_CLZ                   0
+//  Bit Twiddling Hacks
+//  @see https://graphics.stanford.edu/~seander/bithacks.html
+   static const int8_t LogTable256[256] =  {
+#  define LT(n) n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n
+     0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
+     LT(5), LT(6), LT(6), LT(7), LT(7), LT(7), LT(7),
+     LT(8), LT(8), LT(8), LT(8), LT(8), LT(8), LT(8), LT(8)
+#  undef LT
+   };
+   int8_t count = 0;
+   uint16_t t = 0;
+   if      ((t = n >> UINT32_C(8)))   count =  8 - LogTable256[t];
+   else                               count = 16 - LogTable256[n];
+   return static_cast<uint16_t>(count);
+#endif
+}
+
 /**
  * @def    unitex_builtin_clz_32
  * @brief  Count the number of leading 0-bits on a 32-bits data type
