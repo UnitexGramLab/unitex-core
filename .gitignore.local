@@ -11,3 +11,4 @@ unitex-core-tests/
 !/bin/
 /bin/*
 !/bin/elg/
+/Default/
