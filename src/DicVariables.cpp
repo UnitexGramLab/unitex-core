@@ -47,7 +47,24 @@ tmp->next=next;
 return tmp;
 }
 
+/**
+ * Allocates, initializes and returns a dic_variable.
+ *
+ * @note This function receives a const dela_entry and always clone it
+ * @author Cristian Martinez
+ */
+struct dic_variable* new_dic_variable(const unichar* name, const struct dela_entry* dic_entry,
+                                      struct dic_variable* next) {
+  struct dic_variable* dicvar = (struct dic_variable*) malloc(sizeof(struct dic_variable));
+  if (dicvar == NULL) {
+    fatal_alloc_error("new_dic_variable");
+  }
 
+  dicvar->name = u_strdup(name);
+  dicvar->dic_entry = clone_dela_entry(dic_entry);
+  dicvar->next = next;
+  return dicvar;
+}
 
 /**
  * Frees a single dic_variable.
@@ -97,12 +114,33 @@ while (*list!=NULL) {
 }
 
 
+/**
+ * Sets the given dic variable, inserting it in the variable list if absent.
+ *
+ * @note   This function receives a const dela_entry and always clone it
+ * @author Cristian Martinez
+ */
+void set_dic_variable(const unichar* name,const struct dela_entry* dic_entry,struct dic_variable* *list) {
+  while (*list != NULL) {
+    if (!u_strcmp((*list)->name, name)) {
+      /* If we have found the variable we were looking for */
+      /* We have to free the previous value */
+      free_dela_entry((*list)->dic_entry);
+      (*list)->dic_entry = clone_dela_entry(dic_entry);
+      return;
+    }
+    list = &((*list)->next);
+  }
+  *list = new_dic_variable(name, dic_entry, NULL);
+}
+
+
 
 /**
  * Returns the struct dela_entry* associated to the given dic variable name,
  * or NULL if not found.
  */
-struct dela_entry* get_dic_variable(const unichar* name,struct dic_variable* list) {
+const struct dela_entry* get_dic_variable(const unichar* name,const struct dic_variable* list) {
 while (list!=NULL) {
    if (!u_strcmp(list->name,name)) {
       /* If we have found the variable we were looking for */
