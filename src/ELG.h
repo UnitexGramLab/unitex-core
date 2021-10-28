@@ -33,7 +33,6 @@
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
 #include "ELG_API.h"
-#include "ELGLib/common.h"
 #include "ELGLib/ELGLib.h"
 #include "ELGLib/copy_state.h"
 #include "File.h"
@@ -450,7 +449,7 @@ int process_extended_function_return_type(int type,
       // TODO(martinec) use instead luaL_checklstring
       const char* s = lua_tostring(L, -1);
       unichar S[MAXBUF] = { 0 };
-      size_t count = u_decode_utf8(s, S);
+      size_t count = u_decode_utf8_ns(S, s, NULL, MAXBUF, MAXBUF);
       if (UNITEX_LIKELY(set_number < 0)) {
         // push to stack
         push_array(r->stack_template, S, count);
@@ -515,16 +514,14 @@ void setup_relative_paths(lua_State* L, const char* binpath) {
 
   // update path
   // [-0, +0] > (+1)
-  UnitexString path(UnitexString::format(ELG_EXTENSIONS_FORMAT_PATH,
-                                binpath, binpath, binpath, binpath));
-  elg::appendtofield(L, -1, "path", &path);
+  elg::appendtofield(L, -1, "path", UnitexString::format(ELG_EXTENSIONS_FORMAT_PATH,
+                                    binpath, binpath, binpath, binpath).c_unichar());
   elg_stack_dump(L);
 
   // update cpath
   // [-0, +0] > (+1)
-  UnitexString cpath(UnitexString::format(ELG_EXTENSIONS_FORMAT_CPATH,
-                                 binpath, binpath, binpath, binpath));
-  elg::appendtofield(L, -1, "cpath", &cpath);
+  elg::appendtofield(L, -1, "cpath", UnitexString::format(ELG_EXTENSIONS_FORMAT_CPATH,
+                                     binpath, binpath, binpath, binpath).c_unichar());
   elg_stack_dump(L);
 
   // pop package table off the stack
@@ -668,7 +665,6 @@ class vm {
       set_function("is_space", elg::token::is_space);
       set_function("value", elg::token::value);
       set_function("reference", elg::token::reference);
-      set_function("lookup", elg::token::lookup);
       set_function("bitmask", elg::token::bitmask);
       set_function("tag", elg::token::tag);
 
@@ -719,8 +715,20 @@ class vm {
       set_function("setpos", elg::parser::setpos);
       lua_setglobal(L, ELG_GLOBAL_PARSER);
 
+      //uAlphabet
+      lua_newtable(L);
+      set_function("match", elg::alphabet::match);
+      lua_setglobal(L, ELG_GLOBAL_ALPHABET);
+
       //uVariable
       lua_newtable(L);
+      set_function("set", elg::variable::set);
+
+      //uVariable constants
+      set_integer(ELG_GLOBAL_VARIABLE_INPUT,  INPUT_VARIABLE);
+      set_integer(ELG_GLOBAL_VARIABLE_OUTPUT, OUTPUT_VARIABLE);
+      set_integer(ELG_GLOBAL_VARIABLE_DIC,    DIC_VARIABLE);
+
       lua_setglobal(L, ELG_GLOBAL_VARIABLE);
 
       //uMatch
@@ -738,12 +746,14 @@ class vm {
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_MATCH);
 
-      //uString
+      //uMorphoDic
       // [-0, +1] > (+1)
       lua_newtable(L);
-      set_function("format", elg::string::format);
+      set_function("lookup", elg::morphodic::lookup);
       // [-1, +0] > (+0)
-      lua_setglobal(L, ELG_GLOBAL_STRING);
+      lua_setglobal(L, ELG_GLOBAL_MORPHO_DIC);
+
+      // uConstant
 
       // uEnvironment
       // [-0, +1] > (+1)
@@ -1854,6 +1864,18 @@ class vm {
   void* pushlightustring(Ustring* p) {
     if (p) {
       return lua_pushlightobject(L, UnitexString)(p);
+    } else {
+      lua_pushnil(L);
+      return NULL;
+    }
+  }
+
+  // push a dela_entry or null
+  // dela_entry is wrapped into a UnitexDicEntry object
+  // No memory is allocated for p
+  void* pushlightudicentry(struct dela_entry* p) {
+    if (p) {
+      return lua_pushlightobject(L, UnitexDicEntry)(p);
     } else {
       lua_pushnil(L);
       return NULL;

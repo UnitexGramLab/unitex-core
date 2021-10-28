@@ -20,8 +20,12 @@
  * cristian.martinez@univ-paris-est.fr (martinec)
  *
  */
-#ifndef ELGLIB_H_
-#define ELGLIB_H_
+#ifndef UNITEX_ELGLIB_H_
+#define UNITEX_ELGLIB_H_
+/* ************************************************************************** */
+#define EXTENSION_ID_ELG       elg
+#define EXTENSION_VERSION_ELG  "0.1.0"
+#define EXTENSION_NAME_ELG     "elg"
 /* ************************************************************************** */
 // .h source file
 
@@ -38,9 +42,7 @@
 // Project's .h files. (order the includes alphabetically)
 #include "ELGLib/common.h"
 #include "ELGLib/uString/uString.h"
-/* ************************************************************************** */
-#define EXTENSION_NAME_ELG     EXTENSION_NAME_1(ELG)
-#define EXTENSION_VERSION_ELG  "0.1.0"
+#include "ELGLib/uDicEntry/uDicEntry.h"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -49,28 +51,39 @@ namespace elg {
 namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
+const struct luaL_Reg lua_elg_lib_preload[] = {
+  { EXTENSION_NAME_USTRING,    ustring::luaopen_elg_ustring     },
+  { EXTENSION_NAME_UDICENTRY,  udicentry::luaopen_elg_uDicEntry },
+  { NULL,   NULL }
+};
+/* ************************************************************************** */
 int openlibs(lua_State *L) {
-  // create the module table
+  // create the elg table
   // [-0, +1] > (+1)
   lua_newtable(L);
   elg_stack_dump(L);
   // [-0+n, +1+n] > (+1)
 
-  // register modules into the module table
-  // ustring module
-  ustring::luaopen_ustring(L);
-  elg_stack_dump(L);
+  // register preload modules into the elg table
+  const luaL_Reg *lib;
+  for (lib = lua_elg_lib_preload; lib->func; ++lib) {
+    // first, push the lib table onto the stack
+    lib->func(L);
+    // then, set its name
+    lua_setfield(L, -2,  lib->name);
+    elg_stack_dump(L);
+  }
 
-  // set the name of the module
+  // set the name of the elg module
   lua_pushliteral(L, EXTENSION_NAME_ELG);
   lua_setfield(L, -2, "_NAME");
 
-  // set the version of the module
+  // set the version of the elg module
   lua_pushliteral(L, EXTENSION_VERSION_ELG);
   lua_setfield(L, -2, "_VERSION");
   elg_stack_dump(L);
 
-  // register a global "elg" table
+  // register as a global "elg" table
   // [-1, +0] > (+0)
   lua_setglobal(L, EXTENSION_NAME_ELG);
   elg_stack_dump(L);
@@ -83,4 +96,4 @@ int openlibs(lua_State *L) {
 /* ************************************************************************** */
 }  // namespace unitex
 /* ************************************************************************** */
-#endif // ELGLIB_H_
+#endif // UNITEX_ELGLIB_H_

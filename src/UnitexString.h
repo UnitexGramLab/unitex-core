@@ -42,7 +42,6 @@
 /* ************************************************************************** */
 // C system files                  (try to order the includes alphabetically)
 #include <cstddef>                 // ptrdiff_t
-#include <cwchar>                  // wcslen
 #include <cassert>                 // assert
 /* ************************************************************************** */
 // C++ system files                (try to order the includes alphabetically)
@@ -52,6 +51,7 @@
 
 /* ************************************************************************** */
 // Unitex's .h files               (try to order the includes alphabetically)
+#include "Alphabet.h"              // is_sequence_of_letters
 #include "Unicode.h"               // u_* functions                 // NOLINT
 #include "Ustring.h"               // u_* functions                 // NOLINT
 /* ************************************************************************** */
@@ -400,29 +400,14 @@ class UnitexString {
    *
    * @param  string A null-terminated character sequence (C-string)
    */
-  UnitexString(Encoding encoding, const char* string,
+  UnitexString(u_encode_t encoding, const char* string,
                size_type buffer_size = kMaxBufferSize) :  // NOLINT
       data_(acquire(buffer_size)) {
+    // decode and set the length of the resulting string
     size_type length = 0;
-    if(string) {
-    switch (encoding) {
-      case UTF16_LE:
-        break;
-      case BIG_ENDIAN_UTF16:
-        break;
-      case PLATFORM_DEPENDENT_UTF16:
-        break;
-      case ASCII:
-        // same as binary
-        this->append(string);
-        return;
-      case UTF8:
-        // decode from UTF-8
-        length = unitex::u_decode_utf8(string, data_->str);
-        break;
+    if (string) {
+      length = u_decode(encoding, data_->str, string);
     }
-    }
-    // set the length of the resulting string
     data_->len = length;
   }
 
@@ -882,6 +867,18 @@ class UnitexString {
     return UnitexString(string_buffer, size);
   }
 
+
+  /**
+   * @brief  Encode the UnitexString into a UTF-8 C-string
+   *
+   * @param  An already allocated buffer destination (C-string)
+   *
+   * @return length of the destination string
+   */
+  int encode(char* destination) const {
+    return u_encode_utf8(data_->str, destination);
+  }
+
   // Methods
 
   // element access
@@ -1080,34 +1077,32 @@ class UnitexString {
    *
    * @param  string A null-terminated character sequence (C-string)
    */
-  UnitexString& append(Encoding encoding, const char* string,
-                       size_type increase_length = kMaxBufferSize) {
+  UnitexString& append(u_encode_t encoding, const char* string,
+                       size_type count, size_type* readlen) {
     // request to adapt the underline string capacity with a
     // size to a length of *up to* the desired length of characters
-    reserve(increase_length);
-    size_type length = 0;
-    //
+    reserve(count);
+
     switch (encoding) {
-      case UTF16_LE:
+      case U_ENCODE_BINARY:
+      case U_ENCODE_ASCII:
+        // decode from ASCII
+        // note that the length is incremented by the underline function
+        this->append(string, count);
+        // update the number of chars that have been read from the source C string
+        if(readlen) { *readlen = count; }
         break;
-      case BIG_ENDIAN_UTF16:
-        break;
-      case PLATFORM_DEPENDENT_UTF16:
-        break;
-      case ASCII:
-        // same as binary
-        this->append(string);
-        return *this;
-      case UTF8:
+      case U_ENCODE_UTF8:
         // decode from UTF-8
-        length = unitex::u_decode_utf8(string, end());
+        // note that the length must be incremented according the decoded result
+        data_->len += u_decode_utf8_n(end(), string, readlen, count);
+        // update the number of chars that have been read from the source C string
+        break;
+      default:
         break;
     }
-    // set the length of the resulting string
-    data_->len = data_->len + length;
     return *this;
   }
-
 
   /**
    * @brief  Append a encoded c-string
@@ -1117,33 +1112,9 @@ class UnitexString {
    *
    * @param  string A null-terminated character sequence (C-string)
    */
-  UnitexString& append(Encoding encoding, const char* string,
-                       size_type length, size_type& readed) {
-    // request to adapt the underline string capacity with a
-    // size to a length of *up to* the desired length of characters
-    reserve(length);
-    //
-    switch (encoding) {
-      case UTF16_LE:
-        break;
-      case BIG_ENDIAN_UTF16:
-        break;
-      case PLATFORM_DEPENDENT_UTF16:
-        break;
-      case ASCII:
-        // same as binary
-        this->append(string, length);
-        readed = length;
-        return *this;
-      case UTF8:
-          // u_decode_utf8_n returns the number of bytes consumed from
-          // string
-        readed = unitex::u_decode_utf8_n(string, end(), length);
-        break;
-    }
-    // set the length of the resulting string
-    data_->len = data_->len + length;
-    return *this;
+  UnitexString& append(u_encode_t encoding, const char* string,
+                       size_type increase_length = kMaxBufferSize) {
+    return this->append(encoding, string, increase_length, NULL);
   }
 
   /**
@@ -1309,17 +1280,6 @@ class UnitexString {
   }
 
   /**
-   * @brief  Encode the UnitexString into a UTF-8 C-string
-   *
-   * @param  An already allocated buffer destination (C-string)
-   *
-   * @return length of the destination string
-   */
-  int encode(char* destination) {
-    return u_encode_utf8(data_->str, destination);
-  }
-
-  /**
    * @brief  Reverse the string
    * @return *this
    */
@@ -1371,6 +1331,27 @@ class UnitexString {
   UnitexString& deaccentuate() {
     unitex::u_deaccentuate(data_->str);
     return *this;
+  }
+
+//  int match_pattern() {
+//    return 0;
+//  }
+//
+//  int match_filter() {
+//    return 0;
+//  }
+
+  /**
+   * @brief  Test if the string is is only made of letters belonging
+   *         to a given alphabet
+   *
+   * @param alphabet already allocated Unitex alphabet
+   * @return Returns 1 if the string is only made of letters,
+   *         according to the given alphabet, 0 otherwise.
+   */
+  int match_alphabet(const Alphabet* alphabet) const
+      UNITEX_PARAMS_NON_NULL {
+    return is_sequence_of_letters(data_->str, alphabet);
   }
 
   /**

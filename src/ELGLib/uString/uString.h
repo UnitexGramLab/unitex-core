@@ -20,13 +20,20 @@
  * cristian.martinez@univ-paris-est.fr (martinec)
  *
  */
-#ifndef USTRING_H_
-#define USTRING_H_
+#ifndef UNITEX_ELGLIB_USTRING_H_
+#define UNITEX_ELGLIB_USTRING_H_
 /* ************************************************************************** */
 #if UNITEX_COMPILER_AT_LEAST(MSVC,15,0)
 #pragma warning(push)
 #pragma warning(disable:4291)    // no matching operator delete found
 #endif  // UNITEX_COMPILER_AT_LEAST(MSVC,15,0)
+/* ************************************************************************** */
+#define EXTENSION_ID_USTRING          ustring
+#define EXTENSION_VERSION_USTRING     "0.1.0"
+#define EXTENSION_USERDATA_USTRING    UnitexString
+#define EXTENSION_NAME_USTRING        EXTENSION_NAME(EXTENSION_ID_USTRING)
+#define EXTENSION_PREFIX_USTRING      EXTENSION_PREFIX(EXTENSION_ID_USTRING)
+#define EXTENSION_UnitexString        EXTENSION_ID_USTRING
 /* ************************************************************************** */
 // .h source file
 
@@ -47,10 +54,6 @@
 #include "Unicode.h"
 #include "base/integer/operation/round.h"
 /* ************************************************************************** */
-#define EXTENSION_NAME_USTRING        EXTENSION_NAME_2(ELG, USTRING)
-#define FUNCTION_PREFIX_USTRING       FUNCTION_PREFIX_2(ELG, USTRING)
-#define EXTENSION_VERSION_USTRING     "0.1.0"
-/* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
 namespace elg {
@@ -60,38 +63,13 @@ namespace ustring {
 namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
-// all U__* macros must be undefined before the end of this file
-/* ************************************************************************** */
-#define U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(_func)                \
-/* static */ int elg_ustring_##_func(lua_State* L) {                        \
-  UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);              \
-  if (str->is_attached()) {                                                 \
-    str->_func();                                                           \
-  } else {                                                                  \
-    (lua_pushlightobject(L, UnitexString)(*str))->_func();                  \
-  }                                                                         \
-  return 1;                                                                 \
-}
-/* ************************************************************************** */
-U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(deaccentuate)
-U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(fold)
-U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(lower)
-U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(reverse)
-U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(title)
-U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(upper)
-/* ************************************************************************** */
-#undef U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__
-/* ************************************************************************** */
-#define U__DECLARE__FUNCTION__ELG__USTRING__INT__(_func)                    \
-/* static */ int elg_ustring_##_func(lua_State* L) {                        \
-  UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);              \
-  lua_pushinteger(L, (lua_Integer) str->_func());                           \
-  return 1;                                                                 \
-}
-/* ************************************************************************** */
-U__DECLARE__FUNCTION__ELG__USTRING__INT__(len)
-/* ************************************************************************** */
-#undef U__DECLARE__FUNCTION__ELG__USTRING__INT__
+U__DECLARE__ELG__EXTENSION__METHOD__CALL__(UnitexString, deaccentuate)
+U__DECLARE__ELG__EXTENSION__METHOD__CALL__(UnitexString, fold)
+U__DECLARE__ELG__EXTENSION__METHOD__CALL__(UnitexString, lower)
+U__DECLARE__ELG__EXTENSION__METHOD__CALL__(UnitexString, reverse)
+U__DECLARE__ELG__EXTENSION__METHOD__CALL__(UnitexString, title)
+U__DECLARE__ELG__EXTENSION__METHOD__CALL__(UnitexString, upper)
+U__DECLARE__ELG__EXTENSION__METHOD__PUSH__(UnitexString, len, lua_pushinteger)
 /* ************************************************************************** */
 /* static */ int elg_ustring_rep(lua_State* L) {
   UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);
@@ -104,6 +82,30 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len)
 //    str->reverse();
 //  }
 
+  return 1;
+}
+/* ************************************************************************** */
+/* static */ int elg_ustring___lt(lua_State* L) {
+  // string1 is lower or equal to string2 if compare() returns < 0
+  UnitexString* str1 = lua_testudata_cast(L, 1, UnitexString);
+  UnitexString* str2 = lua_testudata_cast(L, 2, UnitexString);
+  lua_pushboolean(L, str1 && str2 ? str1->compare(*str2) < 0 : 0);
+  return 1;
+}
+/* ************************************************************************** */
+/* static */ int elg_ustring___le(lua_State* L) {
+  // string1 is lower or equal to string2 if compare() returns <= 0
+  UnitexString* str1 = lua_testudata_cast(L, 1, UnitexString);
+  UnitexString* str2 = lua_testudata_cast(L, 2, UnitexString);
+  lua_pushboolean(L, str1 && str2 ? str1->compare(*str2) <= 0 : 0);
+  return 1;
+}
+/* ************************************************************************** */
+/* static */ int elg_ustring___eq(lua_State* L) {
+  // string1 is equal to string2 if compare() returns 0
+  UnitexString* str1 = lua_testudata_cast(L, 1, UnitexString);
+  UnitexString* str2 = lua_testudata_cast(L, 2, UnitexString);
+  lua_pushboolean(L, str1 && str2 ? str1->compare(*str2) == 0 : 0);
   return 1;
 }
 /* ************************************************************************** */
@@ -372,7 +374,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len)
                  }
               }
               if (l) {
-                b->append(UTF8, buff, l);
+                b->append(U_ENCODE_UTF8, buff, l);
               }
               break;
            }
@@ -380,7 +382,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len)
      } else {
         size_t readed = 0;
         // a normal character, we append it
-        b->append(UTF8, strfrmt, 1, readed);
+        b->append(U_ENCODE_UTF8, strfrmt, 1, &readed);
         strfrmt = strfrmt + readed - 1;
      }
      strfrmt++;
@@ -424,23 +426,25 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len)
   return 1;
 }
 /* ************************************************************************** */
-/* static */ int elg_ustring_encode(lua_State* L) {
+int elg_ustring_encode(lua_State* L) {   \
   UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);
-  // pushes onto the stack the string 'str'
-  elg::pushstring(L, str);
+  pushustring(L, str->c_unichar());
+  return 1;
+}
+/* ************************************************************************** */
+/* static */ int elg_ustring_decode_(lua_State* L, int numArg) {
+  // length of the source string
+  size_t length;
+  // return the string at the top of stack if any
+  const char* source = luaL_checklstring(L, numArg, &length);
+  // decode source as UTF-8
+  lua_pushlightobject(L, UnitexString)(U_ENCODE_UTF8, source, length);
   // number of values returned
   return 1;
 }
 /* ************************************************************************** */
 /* static */ int elg_ustring_decode(lua_State* L) {
-  // length of the source string
-  size_t length;
-  // return the string at the top of stack if any
-  const char* source = luaL_checklstring(L, 1, &length);
-  // decode source as UTF-8
-  lua_pushlightobject(L, UnitexString)(UTF8, source, length);
-  // number of values returned
-  return 1;
+  return elg_ustring_decode_(L, -1);
 }
 /* ************************************************************************** */
 /* static */ int elg_ustring___call(lua_State* L) {
@@ -449,6 +453,57 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len)
   lua_remove(L,1);
   // the remain argument is expected to be a UTF-8 encoded string to decode
   return elg_ustring_decode(L);
+}
+/* ************************************************************************** */
+/* static */ int elg_ustring___concat(lua_State* L) {
+  // Checks whether the arguments are uStrings. testudata works like checkudata,
+  // except that, when the test fails, it returns NULL instead of throwing an error
+  UnitexString* strptr1 = lua_testudata_cast(L, 1, UnitexString);
+  UnitexString* strptr2 = lua_testudata_cast(L, 2, UnitexString);
+
+  // if both strings are of type uString
+  if (strptr1 && strptr2) {
+    // push a new string resulting of the concatenation of both strings
+    lua_pushlightobject(L, UnitexString)(*strptr1 + *strptr2);
+    return 1;
+  }
+
+  // at least one pointer is a uString, convert it to string and
+  // let lua_concat to perform the concatenation
+  //
+  // (?): unknown type   =>  strptr == null
+  // (S): uString type   =>  strptr != null
+  // (s): string type
+  //
+  // stack:
+  //  strptr1(?)
+  //  strptr2(?)
+  //
+  // swap if strptr1 == null   | push if strptr1 != null
+  //
+  //                           |  strptr1(S)
+  //  strptr2(S)               |  strptr2(?)
+  //  strptr1(?)               | *strptr1(s)
+  //
+  // push if strptr2 != null   | swap if strptr2 == null
+  //
+  //  strptr2(S)               |  strptr1(S)
+  //  strptr1(?)               | *strptr1(s)
+  //  strptr2(s)               |  strptr2(?)
+  //
+  // top n=2                   | top n=2
+  //  strptr1(?)               | *strptr1(s)
+  // *strptr2(s)               |  strptr2(?)
+
+  // put strptr1 as string at the top of the stack
+  pushustring_or_insert(L, -2, strptr1);
+  // put strptr2 as string at the top of the stack
+  pushustring_or_insert(L, -2, strptr2);
+
+  // concatenates the 2 values at the top of the stack
+  // at least one of them being a string
+  lua_concat(L,2);
+  return 1;
 }
 /* ************************************************************************** */
 /* static */ int elg_ustring_self_format(lua_State* L) {
@@ -483,13 +538,13 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len)
   return 0;
 }
 /* ************************************************************************** */
-/* static */ const struct luaL_Reg lua_lib_functions[] = {
+/* static */ const struct luaL_Reg lua_elg_lib_functions[] = {
   U__DECLARE__FUNCTION__ENTRY__(USTRING, rep),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, format),
   {NULL, NULL}
 };
 /* ************************************************************************** */
-/* static */  const struct luaL_Reg lua_lib_methods[] = {
+/* static */ const struct luaL_Reg lua_elg_lib_methods[] = {
   // U__DECLARE__FUNCTION__ELG__USTRING__
   U__DECLARE__FUNCTION__ENTRY__(USTRING, deaccentuate),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, fold),
@@ -518,59 +573,17 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len)
   U__DECLARE__FUNCTION__ENTRY__(USTRING, __call),
   U__DECLARE__FUNCTION__ENTRY__ALIAS__(USTRING, len, __len),
   U__DECLARE__FUNCTION__ENTRY__ALIAS__(USTRING, encode, __tostring),
-  //
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, __concat),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, __lt),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, __le),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, __eq),
+
+  // allow to release any resource associated with the userdata object
   U__DECLARE__GC__ENTRY__(UnitexString),
-  {NULL, NULL}};
+  {NULL, NULL}
+};
 /* ************************************************************************** */
-int luaopen_ustring(lua_State *L) {
-  // -------------------------------------------
-  // create the lib table
-  // [-0, +1] > (+1)
-  //lua_newtable(L);
-  //  luaL_register(L, EXTENSION_FULL_NAME_USTRING, ARRAY_LAST_ELEMENT(lua_lib));
-  //  elg_stack_dump(L);
-
-  // register functions into the lib table
-  luaL_register(L, EXTENSION_NAME_USTRING, lua_lib_functions);
-  elg_stack_dump(L);
-
-  // set the name of the module
-  lua_pushliteral(L, EXTENSION_NAME_USTRING);
-  lua_setfield(L, -2, "_NAME");
-  elg_stack_dump(L);
-
-  // set the version of the module
-  lua_pushliteral(L, EXTENSION_VERSION_USTRING);
-  lua_setfield(L, -2, "_VERSION");
-  elg_stack_dump(L);
-
-  // -------------------------------------------
-  // create the module metatable
-  luaL_newmetatable(L, EXTENSION_NAME_USTRING);
-  elg_stack_dump(L);
-
-  // duplicate the metatable
-  lua_pushvalue(L, -1);
-  elg_stack_dump(L);
-
-  // mt.__index = mt
-  lua_setfield(L, -2, "__index");
-  elg_stack_dump(L);
-
-  // register metamethods
-  luaL_register(L, NULL, lua_lib_methods);
-  elg_stack_dump(L);
-
-  // assign the metatable to the lib table
-  lua_setmetatable(L, -2);
-  elg_stack_dump(L);
-
-  // -------------------------------------------
-  // add the lib table to the elg lib table
-  lua_setfield(L, -2,  EXTENSION_NAME_USTRING);
-  elg_stack_dump(L);
-  return 1;
-}
+U__DECLARE__FUNCTION__ELG__OPEN__EXTENSION__WITH__FUNCTIONS__AND__METHODS__(USTRING);
 /* ************************************************************************** */
 }  // namespace unitex::elg::ustring::{unnamed}
 /* ************************************************************************** */
@@ -584,4 +597,4 @@ int luaopen_ustring(lua_State *L) {
 #pragma warning(pop)
 #endif  // UNITEX_COMPILER_AT_LEAST(MSVC,15,0)
 /* ************************************************************************** */
-#endif // USTRING_H_
+#endif // UNITEX_ELGLIB_USTRING_H_

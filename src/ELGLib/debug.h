@@ -39,6 +39,11 @@
 #include "Unicode.h"
 #include "base/debug/elg_build_mode.h"
 /* ************************************************************************** */
+#if UNITEX_COMPILER_IS(GCC)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+/* ************************************************************************** */
 #define elg_error(L,message)                         \
           luaL_error(L,"[%s:%s:%d] Error: %s",       \
                     ELG_ENVIRONMENT_PREFIX,          \
@@ -54,17 +59,6 @@ namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
 
-/* ************************************************************************** */
-}  // namespace unitex::elg::{unnamed
-/* ************************************************************************** */
-}  // namespace unitex::elg
-/* ************************************************************************** */
-
-/* ************************************************************************** */
-namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
-// anonymous namespaces in C++ are more versatile and superior to static.
-/* ************************************************************************** */
-#if ELG_BUILD_MODE(DEBUG)
 void entryprint(lua_State *L, const int entry, const char *kv)
 {
 		if (lua_type(L, (entry)) == LUA_TSTRING)
@@ -101,7 +95,6 @@ void tableprint(lua_State *L, const int tindex, const char *ttype)
 	}
 	lua_pop(L, 1);	/* remove copied table */
 }
-
 void stack_dump(lua_State *L,
 					const char *mark = "",		/* print after *** stackdump */
 					const bool listtable = "true")	/* show (meta)table contents */
@@ -237,13 +230,20 @@ void stack_dump(lua_State *L,
     //}
   //}
 //}
+#if ELG_BUILD_MODE(DEBUG)
 # define elg_stack_dump(L) stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC)
 #else
 # define elg_stack_dump(L)
 #endif
 /* ************************************************************************** */
-}  // namespace unitex::{unnamed
+}  // namespace unitex::elg::{unnamed
+/* ************************************************************************** */
+}  // namespace unitex::elg
 /* ************************************************************************** */
 }  // namespace unitex
+/* ************************************************************************** */
+#if UNITEX_COMPILER_IS(GCC)
+# pragma GCC diagnostic pop
+#endif
 /* ************************************************************************** */
 #endif // ELGLIB_DEBUG_H_
