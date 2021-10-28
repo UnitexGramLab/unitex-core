@@ -262,7 +262,7 @@ while (s[i]!='\0') {
             }
          } else {
              /* Here we deal with dictionary variable things like $a.CODE$ */
-             struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
+             const struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
              if (entry==NULL) {
                  switch (p->variable_error_policy) {
                      case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name);

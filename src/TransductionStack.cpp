@@ -1319,7 +1319,7 @@ for (;;) {
 
             /* If we arrive here, the variable was neither a normal one nor an output one,
              * so we try to match dictionary one */
-            struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
+            const struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
             if (entry==NULL) {
                /* If the variable is not defined properly */
                if (field[0]=='S') {
@@ -1340,7 +1340,7 @@ for (;;) {
             }
          }
 
-         struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
+         const struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
          if (entry==NULL) {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name); break;
