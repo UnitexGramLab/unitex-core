@@ -34,7 +34,6 @@
  */
 /* ************************************************************************** */
 // Unitex's .h files               (try to order the includes alphabetically)
-#include "base/compiler/intrinsic/assume_aligned.h"
 #include "base/integer/integer.h"
 /* ************************************************************************** */
 // Header for this file
@@ -96,307 +95,110 @@ const uint8_t kUTF8ByteInfoIndex[] = {
                      3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 6, 6,  // 224-239
                      7, 8, 8, 8, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // 240-255
 /* ************************************************************************** */
-/**
- * @brief  Returns the length of the string s
- */
-size_t u_strlen(const unichar* s) {
-  const unichar *it;
-  for (it = s; *it; ++it) {}
-  return (it - s);
-}
+size_t u_encode_utf8(const unichar* source, char* destination) {
+  const unichar* it = source;
+  int pos = 0;
 
-// all U__* macros must be undefined at the end of this file
-#define U__STRCMP__NULL__(s1, s2)                        \
-    if (UNITEX_UNLIKELY((s1 == NULL) || (s2 == NULL))) { \
-      if ((s1 == NULL) && (s2 == NULL)) return  0;       \
-      if  (s1 == NULL)                  return  1;       \
-      else                              return -1;       \
+  // loop till the end of string
+  while (*it != '\0') {
+    // ASCII characters lower than 0x80
+    // 1-byte unicode codepoint
+    if (*it <= 0x7F) {
+      destination[pos++] = (char) *it;
     }
-
-#define U__STRCMP__(s1_t, s1, s2_t, s2, init, cond)                                        \
-  const s1_t* it1 = s1;                                                                    \
-  const s2_t* it2 = s2;                                                                    \
-  s1_t c1 = '\0';                                                                          \
-  s2_t c2 = '\0';                                                                          \
-  size_t pos = init;                                                                       \
-  for (; cond ; pos += 4) {                                                                \
-    c1 = *(it1+pos);   c2= *(it2+pos)   ; if (c1=='\0'){ break; } if ((c1-c2)) { break; }  \
-    c1 = *(it1+pos+1); c2= *(it2+pos+1) ; if (c1=='\0'){ break; } if ((c1-c2)) { break; }  \
-    c1 = *(it1+pos+2); c2= *(it2+pos+2) ; if (c1=='\0'){ break; } if ((c1-c2)) { break; }  \
-    c1 = *(it1+pos+3); c2= *(it2+pos+3) ; if (c1=='\0'){ break; } if ((c1-c2)) { break; }  \
+    // 2-bytes unicode codepoints
+    else if (*it <= 0x7FF) {
+      destination[pos++] = (char) (0xC0 | (*it >> 6));
+      destination[pos++] = (char) (0x80 | (*it & 0x3F));
+    }
+    // 3-bytes unicode codepoints
+    // Even if such behavior should be treated as an encoding error,
+    // note that this allows the encoding of the code points between
+    // 0xD800 and 0xDFFF, i.e. the code points for UTF-16 surrogates
+    else if (*it <= 0xFFFF) {
+      destination[pos++] = (char) (0xE0 | (*it >> 12));
+      destination[pos++] = (char) (0x80 | ((*it >> 6) & 0x3F));
+      destination[pos++] = (char) (0x80 | (*it & 0x3F));
+    }
+    // 4-bytes unicode codepoints
+    else if (*it <= 0x10FFFF) {
+      destination[pos++] = (char) (0xF0 | (*it  >> 18));
+      destination[pos++] = (char) (0x80 | ((*it >> 12) & 0x3F));
+      destination[pos++] = (char) (0x80 | ((*it >> 6)  & 0x3F));
+      destination[pos++] = (char) (0x80 | (*it & 0x3F));
+    }
+    // if the codepoint is invalid encode it as the replacement char
+    else {
+      destination[pos++] = (char) kUTF8ReplacementChar[0];
+      destination[pos++] = (char) kUTF8ReplacementChar[1];
+      destination[pos++] = (char) kUTF8ReplacementChar[2];
+    }
+    // advance the character pointer
+    ++it;
   }
 
+  // indicate the end of the string
+  destination[pos] = '\0';
 
-#define U__BLOCKSTRCMP__(s1, s2, n)                                                          \
-  size_t block = 0;                                                                          \
-  const size_t elements_per_block = sizeof(uintptr_t)   / sizeof(unichar);                   \
-  const size_t number_of_blocks   = sizeof(unichar) * n / sizeof(uintptr_t);                 \
-  size_t repeat = number_of_blocks / 2;                                                      \
-  if(repeat) {                                                                               \
-    const uintptr_t* r0 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s1, 16)); \
-    const uintptr_t* r1 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s2, 16)); \
-    while (repeat--) {                                                                       \
-      if ((*(r0+block)   - *(r1+block))   != 0) {           break; }                         \
-      if ((*(r0+block+1) - *(r1+block+1)) != 0) { block+=1; break; }                         \
-      block += 2;                                                                            \
-    }                                                                                        \
-  }
-
-/**
- * @brief  Compares two strings
- *
- * @param  s1 A null-terminated character sequence (unichar-string)
- * @param  s2 A null-terminated character sequence (unichar-string)
- * @return Returns a signed integral indicating the relation between
- *         the strings:
- *         -  0 : They compare equal
- *         - <0 : Either the value of the first character that does not match
- *                is lower in the compared string, or all compared characters
- *                match but the compared string is shorter
- *         - >0 : Either the value of the first character that does not match
- *                is greater in the compared string, or all compared characters
- *                match but the compared string is longer.
- *
- * @note   Null strings are allowed
- */
-int u_strcmp(const unichar* s1, const unichar* s2) {
-  // if any of the two strings is equal to null
-  U__STRCMP__NULL__(s1, s2);
-  // compare the two non-null strings
-  U__STRCMP__(unichar, s1, unichar, s2, 0,);
-  // return a signed integral indicating the relation between the strings
-  return (c1 == '\0') ? -(unsigned int)c2 :
-                        ((unsigned int)c1 - (unsigned int)c2);
+  // return the length of the destination string
+  return pos;
 }
 
-/**
- * @brief  Compares the specified number of characters of two strings
- *
- * @param  s1 A null-terminated character sequence (unichar-string)
- * @param  s2 A null-terminated character sequence (unichar-string)
- * @param  n  Number of characters to compare
- * @return Returns a signed integral indicating the relation between
- *         the strings:
- *         -  0 : They compare equal
- *         - <0 : Either the value of the first character that does not match
- *                is lower in the compared string, or all compared characters
- *                match but the compared string is shorter
- *         - >0 : Either the value of the first character that does not match
- *                is greater in the compared string, or all compared characters
- *                match but the compared string is longer.
- *
- * @note   Null strings are allowed
- */
-int u_strncmp(const unichar* UNITEX_RESTRICT s1, const unichar* UNITEX_RESTRICT s2, size_t n) {
-  // if any of the two strings is equal to null
-  U__STRCMP__NULL__(s1, s2);
-  // find on which block of bytes there are a difference
-  U__BLOCKSTRCMP__(s1, s2, n);
-  // find the first character that is different inside the detected block
-  U__STRCMP__(unichar, s1, unichar, s2, block * elements_per_block, pos < n);
-  // return a signed integral indicating the relation between the strings
-  return (c1 == '\0') ? -(unsigned int)c2 :
-                        ((unsigned int)c1 - (unsigned int)c2);
-}
+size_t u_decode_utf8_ns(unichar* UNITEX_RESTRICT udst,
+    const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen,
+    size_t dstsize) {
+  const char* it = csrc;
+  int pos = 0;
 
-/**
- * @brief  Compares the specified number of characters of two strings without
- *         regard to case
- *
- * @param  s1 A null-terminated character sequence (unichar-string)
- * @param  s2 A null-terminated character sequence (unichar-string)
- * @param  n  Number of characters to compare
- * @return Returns a signed integral indicating the relation between
- *         the strings:
- *         -  0 : They compare equal
- *         - <0 : Either the value of the first character that does not match
- *                is lower in the compared string, or all compared characters
- *                match but the compared string is shorter
- *         - >0 : Either the value of the first character that does not match
- *                is greater in the compared string, or all compared characters
- *                match but the compared string is longer.
- *
- * @note   Null strings are allowed
- */
-int u_strnicmp(const unichar* s1, const unichar* s2, size_t n) {
-  // if any of the two strings is equal to null
-  U__STRCMP__NULL__(s1, s2);
+  // loop till the end of string
+  while (*it != '\0' && --maxlen) {
+    // 1-byte encodes UTF-8 information
+    uint8_t encoded_index  = kUTF8ByteInfoIndex[static_cast<uint8_t>(*it)];
+    //
+    uint8_t encoded_width  = kUTF8ByteInfo[encoded_index].width;
+    //
+    uint8_t encoded_offset = encoded_width - 1u;
+    // set the replacement char (0xFFFD) as default value
+    unichar value = U_REPLACEMENT_CHAR;
 
-  const unichar*  it1 = s1;
-  const unichar*  it2 = s2;
-  const u_info_t* info1 = (const u_info_t *) '\0';
-  const u_info_t* info2 = (const u_info_t *) '\0';
+    if (u_has_valid_utf8_width(encoded_width)) {
+      // 1-byte unicode codepoint
+      value = *it & kUTF8ByteInfo[encoded_index].mask;
 
-  while(n) {
-    if(*it1 == '\0' || *it2 == '\0') {
-      break;
-    }
-
-    info1 = u_info(*it1);
-    info2 = u_info(*it2);
-
-    // 0: s1 and s2 have simple case folding
-    // 1: s2 have full case folding
-    // 2: s1 have full case folding
-    // 3: s1 and s2 have both full case folding
-    int fold_expands = 2 * u_has_flag_fold_expands(info1) +
-                           u_has_flag_fold_expands(info2);
-
-    // simple case folding compare (where string lengths don't change)
-    if(UNITEX_LIKELY(fold_expands == 0)) {
-      if(*it1 + info1->variant[U_CASE_FOLD] !=
-         *it2 + info2->variant[U_CASE_FOLD]) {
-        break;
+      // n-byte following unicode codepoints
+      for (uint8_t i=0u; i < encoded_offset && *(it+1) != '\0'; ++i, ++it) {
+         value = (value<<6) | ((*(it+1)) & 0x3F);
       }
-    // s1 or s2 have full case folding
-    } else if (fold_expands == 1 || fold_expands == 2) {
-      int index  = fold_expands == 1 ? info2->variant[U_CASE_FOLD] :
-                                       info1->variant[U_CASE_FOLD];
-      const unichar** it_unfold = fold_expands == 1 ? &it1 : &it2;
-      const unichar*  it_fold   = &kUSpecialVariants[index + 1];
-      size_t length = kUSpecialVariants[index];
-      int strings_not_equal = u_strnicmp(*it_unfold,it_fold,length);
-      if (strings_not_equal) return strings_not_equal;
-      (*it_unfold) += (length-1);
-    // both of strings have full case folding
     } else {
-      if (info1->variant[U_CASE_FOLD] !=
-          info2->variant[U_CASE_FOLD]) {
-        break;
-      }
+      it += encoded_offset;
     }
 
-    ++it1;
-    ++it2;
-    --n;
+    // unichar = decoded value
+    udst[pos++] = u_replace_if_invalid(value);
+
+    // advance the character pointer
+    ++it;
   }
 
-  return n == 0 ? 0 : (*(const unsigned int *)it1 - *(const unsigned int *)it2);
+  // indicate the end of the string
+  udst[pos] = '\0';
+
+  // update read length
+  if (readlen) { *readlen = (it - csrc); }
+
+  // return the decoded length
+  return pos;
 }
 
-/**
- * @brief  Compares two strings without regard to case
- *
- * @param  s1 A null-terminated character sequence (unichar-string)
- * @param  s2 A null-terminated character sequence (unichar-string)
- * @return Returns a signed integral indicating the relation between
- *         the strings:
- *         -  0 : They compare equal
- *         - <0 : Either the value of the first character that does not match
- *                is lower in the compared string, or all compared characters
- *                match but the compared string is shorter
- *         - >0 : Either the value of the first character that does not match
- *                is greater in the compared string, or all compared characters
- *                match but the compared string is longer.
- *
- * @note   Null strings are allowed
- */
-int u_stricmp(const unichar* s1, const unichar* s2) {
-  // if any of the two strings is equal to null
-  U__STRCMP__NULL__(s1, s2);
-
-  const unichar*  it1 = s1;
-  const unichar*  it2 = s2;
-  const u_info_t* info1 = (const u_info_t *) '\0';
-  const u_info_t* info2 = (const u_info_t *) '\0';
-
-  for(;;) {
-    if(*it1 == '\0' || *it2 == '\0') {
-      break;
-    }
-
-    info1 = u_info(*it1);
-    info2 = u_info(*it2);
-
-    // 0: s1 and s2 have simple case folding
-    // 1: s2 have full case folding
-    // 2: s1 have full case folding
-    // 3: s1 and s2 have both full case folding
-    int fold_expands = 2 * u_has_flag_fold_expands(info1) +
-                           u_has_flag_fold_expands(info2);
-
-    // simple case folding compare (where string lengths don't change)
-    if(UNITEX_LIKELY(fold_expands == 0)) {
-      if(*it1 + info1->variant[U_CASE_FOLD] !=
-         *it2 + info2->variant[U_CASE_FOLD]) {
-        break;
-      }
-    // s1 or s2 have full case folding
-    } else if (fold_expands == 1 || fold_expands == 2) {
-      int index  = fold_expands == 1 ? info2->variant[U_CASE_FOLD] :
-                                       info1->variant[U_CASE_FOLD];
-      const unichar** it_unfold = fold_expands == 1 ? &it1 : &it2;
-      const unichar*  it_fold   = &kUSpecialVariants[index + 1];
-      size_t length = kUSpecialVariants[index];
-      int strings_not_equal = u_strnicmp(*it_unfold,it_fold,length);
-      if (strings_not_equal) return strings_not_equal;
-      (*it_unfold) += (length-1);
-    // both of strings have full case folding
-    } else {
-      if (info1->variant[U_CASE_FOLD] !=
-          info2->variant[U_CASE_FOLD]) {
-        break;
-      }
-    }
-
-    ++it1;
-    ++it2;
-  }
-
-  return (*(const unsigned int *)it1 - *(const unsigned int *)it2);
+size_t u_decode_utf8_n(unichar* UNITEX_RESTRICT udst,
+    const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen) {
+  return u_decode_utf8_ns(udst, csrc, readlen, maxlen, U_MAX_BUFFER_SIZE);
 }
 
-#define U__REVERSE__(s_t, s, l)     \
-  if (s == NULL || !(*s)) return 0; \
-  s_t tmp = '\0';                   \
-  s_t*  it_end = s + l - 1;         \
-  while (it_end > s) {              \
-    tmp = *s;                       \
-    *s = *it_end;                   \
-    *it_end = tmp;                  \
-    s++;                            \
-    it_end--;                       \
-  }
-
-/**
- * @brief  Reverse a string
- */
-size_t u_reverse(unichar* s) {
-  size_t len = u_strlen(s);
-  U__REVERSE__(unichar, s, len);
-  return len;
+size_t u_decode_utf8(unichar* UNITEX_RESTRICT udst,
+    const char* UNITEX_RESTRICT csrc, size_t* readlen) {
+  return u_decode_utf8_ns(udst, csrc, readlen, U_MAX_BUFFER_SIZE, U_MAX_BUFFER_SIZE);
 }
 
-/**
- * @brief  Reverse a string
- */
-size_t u_reverse(unichar* s, size_t n) {
-  U__REVERSE__(unichar, s, n);
-  return n;
-}
-
-#define U__REVERSE__DEST__(s_t, s, d_t, d, l)   \
-  if (s == NULL || !(*s)) return 0;             \
-  const s_t*  it_end = s + l - 1;               \
-  while (it_end >= s) {                         \
-    *d = *it_end;                               \
-    d++;                                        \
-    it_end--;                                   \
-  }                                             \
-
-size_t u_reverse(const unichar* UNITEX_RESTRICT s, unichar* UNITEX_RESTRICT d) {
-  size_t len = u_strlen(s);
-  U__REVERSE__DEST__(unichar, s, unichar, d, len);
-  return len;
-}
-
-size_t u_reverse(const unichar* UNITEX_RESTRICT s, unichar* UNITEX_RESTRICT d, size_t n) {
-  U__REVERSE__DEST__(unichar, s, unichar, d, n);
-  return n;
-}
-
-
-#undef U__REVERSE__
-#undef U__REVERSE__DEST__
 /* ************************************************************************** */
 }  // namespace unitex

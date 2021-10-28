@@ -66,6 +66,18 @@ namespace unitex {
 #define {c:MaxValue} {v:maxValue}
 
 /**
+ * @def      U_SIZE_MAX
+ * @brief    Maximum allowed unicode buffer size
+ */
+#if defined(SIZE_MAX)
+#define U_SIZE_MAX SIZE_MAX
+#elif defined(__SIZE_MAX__)
+#define U_SIZE_MAX __SIZE_MAX__
+#else
+#define U_SIZE_MAX (static_cast<size_t>(-1))
+#endif  // defined(SIZE_MAX)
+
+/**
  * @def      {c:ReplacementChar}
  * @brief    The unicode replacement character used when decoding byte sequences
  *           that cannot be successfully converted

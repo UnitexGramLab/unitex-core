@@ -1033,6 +1033,9 @@
     <ClCompile Include="..\base\unicode\encode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\base\unicode\operations.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\base\unicode\case.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

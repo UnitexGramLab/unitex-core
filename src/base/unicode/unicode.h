@@ -36,10 +36,20 @@
 #ifndef UNITEX_BASE_UNICODE_UNICODE_H_                              // NOLINT
 #define UNITEX_BASE_UNICODE_UNICODE_H_                              // NOLINT
 /* ************************************************************************** */
+// C system files                  (try to order the includes alphabetically)
+#include <string.h>
+/* ************************************************************************** */
+// Unitex's .h files               (try to order the includes alphabetically)
 #include "base/unicode/table.h"
 #include "base/unicode/test.h"
 #include "base/unicode/case.h"
 #include "base/unicode/utf8.h"
 #include "base/unicode/encode.h"
+#include "base/unicode/operations.h"
+/* ************************************************************************** */
+namespace unitex {
+/* ************************************************************************** */
+/* ************************************************************************** */
+}  // namespace unitex
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_UNICODE_UNICODE_H_                           // NOLINT

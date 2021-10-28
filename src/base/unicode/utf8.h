@@ -91,21 +91,50 @@ extern const u_info_utf8_t kUTF8ByteInfo[];
  *
  */
 extern const uint8_t kUTF8ByteInfoIndex[];
-/* ************************************************************************** */
-size_t u_strlen(const unichar* s);
 
-int u_strcmp(const unichar* s1, const unichar* s2);
+/**
+ *
+ *
+ * @param source
+ * @param destination
+ * @return length of the destination string
+ */
+size_t u_encode_utf8(const unichar* source, char* destination)
+  ;
 
-int u_strncmp(const unichar* UNITEX_RESTRICT s1, const unichar* UNITEX_RESTRICT s2, size_t n);
+/**
+ *
+ * @param source
+ * @param destination
+ * @param n
+ * @return length of decoded destination string
+ */
+size_t u_decode_utf8_ns(unichar* UNITEX_RESTRICT udst,
+    const char* UNITEX_RESTRICT csrc, size_t* readlen,
+    size_t maxlen, size_t dstsize)
+    UNITEX_PARAMS_NON_NULL_(1, 2);
 
-int u_strnicmp(const unichar* s1, const unichar* s2, size_t n);
+/**
+ *
+ * @param source
+ * @param destination
+ * @param n
+ * @return length of decoded destination string
+ */
+size_t u_decode_utf8_n(unichar* UNITEX_RESTRICT udst,
+    const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen)
+    UNITEX_PARAMS_NON_NULL_(1, 2);
 
-int u_stricmp(const unichar* s1,const unichar* s2);
-
-size_t u_reverse(unichar* s);
-size_t u_reverse(unichar* s, size_t n);
-size_t u_reverse(const unichar* UNITEX_RESTRICT s, unichar* UNITEX_RESTRICT d) UNITEX_PARAMS_NON_NULL_(2);
-size_t u_reverse(const unichar* UNITEX_RESTRICT s, unichar* UNITEX_RESTRICT d, size_t n) UNITEX_PARAMS_NON_NULL_(2);
+/**
+ *
+ * @param source
+ * @param destination
+ * @param n
+ * @return length of decoded destination string
+ */
+size_t u_decode_utf8(unichar* UNITEX_RESTRICT udst,
+    const char* UNITEX_RESTRICT csrc, size_t* readlen)
+    UNITEX_PARAMS_NON_NULL_(1, 2);
 
 /* ************************************************************************** */
 }  // namespace unitex

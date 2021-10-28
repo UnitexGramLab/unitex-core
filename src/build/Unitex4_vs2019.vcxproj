@@ -432,6 +432,7 @@
     <ClCompile Include="..\base\unicode\table.cpp" />
     <ClCompile Include="..\base\unicode\utf8.cpp" />
     <ClCompile Include="..\base\unicode\encode.cpp" />
+    <ClCompile Include="..\base\unicode\operations.cpp" />
     <ClCompile Include="..\base\unilog\severity_level.cpp" />
     <ClCompile Include="..\base\vendor\whereami\whereami.c" />
     <ClCompile Include="..\BitArray.cpp" />

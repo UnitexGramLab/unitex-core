@@ -91,17 +91,41 @@ namespace unitex {
 #define U_REPLACEMENT_CHAR 0xFFFD
 
 /**
- * @def      U_SIZE
- * @brief    This is the size in bits of a unicode character
- */
-#define U_SIZE 16
-
-/**
  * @def      unichar
  * @brief    This is the type of a unicode character. Note that it is a
  *           16-bits type and it cannot handle characters beyond 0xFFFF
  */
 typedef uint16_t unichar;
+
+/**
+ * @def      U_BYTES
+ * @brief    This is the size in bytes of a unicode character
+ */
+#define U_CHAR_SIZE sizeof(unichar)
+
+/**
+ * @def      U_CHAR_BIT
+ * @brief    This is the size in bits of a unicode character
+ */
+#define U_CHAR_BIT CHAR_BIT * U_CHAR_SIZE
+
+/**
+ * @def      U_MAX_BUFFER_SIZE
+ * @brief    Maximum allowed unicode buffer size
+ */
+#if defined(SIZE_MAX)
+#define U_MAX_BUFFER_SIZE SIZE_MAX
+#elif defined(__SIZE_MAX__)
+#define U_MAX_BUFFER_SIZE __SIZE_MAX__
+#else
+#define U_MAX_BUFFER_SIZE (static_cast<size_t>(-1))
+#endif  // defined(SIZE_MAX)
+
+/**
+ * @def      U_MAX_STRING_LENGTH
+ * @brief    Maximum theoretical length than a unicode string can reach
+ */
+#define U_MAX_STRING_LENGTH U_MAX_BUFFER_SIZE / U_CHAR_SIZE
 
 /**
  * `u_info_t` integer member types

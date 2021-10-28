@@ -112,6 +112,9 @@ SYSTEM = linux-like
 # compile and link LuaJIT directly from vendor sources
 LUAJIT_DIRECT_LINK = yes
 
+# use virtual memory optimizations by default
+#VIRTOPTIMIZATION = yes
+
 ifeq ($(SYSTEM),linux)
 LINUX_LIKE = yes
 #LDFLAGS += -lstdc++
@@ -957,7 +960,7 @@ CASSYS_FILE_OBJS = Cassys.o Cassys_tokens.o Cassys_xml_output.o Cassys_external_
 ##################################
 ##################################
 
-UNITEX_BASE_OBJECT = case.o chrono.o encode.o functions.o MsgLogger.o safe_bool.o severity_level.o table.o utf8.o whereami.o
+UNITEX_BASE_OBJECT = case.o chrono.o encode.o functions.o MsgLogger.o safe_bool.o severity_level.o table.o operations.o utf8.o whereami.o
 UNITEX_ELGLIB_OBJECT = common.o ELG.o
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
@@ -2335,7 +2338,10 @@ table.o: ../base/unicode/table.cpp
 
 utf8.o: ../base/unicode/utf8.cpp
 	$(CC) -c ../base/unicode/utf8.cpp $(OPTIONS)
-	
+
+operations.o: ../base/unicode/operations.cpp
+	$(CC) -c ../base/unicode/operations.cpp $(OPTIONS)
+
 case.o: ../base/unicode/case.cpp
 	$(CC) -c ../base/unicode/case.cpp $(OPTIONS)
 

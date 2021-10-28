@@ -40,31 +40,67 @@
 namespace unitex {
 /* ************************************************************************** */
 /**
+ * Flags for determining encoding/decoding types
+ */
+typedef enum {
+  U_ENCODE_AUTO  = 0,  ///<
+  U_ENCODE_BINARY   ,  ///<
+  U_ENCODE_ASCII    ,  ///<
+  U_ENCODE_UNICODE  ,  ///<
+  U_ENCODE_UTF8     ,  ///<
+  U_ENCODE_UTF16    ,  ///<
+  U_ENCODE_UTF16_SE ,  ///<
+  U_ENCODE_UTF16_LE ,  ///<
+  U_ENCODE_UTF16_BE ,  ///<
+  U_ENCODE_UTF32    ,  ///<
+  U_ENCODE_UTF32_SE ,  ///<
+  U_ENCODE_UTF32_LE ,  ///<
+  U_ENCODE_UTF32_BE
+} u_encode_t;
+/* ************************************************************************** */
+/**
  *
- *
+ * @param encoding
  * @param source
  * @param destination
- * @return the length of the destination string
+ * @return length of the destination string
  */
-size_t u_encode_utf8(const unichar* source, char* destination) UNITEX_PARAMS_NON_NULL;
+size_t u_encode(u_encode_t encoding, const unichar* source, char* destination)
+                UNITEX_PARAMS_NON_NULL;
 
 /**
  *
- *
+ * @param encoding
  * @param source
  * @param destination
- * @return
+ * @return length of the destination string
  */
-size_t u_decode_utf8(const char* source, unichar* destination) UNITEX_PARAMS_NON_NULL;
+size_t u_decode_ns(u_encode_t encoding, unichar* UNITEX_RESTRICT udst,
+    const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen,
+    size_t dstsize)
+    UNITEX_PARAMS_NON_NULL_(2, 3);
 
 /**
  *
+ * @param encoding
  * @param source
  * @param destination
- * @param n
- * @return
+ * @return length of the destination string
  */
-size_t u_decode_utf8_n(const char* source, unichar* destination, size_t n) UNITEX_PARAMS_NON_NULL;
+size_t u_decode_n(u_encode_t encoding, unichar* UNITEX_RESTRICT udst,
+    const char* UNITEX_RESTRICT csrc, size_t* readlen, size_t maxlen)
+    UNITEX_PARAMS_NON_NULL_(2, 3);
+
+/**
+ *
+ * @param encoding
+ * @param source
+ * @param destination
+ * @return length of the destination string
+ */
+size_t u_decode(u_encode_t encoding, unichar* UNITEX_RESTRICT udst,
+    const char* UNITEX_RESTRICT csrc)
+    UNITEX_PARAMS_NON_NULL_(2, 3);
 /* ************************************************************************** */
 }  // namespace unitex
 /* ************************************************************************** */
