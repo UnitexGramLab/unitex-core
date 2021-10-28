@@ -103,6 +103,14 @@ typedef enum {
    BACKTRACK_ON_VARIABLE_ERRORS
 } VariableErrorPolicy;
 
+/* Common variables types */
+typedef enum {
+   INPUT_VARIABLE   = 1 << 0 ,
+   OUTPUT_VARIABLE  = 1 << 1 ,
+   DIC_VARIABLE     = 1 << 2
+} VariableType;
+
+
 } // namespace unitex
 
 #endif
