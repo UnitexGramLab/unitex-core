@@ -2286,13 +2286,13 @@ void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 
 /**
  * Tries to find something in the dictionary that match both text content and
- * given pattern. This version of the function handles the all languages but Arabic.
+ * given pattern. This version of the function handles all languages but Arabic.
  */
 void explore_dic_in_morpho_mode_standard_with_token(
         struct locate_parameters* p,
         Dictionary* d,
         int offset,
-        const unichar* current_token,
+        const unichar* token,
         unichar* inflected,
         int pos_in_current_token,
         int pos_in_inflected,
@@ -2318,7 +2318,7 @@ offset=read_dictionary_state(d,offset,&is_final_state,&n_transitions,&inf_number
     inflected[pos_in_inflected] = '\0';
     if (pattern == NULL && !save_dic_entry) {
       /* If any word will do with no entry saving */
-      if (current_token[pos_in_current_token] == '\0') {
+      if (token[pos_in_current_token] == '\0') {
         (*matches) = insert_morphological_match(-1,
             pos_in_current_token, -1, (*matches), NULL, jamo,
             pos_in_jamo, &p->al.pa);
@@ -2328,7 +2328,7 @@ offset=read_dictionary_state(d,offset,&is_final_state,&n_transitions,&inf_number
 
 
       Abstract_allocator explore_dic_in_morpho_mode_standard_abstract_allocator=NULL;
-      explore_dic_in_morpho_mode_standard_abstract_allocator=create_abstract_allocator("explore_dic_in_morpho_mode_standard",
+      explore_dic_in_morpho_mode_standard_abstract_allocator=create_abstract_allocator("explore_dic_in_morpho_mode_standard_with_token",
                                                                   AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
                                                                   0);
 
@@ -2345,7 +2345,7 @@ offset=read_dictionary_state(d,offset,&is_final_state,&n_transitions,&inf_number
                 || is_entry_compatible_with_pattern(dela_entry,
                     pattern))) {
           //error("et ca matche!!\n");
-          if (current_token[pos_in_current_token] == '\0') {
+          if (token[pos_in_current_token] == '\0') {
           (*matches) = insert_morphological_match(-1,
               pos_in_current_token, -1, (*matches),
               save_dic_entry ? dela_entry : NULL, jamo,
@@ -2369,12 +2369,12 @@ offset=read_dictionary_state(d,offset,&is_final_state,&n_transitions,&inf_number
   int adr;
   for (int i = 0; i < n_transitions; ++i) {
     offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
-    if (is_equal_or_uppercase(c, current_token[pos_in_current_token], p->alphabet)) {
+    if (is_equal_or_uppercase(c, token[pos_in_current_token], p->alphabet)) {
       // If the transition's letter is case compatible with the current letter
       // of the word to analyze, copy it in inflected and follow it
       inflected[pos_in_inflected] = c;
       explore_dic_in_morpho_mode_standard_with_token(p, d, adr,
-          current_token, inflected, pos_in_current_token + 1,
+          token, inflected, pos_in_current_token + 1,
           pos_in_inflected + 1, matches, pattern,
           save_dic_entry, jamo, pos_in_jamo, line_buffer, ustr, base);
     }
@@ -2385,6 +2385,7 @@ offset=read_dictionary_state(d,offset,&is_final_state,&n_transitions,&inf_number
 // if the loaded morphological dictionaries are 0=zaz, 1=bar and 2=foo; and
 // if morpho_dic_list == "foo;zaz" then morpho_dic_indices = {2, 0}; or
 // if morpho_dic_list == "*"       then morpho_dic_indices = {0, 1, 2}
+// @author Cristian Martinez
 void get_morphological_dictionaries_indices(const char* morpho_dic_list,
                                             const struct locate_parameters* p,
                                             struct list_int* *morpho_dic_indices) {
@@ -2398,7 +2399,7 @@ void get_morphological_dictionaries_indices(const char* morpho_dic_list,
     return;
   }
 
-  char name[FILENAME_MAX];
+  char name[UNITEX_FULLPATH_MAX];
   int pos = 0;
   int index = -1;
 
@@ -2428,6 +2429,8 @@ void get_morphological_dictionaries_indices(const char* morpho_dic_list,
  * This function tries to find something in p's morphological dictionary that
  * matches the given token and pattern. If 'pattern' is NULL, anything found
  * in the dictionary will do. It is used to represent the <DIC> pattern.
+ * @see explore_dic_in_morpho_mode_standard()
+ * @author Cristian Martinez
  */
 void explore_dic_in_morpho_mode_with_token(
         struct locate_parameters* p,
@@ -2442,11 +2445,11 @@ void explore_dic_in_morpho_mode_with_token(
   unichar* buffer_line_buffer_inflected = (unichar*) malloc(sizeof(unichar) * (4096 + DIC_LINE_SIZE));
 
   if (buffer_line_buffer_inflected == NULL) {
-    fatal_alloc_error("explore_dic_in_morpho_mode");
+    fatal_alloc_error("explore_dic_in_morpho_mode_with_token");
   }
 
   unichar* inflected = buffer_line_buffer_inflected;
-  Ustring* line_buffer=new_Ustring(4096);
+  Ustring* line_buffer=new_Ustring(DIC_LINE_SIZE);
   Ustring* ustr=new_Ustring();
 
   struct list_int* morpho_dic_indices = NULL;
