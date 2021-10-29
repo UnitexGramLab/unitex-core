@@ -36,37 +36,37 @@ namespace unitex {
  * Parsing error messages
  */
 const char* const _u_dic_parsing_error_list[] = {
-  [P_OK]                                   = "sucess",
-  [P_FORBIDDEN_CHAR]                       = "forbidden character",
-  [P_BACKSLASH_AT_END]                     = "backslash (\\) at end of line",
-  [P_NULL_STRING]                          = "internal NULL error",
-  [P_UNEXPECTED_END_OF_LINE]               = "unexpected end of line",
-  [P_UNEXPECTED_COMMENT]                   = "unexpected comment at end of entry",
-  [P_EMPTY_INFLECTED_FORM]                 = "empty inflected form",
-  [P_EMPTY_SEMANTIC_CODE]                  = "empty grammatical or semantic code",
-  [P_EMPTY_INFLECTIONAL_CODE]              = "empty inflectional code",
-  [P_EMPTY_LEMMA]                          = "empty lemma",
-  [P_EMPTY_FILTER]                         = "empty filter",
-  [P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE]  = "duplicate character in an inflectional code",
-  [P_DUPLICATE_INFLECTIONAL_CODE]          = "inflectional code is a subset of another",
-  [P_DUPLICATE_SEMANTIC_CODE]              = "duplicate semantic code",
-  [P_UNPROTECTED_DOT]                      = "unprotected dot in inflected form",
-  [P_UNPROTECTED_COMMA]                    = "unprotected comma in lemma",
-  [P_EMPTY_GRAMMATICAL_CODE]               = "empty grammatical code"
+  "sucess",                                       // [P_OK]                                   =
+  "forbidden character",                          // [P_FORBIDDEN_CHAR]                       =
+  "backslash (\\) at end of line",                // [P_BACKSLASH_AT_END]                     =
+  "internal NULL error",                          // [P_NULL_STRING]                          =
+  "unexpected end of line",                       // [P_UNEXPECTED_END_OF_LINE]               =
+  "unexpected comment at end of entry",           // [P_UNEXPECTED_COMMENT]                   =
+  "empty inflected form",                         // [P_EMPTY_INFLECTED_FORM]                 =
+  "empty grammatical or semantic code",           // [P_EMPTY_SEMANTIC_CODE]                  =
+  "empty inflectional code",                      // [P_EMPTY_INFLECTIONAL_CODE]              =
+  "empty lemma",                                  // [P_EMPTY_LEMMA]                          =
+  "empty filter",                                 // [P_EMPTY_FILTER]                         =
+  "duplicate character in an inflectional code",  // [P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE]  =
+  "inflectional code is a subset of another",     // [P_DUPLICATE_INFLECTIONAL_CODE]          =
+  "duplicate semantic code",                      // [P_DUPLICATE_SEMANTIC_CODE]              =
+  "unprotected dot in inflected form",            // [P_UNPROTECTED_DOT]                      =
+  "unprotected comma in lemma",                   // [P_UNPROTECTED_COMMA]                    =
+  "empty grammatical code"                        // [P_EMPTY_GRAMMATICAL_CODE]               =
 };
 
 /**
  * Dictionary entry units
  */
 const char* const _u_dic_entry_unit_list[] = {
-  [U_DICENTRY_UNIT_INFLECTED_FORM]         = "inflected form",
-  [U_DICENTRY_UNIT_LEMMA]                  = "lemma",
-  [U_DICENTRY_UNIT_GRAMMATICAL_CODE]       = "grammatical code",
-  [U_DICENTRY_UNIT_SEMANTIC_CODES]         = "semantic codes",
-  [U_DICENTRY_UNIT_INFLECTIONAL_CODES]     = "inflectional codes",
-  [U_DICENTRY_UNIT_FILTER]                 = "filter",
-  [U_DICENTRY_UNIT_FILTER_CODES]           = "filter codes",
-  [U_DICENTRY_UNIT_COMMENT]                = "comment"
+  "inflected form",      // [U_DICENTRY_UNIT_INFLECTED_FORM]         =
+  "lemma",               // [U_DICENTRY_UNIT_LEMMA]                  =
+  "grammatical code",    // [U_DICENTRY_UNIT_GRAMMATICAL_CODE]       =
+  "semantic codes",      // [U_DICENTRY_UNIT_SEMANTIC_CODES]         =
+  "inflectional codes",  // [U_DICENTRY_UNIT_INFLECTIONAL_CODES]     =
+  "filter",              // [U_DICENTRY_UNIT_FILTER]                 =
+  "filter codes",        // [U_DICENTRY_UNIT_FILTER_CODES]           =
+  "comment"              // [U_DICENTRY_UNIT_COMMENT]                =
 };
 
 //#define U_DIC_PARSING_ERROR_LIST_SIZE
