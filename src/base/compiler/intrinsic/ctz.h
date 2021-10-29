@@ -66,7 +66,7 @@ uint32_t unitex_builtin_ctz_16(uint16_t n) {
 #  define UNITEX_HAS_BUILTIN_CTZ                   1
    uint16_t count = 16;
    if (UNITEX_LIKELY(n)) {
-     _BitScanForward((WORD*)&count, n);
+     _BitScanForward((DWORD*)&count, n);
    }
    return count;
 // Intel Compiler
