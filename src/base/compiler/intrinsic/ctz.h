@@ -66,7 +66,7 @@ uint32_t unitex_builtin_ctz_16(uint16_t n) {
 #  define UNITEX_HAS_BUILTIN_CTZ                   1
    uint16_t count = 16;
    if (UNITEX_LIKELY(n)) {
-     _BitScanForward((uint16_t*)&count, n);
+     _BitScanForward((WORD*)&count, n);
    }
    return count;
 // Intel Compiler
@@ -107,7 +107,7 @@ uint32_t unitex_builtin_ctz_32(uint32_t n) {
 #  define UNITEX_HAS_BUILTIN_CTZ                   1
    uint32_t count = 32;
    if (UNITEX_LIKELY(n)) {
-     _BitScanForward((uint32_t*)&count, n);
+     _BitScanForward((DWORD*)&count, n);
    }
    return count;
 // Intel Compiler
@@ -152,13 +152,13 @@ uint32_t unitex_builtin_ctz_64(uint64_t n) {
    uint32_t count = 64;
    if (UNITEX_LIKELY(n)) {
 #  if UNITEX_CPU_IS(X64)
-      _BitScanForward64((uint32_t*)&count, n);
+      _BitScanForward64((DWORD*)&count, n);
 #  else
-     if (_BitScanForward((uint32_t*)&count, static_cast<uint32_t>(n >> 32))) {
+     if (_BitScanForward((DWORD*)&count, static_cast<uint32_t>(n >> 32))) {
        count += 32;
      }
      else {
-       _BitScanForward((uint32_t*)&count, static_cast<uint32_t>(n))
+       _BitScanForward((DWORD*)&count, static_cast<uint32_t>(n))
      }
 #  endif
   }

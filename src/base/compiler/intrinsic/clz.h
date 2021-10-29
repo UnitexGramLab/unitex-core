@@ -65,7 +65,7 @@ uint16_t unitex_builtin_clz_16(uint16_t n) {
 #  define UNITEX_HAS_BUILTIN_CLZ                   1
    uint16_t count = 16;
    if (UNITEX_LIKELY(n)) {
-     _BitScanReverse((uint16_t*)&count, n);
+     _BitScanReverse((WORD*)&count, n);
      count ^= 15;
    }
    return count;
