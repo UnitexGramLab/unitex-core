@@ -10,6 +10,8 @@ Unitex is the Natural Language Processing (NLP) engine of [Unitex/GramLab][unite
     cd unitex-core/src/build
     make DEBUG=yes 64BITS=yes UNITEXTOOLLOGGERONLY=yes
 
+then follow the instruction displayed at the end of the make.
+
 ## Contributing
 
 We welcome everyone to contribute to improve this project. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) 
