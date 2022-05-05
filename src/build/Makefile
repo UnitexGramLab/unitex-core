@@ -2587,18 +2587,18 @@ no_o_files:
 
 .libunitex: no_o_files $(OBJS) Test_lib.o
 	$(RM) Main_*.o
-	$(CC) *.o $(OPTIONS) $(BUILD_LIB_OPTIONS) -shared -o $BIN_DIR/libunitex.$(DYLIBEXT)
-	$(CC) Test_lib.o -L$BIN_DIR -Wl,-rpath,. -lunitex $(OPTIONS) $(TEST_LIB_OPTIONS) -o $BIN_DIR/Test_lib
+	$(CC) *.o $(OPTIONS) $(BUILD_LIB_OPTIONS) -shared -o $(BIN_DIR)/libunitex.$(DYLIBEXT)
+	$(CC) Test_lib.o -L$(BIN_DIR) -Wl,-rpath,. -lunitex $(OPTIONS) $(TEST_LIB_OPTIONS) -o $(BIN_DIR)/Test_lib
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS) Test_lib.o
 	$(RM) Main_*.o
-	$(CC) *.o $(OPTIONS) $(BUILD_LIB_OPTIONS) -shared -o $BIN_DIR/libUnitexJni.$(DYLIBEXT)
-	jar cvf $BIN_DIR/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
-	$(CC) Test_lib.o -L$BIN_DIR -Wl,-rpath,. -lUnitexJni $(OPTIONS) $(TEST_LIB_OPTIONS) -o $BIN_DIR/Test_lib
+	$(CC) *.o $(OPTIONS) $(BUILD_LIB_OPTIONS) -shared -o $(BIN_DIR)/libUnitexJni.$(DYLIBEXT)
+	jar cvf $(BIN_DIR)/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
+	$(CC) Test_lib.o -L$(BIN_DIR) -Wl,-rpath,. -lUnitexJni $(OPTIONS) $(TEST_LIB_OPTIONS) -o $(BIN_DIR)/Test_lib
 
 .libunitexstatic: $(OBJS)
 	$(RM) Main_*.o
-	$(AR) rcs $BIN_DIR/libunitex.a *.o
+	$(AR) rcs $(BIN_DIR)/libunitex.a *.o
 	touch .libunitexstatic
 else
 
@@ -2608,18 +2608,18 @@ no_o_files:
 
 .libunitex: no_o_files $(LIBTRE) $(LIBLUAJIT) $(OBJS) Test_lib.o
 	$(RM) Main_*.o	
-	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(BUILD_LIB_OPTIONS) $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o $BIN_DIR/unitex.dll
-	$(CC) Test_lib.o $(OPTIONS) $(TEST_LIB_OPTIONS) $BIN_DIR/unitex.dll -o $BIN_DIR/Test_lib.exe
+	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(BUILD_LIB_OPTIONS) $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o $(BIN_DIR)/unitex.dll
+	$(CC) Test_lib.o $(OPTIONS) $(TEST_LIB_OPTIONS) $(BIN_DIR)/unitex.dll -o $(BIN_DIR)/Test_lib.exe
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(LIBLUAJIT) $(OBJS) Test_lib.o
 	-$(RM) Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(BUILD_LIB_OPTIONS) $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o $BIN_DIR/UnitexJni.dll
-	jar cvf $BIN_DIR/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
-	$(CC) Test_lib.o $(OPTIONS) $(TEST_LIB_OPTIONS) $BIN_DIR/UnitexJni.dll -o $BIN_DIR/Test_lib.exe
+	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(BUILD_LIB_OPTIONS) $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o $(BIN_DIR)/UnitexJni.dll
+	jar cvf $(BIN_DIR)/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
+	$(CC) Test_lib.o $(OPTIONS) $(TEST_LIB_OPTIONS) $(BIN_DIR)/UnitexJni.dll -o $(BIN_DIR)/Test_lib.exe
 
 .libunitexstatic: $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(OBJS)
 	$(RM) Main_*.o
-	$(AR) rcs $BIN_DIR/libunitex.a *.o
+	$(AR) rcs $(BIN_DIR)/libunitex.a *.o
 	touch .libunitexstatic
 
 endif
