@@ -29,6 +29,7 @@
 #include <memory>
 #include <vector>
 
+#include "DELA.h"
 #include "Pattern.h"
 #include "Unicode.h"
 
@@ -60,6 +61,8 @@ class ConfigCommand {
   ~ConfigCommand();
   unichar* get_lemma() const;
   unichar* get_part_of_speech() const;
+  struct list_ustring* get_semantic_codes() const;
+  struct list_ustring* get_inflectional_codes() const;
 
  private:
   static unichar* tokenize_lemma(unichar** ptr, const char* config_filename);
@@ -100,6 +103,9 @@ class ConfigLine {
   ConfigLine& operator=(ConfigLine&& other)      = delete;
   ~ConfigLine();
   static int advance_to_next_no_blank_char(unichar** str);
+  struct pattern* get_pattern() const;
+  int get_nb_required_tag() const;
+  std::shared_ptr<ConfigCommand> get_config_command() const;
 
  private:
   static int recognize_pattern_token(unichar** ptr, unichar* res);
@@ -124,11 +130,29 @@ class Multi2Delaf {
   Multi2Delaf& operator=(const Multi2Delaf& other) = delete;
   Multi2Delaf& operator=(Multi2Delaf&& other)      = delete;
   void parse_config_file();
+  void translate_multidelaf_to_delaf(const unichar* inflected_input,
+                                     unichar* buffer) const;
 
  private:
   static int read_line_config_file(U_FILE* config_file, unichar* buffer,
                                    int size_buffer);
   void load_config_file(U_FILE* config_file);
+  static struct dela_entry* tokenize_delaf_tag(unichar** next);
+  static int nb_delaf_tag_that_match_pattern(
+      const std::vector<struct dela_entry*>& delaf_tags,
+      const struct pattern* pattern);
+  static unichar* escape_inflected_input(const unichar* input);
+  unichar* retrieve_lemma(const std::vector<struct dela_entry*>& delaf_tags,
+                          const unichar* multidelaf_string) const;
+  unichar* retrieve_part_of_speech(
+      const std::vector<struct dela_entry*>& delaf_tags,
+      const unichar* multidelaf_string) const;
+  unichar* retrieve_semantic_codes(
+      const std::vector<struct dela_entry*>& delaf_tags) const;
+  unichar* retrieve_inflectional_codes(
+      const std::vector<struct dela_entry*>& delaf_tags) const;
+  static unichar* build_output_codes(const struct list_ustring* list,
+                                     char separator);
   const VersatileEncodingConfig _vec = VEC_DEFAULT;
   std::vector<std::shared_ptr<ConfigLine>> _config_lines;
   const char* _config_filename;
