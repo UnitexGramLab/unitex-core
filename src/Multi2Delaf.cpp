@@ -127,12 +127,12 @@ unichar* ConfigCommand::tokenize_lemma(unichar** ptr,
   // try to read ,,copy
   if (line[0] == ',' && line[1] == ',') {
     if (!u_starts_with(line + 1, COMMA_COPY)) {
-      fatal_error("Double ',' in file: %s, line: `%S`\n", config_filename,
+      fatal_error("Double ',' in file: %s, line: '%S'\n", config_filename,
                   line);
     }
     *ptr = line + 1 + strlen(COMMA_COPY);
     if (**ptr != '\0' && **ptr != '.' && **ptr != '+' && **ptr != ':') {
-      fatal_error("Double ',' in file: %s, line: `%S`\n", config_filename,
+      fatal_error("Double ',' in file: %s, line: '%S'\n", config_filename,
                   line);
     }
     return u_strdup(COMMA_COPY);
@@ -327,16 +327,16 @@ std::unique_ptr<ConfigLine> ConfigLine::tokenize_config_line(
     return nullptr;
   }
   // build config command
-  auto config_commang = ConfigCommand::tokenize_config_command(
+  auto config_command = ConfigCommand::tokenize_config_command(
       nextNoEmptyUnichar, config_filename);
-  if (u_strcmp(config_commang->get_lemma(), ConfigCommand::COMMA_COPY) == 0 &&
+  if (u_strcmp(config_command->get_lemma(), ConfigCommand::COMMA_COPY) == 0 &&
       nb_required_tag != NOT_SPECIFIED && nb_required_tag != 1) {
     fatal_error(
         "Command ,,copy is incompatible with an integer enclosed in curly "
         "braces, except for {1} in file: %s, line: '%S'\n",
         config_filename, line);
   }
-  if (u_strcmp(config_commang->get_part_of_speech(), ConfigCommand::DOT_COPY) ==
+  if (u_strcmp(config_command->get_part_of_speech(), ConfigCommand::DOT_COPY) ==
           0 &&
       nb_required_tag != NOT_SPECIFIED && nb_required_tag != 1) {
     fatal_error(
@@ -345,7 +345,7 @@ std::unique_ptr<ConfigLine> ConfigLine::tokenize_config_line(
         config_filename, line);
   }
   return std::make_unique<ConfigLine>(pattern, nb_required_tag,
-                                      std::move(config_commang));
+                                      std::move(config_command));
 }
 
 ConfigLine::ConfigLine(struct pattern* pattern, int nb_required_tag,
@@ -587,7 +587,7 @@ struct dela_entry* Multi2Delaf::tokenize_delaf_tag(unichar** ptr) {
     return nullptr;  // end of the line, no more dela_entry
   }
   if (next_no_blank_char[0] != '{') {
-    fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n '",
+    fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n",
                 line);
   }
   int i = 1;
@@ -595,13 +595,13 @@ struct dela_entry* Multi2Delaf::tokenize_delaf_tag(unichar** ptr) {
     i++;
   }
   if (next_no_blank_char[i] == '\0') {
-    fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n '",
+    fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n",
                 line);
   }
-  unichar* token_dela_entry = u_strndup(line + 1, i - 1);
+  unichar* token_dela_entry = u_strndup(next_no_blank_char + 1, i - 1);
   struct dela_entry* tag    = tokenize_DELAF_line(token_dela_entry);
   free(token_dela_entry);
-  *ptr = line + i + 1;  // + 1 to skip closing brace '}'
+  *ptr = next_no_blank_char + i + 1;  // + 1 to skip closing brace '}'
   return tag;
 }
 
