@@ -149,6 +149,13 @@ class Multi2Delaf {
       const unichar* multidelaf_string) const;
   unichar* retrieve_semantic_codes(
       const std::vector<struct dela_entry*>& delaf_tags) const;
+  static unichar* complete_first_with_second(const unichar* first,
+                                             const unichar* second);
+  static struct list_ustring* clone_and_replace_copy_command(
+      const struct list_ustring* inflectional_command,
+      const struct dela_entry* tag);
+  static struct list_ustring* product(struct list_ustring* l1,
+                                      struct list_ustring* l2);
   unichar* retrieve_inflectional_codes(
       const std::vector<struct dela_entry*>& delaf_tags) const;
   static unichar* build_output_codes(const struct list_ustring* list,

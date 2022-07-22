@@ -809,6 +809,80 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
 }
 
 /**
+ * Returns a new string containing the first one and the second one without duplicates.
+ */
+unichar* Multi2Delaf::complete_first_with_second(const unichar* first,
+                                                 const unichar* second) {
+  unichar to_add[INPUTSIZEBUFFER] = {0};
+  unichar res[INPUTSIZEBUFFER]    = {0};
+  int j                           = 0;
+  for (size_t i = 0; i < u_strlen(second); i++) {
+    if (u_strchr(first, second[i]) == nullptr) {
+      to_add[j] = second[i];
+      j++;
+    }
+  }
+  to_add[j] = '\0';
+  u_sprintf(res, "%S%S", first, to_add);
+  return u_strdup(res);
+}
+
+/**
+ * Returns a new list where ::copy has been replaced by the inflectional codes of the tag.
+ */
+struct list_ustring* Multi2Delaf::clone_and_replace_copy_command(
+    const struct list_ustring* inflectional_command,
+    const struct dela_entry* tag) {
+  struct list_ustring* res = nullptr;
+
+  while (inflectional_command != nullptr) {
+    if (u_strcmp(inflectional_command->string, ConfigCommand::COLUMN_COPY) !=
+        0) {
+      if (!is_in_list(inflectional_command->string, res)) {
+        res = insert_at_end_of_list(inflectional_command->string, res);
+      }
+    } else {
+      for (int i = 0; i < tag->n_inflectional_codes; i++) {
+        if (!is_in_list(tag->inflectional_codes[i], res)) {
+          res = insert_at_end_of_list(tag->inflectional_codes[i], res);
+        }
+      }
+    }
+    inflectional_command = inflectional_command->next;
+  }
+  return res;
+}
+
+/**
+ * Create a new allocated list containing the Cartesian product of the two lists in parameter
+ * and substituate ::copy command by codes in the delaf tag.
+ * Suppose that l2 is not the empty list.
+ */
+struct list_ustring* Multi2Delaf::product(struct list_ustring* l1,
+                                          struct list_ustring* l2) {
+  unichar* tmp_code           = nullptr;
+  struct list_ustring* res    = nullptr;
+  struct list_ustring* ptr_l1 = l1;
+  struct list_ustring* ptr_l2 = l2;
+  if (l1 == nullptr) {
+    return clone(l2);
+  }
+  while (ptr_l1 != nullptr) {
+    ptr_l2 = l2;
+    while (ptr_l2 != nullptr) {
+      tmp_code = complete_first_with_second(ptr_l1->string, ptr_l2->string);
+      if (!is_in_list(tmp_code, res)) {
+        res = insert_at_end_of_list(tmp_code, res);
+      }
+      free(tmp_code);
+      ptr_l2 = ptr_l2->next;
+    }
+    ptr_l1 = ptr_l1->next;
+  }
+  return res;
+}
+
+/**
  * Retrieves inflectional codes according to the specification:
  * The inflectional codes of the multidelaf string are obtained by taking the union
  * of the inflectional codes of each tag assigned by the configuration file.
@@ -818,56 +892,51 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
 unichar* Multi2Delaf::retrieve_inflectional_codes(
     const std::vector<struct dela_entry*>& delaf_tags) const {
   struct list_ustring* codes       = nullptr;
+  struct list_ustring* tmp_codes   = nullptr;
   struct list_ustring* ptr_command = nullptr;
 
   for (const auto& tag : delaf_tags) {
     for (const auto& line : _config_lines) {
+      tmp_codes = codes;
       if (line->get_config_command()->get_inflectional_codes() == nullptr) {
         continue;
       }
       if (is_entry_compatible_with_pattern(tag, line->get_pattern())) {
         ptr_command = line->get_config_command()->get_inflectional_codes();
-        while (ptr_command != nullptr) {
-          if (line->get_nb_required_tag() == ConfigLine::NOT_SPECIFIED ||
-              line->get_nb_required_tag() ==
-                  nb_delaf_tag_that_match_pattern(delaf_tags,
-                                                  line->get_pattern())) {
-            if (u_strcmp(ptr_command->string, ConfigCommand::COLUMN_COPY) ==
-                0) {
-              for (int i = 0; i < tag->n_inflectional_codes; i++) {
-                if (codes == nullptr) {
-                  codes = new_list_ustring(tag->inflectional_codes[i]);
-                } else if (!is_in_list(tag->inflectional_codes[i], codes)) {
-                  insert_at_end_of_list(tag->inflectional_codes[i], codes);
-                }
-              }
+
+        if (line->get_nb_required_tag() == ConfigLine::NOT_SPECIFIED ||
+            line->get_nb_required_tag() ==
+                nb_delaf_tag_that_match_pattern(delaf_tags,
+                                                line->get_pattern())) {
+          if (is_in_list(ConfigCommand::COLUMN_COPY, ptr_command)) {
+            struct list_ustring* tmp_lst =
+                clone_and_replace_copy_command(ptr_command, tag);
+            if (tmp_lst == nullptr) {
+              codes = product(nullptr, tmp_codes);
             } else {
-              if (line->get_nb_required_tag() != 0) {
-                if (codes == nullptr) {
-                  codes = new_list_ustring(ptr_command->string);
-                } else if (!is_in_list(ptr_command->string, codes)) {
-                  insert_at_end_of_list(ptr_command->string, codes);
-                }
-              }
+              codes = product(tmp_codes, tmp_lst);
+              free_list_ustring(tmp_lst);
+            }
+            if (tmp_codes) {
+              free_list_ustring(tmp_codes);
+            }
+          } else {
+            codes = product(tmp_codes, ptr_command);
+            if (tmp_codes) {
+              free_list_ustring(tmp_codes);
             }
           }
-          ptr_command = ptr_command->next;
         }
+
       } else {
         if (0 == line->get_nb_required_tag() &&
             0 == nb_delaf_tag_that_match_pattern(delaf_tags,
                                                  line->get_pattern())) {
           struct list_ustring* ptr_command =
               line->get_config_command()->get_inflectional_codes();
-          while (ptr_command != nullptr) {
-            if (codes == nullptr) {
-              codes = new_list_ustring(ptr_command->string);
-            } else {
-              if (!is_in_list(ptr_command->string, codes)) {
-                insert_at_end_of_list(ptr_command->string, codes);
-              }
-            }
-            ptr_command = ptr_command->next;
+          codes = product(tmp_codes, ptr_command);
+          if (tmp_codes) {
+            free_list_ustring(tmp_codes);
           }
         }
       }
