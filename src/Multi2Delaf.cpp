@@ -218,11 +218,7 @@ struct list_ustring* ConfigCommand::tokenize_semantic_codes(
     if (*next_code == '+') {
       unichar* new_code =
           tokenize_one_semantic_code(&next_code, config_filename);
-      if (codes == nullptr) {
-        codes = new_list_ustring(new_code);
-      } else if (!is_in_list(new_code, codes)) {
-        insert_at_end_of_list(new_code, codes);
-      }
+      codes = sorted_insert(new_code, codes);
       free(new_code);
     }
   }
@@ -271,11 +267,7 @@ struct list_ustring* ConfigCommand::tokenize_inflectional_codes(
     if (*next_code == ':') {
       unichar* new_code =
           tokenize_one_inflectional_code(&next_code, config_filename);
-      if (codes == nullptr) {
-        codes = new_list_ustring(new_code);
-      } else if (!is_in_list(new_code, codes)) {
-        insert_at_end_of_list(new_code, codes);
-      }
+      codes = sorted_insert(new_code, codes);
       free(new_code);
     }
   }
@@ -763,19 +755,11 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
             if (u_strcmp(ptr_command->string, ConfigCommand::PLUS_COPY) == 0) {
               for (int i = 1; i < tag->n_semantic_codes;
                    i++) {  // begin at 1 to skip the grammatical catergory
-                if (codes == nullptr) {
-                  codes = new_list_ustring(tag->semantic_codes[i]);
-                } else if (!is_in_list(tag->semantic_codes[i], codes)) {
-                  insert_at_end_of_list(tag->semantic_codes[i], codes);
-                }
+                codes = sorted_insert(tag->semantic_codes[i], codes);
               }
             } else {
               if (line->get_nb_required_tag() != 0) {
-                if (codes == nullptr) {
-                  codes = new_list_ustring(ptr_command->string);
-                } else if (!is_in_list(ptr_command->string, codes)) {
-                  insert_at_end_of_list(ptr_command->string, codes);
-                }
+                codes = sorted_insert(ptr_command->string, codes);
               }
             }
           }
@@ -788,13 +772,7 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
           struct list_ustring* ptr_command =
               line->get_config_command()->get_semantic_codes();
           while (ptr_command != nullptr) {
-            if (codes == nullptr) {
-              codes = new_list_ustring(ptr_command->string);
-            } else {
-              if (!is_in_list(ptr_command->string, codes)) {
-                insert_at_end_of_list(ptr_command->string, codes);
-              }
-            }
+            codes       = sorted_insert(ptr_command->string, codes);
             ptr_command = ptr_command->next;
           }
         }
@@ -838,14 +816,10 @@ struct list_ustring* Multi2Delaf::clone_and_replace_copy_command(
   while (inflectional_command != nullptr) {
     if (u_strcmp(inflectional_command->string, ConfigCommand::COLUMN_COPY) !=
         0) {
-      if (!is_in_list(inflectional_command->string, res)) {
-        res = insert_at_end_of_list(inflectional_command->string, res);
-      }
+      res = sorted_insert(inflectional_command->string, res);
     } else {
       for (int i = 0; i < tag->n_inflectional_codes; i++) {
-        if (!is_in_list(tag->inflectional_codes[i], res)) {
-          res = insert_at_end_of_list(tag->inflectional_codes[i], res);
-        }
+        res = sorted_insert(tag->inflectional_codes[i], res);
       }
     }
     inflectional_command = inflectional_command->next;
@@ -871,9 +845,7 @@ struct list_ustring* Multi2Delaf::product(struct list_ustring* l1,
     ptr_l2 = l2;
     while (ptr_l2 != nullptr) {
       tmp_code = complete_first_with_second(ptr_l1->string, ptr_l2->string);
-      if (!is_in_list(tmp_code, res)) {
-        res = insert_at_end_of_list(tmp_code, res);
-      }
+      res      = sorted_insert(tmp_code, res);
       free(tmp_code);
       ptr_l2 = ptr_l2->next;
     }
