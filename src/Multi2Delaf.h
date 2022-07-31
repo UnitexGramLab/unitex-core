@@ -29,6 +29,7 @@
 #include <vector>
 
 #include "DELA.h"
+#include "List_pointer.h"
 #include "Pattern.h"
 #include "Unicode.h"
 #include "base/compiler/keyword/eq_delete.h"
@@ -111,7 +112,8 @@ class Multi2Delaf {
   static unichar* build_output_codes(const struct list_ustring* list,
                                      char separator);
   const VersatileEncodingConfig _vec = VEC_DEFAULT;
-  std::vector<struct ConfigLine*> _config_lines;
+  //std::vector<struct ConfigLine*> _config_lines;
+  struct list_pointer* _config_lines = nullptr;
   const char* _config_filename;
 };
 

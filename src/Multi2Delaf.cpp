@@ -418,7 +418,8 @@ struct ConfigLine* tokenize_config_line(unichar* line,
   return new_config_line(pattern, nb_required_tag, config_command);
 }
 
-void free_config_line(struct ConfigLine* line) {
+void free_config_line(void* void_line) {
+  struct ConfigLine* line = (struct ConfigLine*)void_line;
   free_pattern(line->pattern);
   free(line);
   free_config_command(line->config_command);
@@ -435,9 +436,7 @@ Multi2Delaf::Multi2Delaf(const char* config_filename)
 }
 
 Multi2Delaf::~Multi2Delaf() {
-  for (auto& lines : _config_lines) {
-    free_config_line(lines);
-  }
+  free_list_pointer(_config_lines, free_config_line);
 }
 
 /**
@@ -542,14 +541,14 @@ void Multi2Delaf::load_config_file(U_FILE* config_file) {
     struct ConfigLine* config_line =
         tokenize_config_line(line, filename_without_path(_config_filename));
     if (config_line != nullptr) {
-      _config_lines.emplace_back(config_line);
+      _config_lines = new_list_pointer(config_line, _config_lines);
     }
   }
   // the last line is potentially a config line
-  auto config_line =
+  struct ConfigLine* config_line =
       tokenize_config_line(line, filename_without_path(_config_filename));
   if (config_line != nullptr) {
-    _config_lines.emplace_back(config_line);
+    _config_lines = new_list_pointer(config_line, _config_lines);
   }
 }
 
@@ -634,8 +633,13 @@ unichar* Multi2Delaf::escape_inflected_input(const unichar* input) {
 unichar* Multi2Delaf::retrieve_lemma(
     const std::vector<struct dela_entry*>& delaf_tags,
     const unichar* multidelaf_string) const {
-  for (const auto& current_line : _config_lines) {
+  struct list_pointer* current_line_ptr = _config_lines;
+
+  while (current_line_ptr != NULL) {
+    struct ConfigLine* current_line =
+        (struct ConfigLine*)current_line_ptr->pointer;
     if (current_line->config_command->lemma == nullptr) {
+      current_line_ptr = current_line_ptr->next;
       continue;
     }
     for (const auto& tag : delaf_tags) {
@@ -665,6 +669,7 @@ unichar* Multi2Delaf::retrieve_lemma(
     if (current_line->nb_required_tag == 0) {
       return u_strdup(current_line->config_command->lemma);
     }
+    current_line_ptr = current_line_ptr->next;
   }
   fatal_error("No lemma is provided for this multidelaf string: %S\n",
               multidelaf_string);
@@ -680,8 +685,12 @@ unichar* Multi2Delaf::retrieve_lemma(
 unichar* Multi2Delaf::retrieve_part_of_speech(
     const std::vector<struct dela_entry*>& delaf_tags,
     const unichar* multidelaf_string) const {
-  for (const auto& current_line : _config_lines) {
+  struct list_pointer* current_line_ptr = _config_lines;
+  while (current_line_ptr != NULL) {
+    struct ConfigLine* current_line =
+        (struct ConfigLine*)current_line_ptr->pointer;
     if (current_line->config_command->part_of_speech == nullptr) {
+      current_line_ptr = current_line_ptr->next;
       continue;
     }
     for (const auto& tag : delaf_tags) {
@@ -710,6 +719,7 @@ unichar* Multi2Delaf::retrieve_part_of_speech(
     if (current_line->nb_required_tag == 0) {
       return u_strdup(current_line->config_command->part_of_speech);
     }
+    current_line_ptr = current_line_ptr->next;
   }
   fatal_error(
       "No grammatical cathegory is provided for this multidelaf string: %S\n",
@@ -726,12 +736,16 @@ unichar* Multi2Delaf::retrieve_part_of_speech(
  */
 unichar* Multi2Delaf::retrieve_semantic_codes(
     const std::vector<struct dela_entry*>& delaf_tags) const {
-  struct list_ustring* codes       = nullptr;
-  struct list_ustring* ptr_command = nullptr;
+  struct list_ustring* codes            = nullptr;
+  struct list_ustring* ptr_command      = nullptr;
+  struct list_pointer* config_lines_ptr = _config_lines;
 
   for (const auto& tag : delaf_tags) {
-    for (const auto& line : _config_lines) {
+    config_lines_ptr = _config_lines;
+    while (config_lines_ptr != NULL) {
+      struct ConfigLine* line = (struct ConfigLine*)config_lines_ptr->pointer;
       if (line->config_command->semantic_codes == nullptr) {
+        config_lines_ptr = config_lines_ptr->next;
         continue;
       }
       if (is_entry_compatible_with_pattern(tag, line->pattern)) {
@@ -764,6 +778,7 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
           }
         }
       }
+      config_lines_ptr = config_lines_ptr->next;
     }
   }
   unichar* res = build_output_codes(codes, '+');
@@ -852,11 +867,15 @@ unichar* Multi2Delaf::retrieve_inflectional_codes(
   struct list_ustring* codes       = nullptr;
   struct list_ustring* tmp_codes   = nullptr;
   struct list_ustring* ptr_command = nullptr;
+  struct list_pointer* line_ptr    = _config_lines;
 
   for (const auto& tag : delaf_tags) {
-    for (const auto& line : _config_lines) {
-      tmp_codes = codes;
+    line_ptr = _config_lines;
+    while (line_ptr != NULL) {
+      struct ConfigLine* line = (struct ConfigLine*)line_ptr->pointer;
+      tmp_codes               = codes;
       if (line->config_command->inflectional_codes == nullptr) {
+        line_ptr = line_ptr->next;
         continue;
       }
       if (is_entry_compatible_with_pattern(tag, line->pattern)) {
@@ -896,6 +915,7 @@ unichar* Multi2Delaf::retrieve_inflectional_codes(
           }
         }
       }
+      line_ptr = line_ptr->next;
     }
   }
   unichar* res = build_output_codes(codes, ':');
