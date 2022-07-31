@@ -29,6 +29,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/compiler/keyword/eq_delete.h"
 #include "DELA.h"
 #include "Pattern.h"
 #include "Unicode.h"
@@ -54,10 +55,10 @@ class ConfigCommand {
                 struct list_ustring* semantic_codes,
                 struct list_ustring* inflectional_codes);
   // Not copyable or movable
-  ConfigCommand(const ConfigCommand&)                  = delete;
-  ConfigCommand(ConfigCommand&&)                       = delete;
-  ConfigCommand& operator=(const ConfigCommand& other) = delete;
-  ConfigCommand& operator=(ConfigCommand&& other)      = delete;
+  ConfigCommand(const ConfigCommand&)                  UNITEX_EQ_DELETE;
+  ConfigCommand(ConfigCommand&&)                       UNITEX_EQ_DELETE;
+  ConfigCommand& operator=(const ConfigCommand& other) UNITEX_EQ_DELETE;
+  ConfigCommand& operator=(ConfigCommand&& other)      UNITEX_EQ_DELETE;
   ~ConfigCommand();
   unichar* get_lemma() const;
   unichar* get_part_of_speech() const;
@@ -97,10 +98,10 @@ class ConfigLine {
   ConfigLine(struct pattern* pattern, int nb_required_tag,
              std::shared_ptr<ConfigCommand> _config_command);
   // Not copyable or movable
-  ConfigLine(const ConfigLine&)                  = delete;
-  ConfigLine(ConfigLine&&)                       = delete;
-  ConfigLine& operator=(const ConfigLine& other) = delete;
-  ConfigLine& operator=(ConfigLine&& other)      = delete;
+  ConfigLine(const ConfigLine&)                  UNITEX_EQ_DELETE;
+  ConfigLine(ConfigLine&&)                       UNITEX_EQ_DELETE;
+  ConfigLine& operator=(const ConfigLine& other) UNITEX_EQ_DELETE;
+  ConfigLine& operator=(ConfigLine&& other)      UNITEX_EQ_DELETE;
   ~ConfigLine();
   static int advance_to_next_no_blank_char(unichar** str);
   struct pattern* get_pattern() const;
@@ -125,10 +126,10 @@ class Multi2Delaf {
  public:
   Multi2Delaf(const char* config_filename);
   // Not copyable or movable
-  Multi2Delaf(const Multi2Delaf&)                  = delete;
-  Multi2Delaf(Multi2Delaf&&)                       = delete;
-  Multi2Delaf& operator=(const Multi2Delaf& other) = delete;
-  Multi2Delaf& operator=(Multi2Delaf&& other)      = delete;
+  Multi2Delaf(const Multi2Delaf&)                  UNITEX_EQ_DELETE;
+  Multi2Delaf(Multi2Delaf&&)                       UNITEX_EQ_DELETE;
+  Multi2Delaf& operator=(const Multi2Delaf& other) UNITEX_EQ_DELETE;
+  Multi2Delaf& operator=(Multi2Delaf&& other)      UNITEX_EQ_DELETE;
   void parse_config_file();
   void translate_multidelaf_to_delaf(const unichar* inflected_input,
                                      unichar* buffer) const;
