@@ -1152,7 +1152,7 @@ FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Copyright.o Af_stdio.o Act
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o \
                 Transitions.o DELA.o Symbol.o Symbol_op.o LanguageDefinition.o \
                 Ustring.o Tagset.o AbstractDelaLoad.o PackInf.o CompressedDic.o LoadInf.o \
-                VirtualFiles.o Persistence.o UnitexRevisionInfo.o UnitexGetOpt.o \
+                VirtualFiles.o Persistence.o UnitexRevisionInfo.o UnitexGetOpt.o Multi2Delaf.o \
                 $(ADDITIONAL_OBJECT) $(UNITEX_BASE_OBJECT) $(UNITEX_ELGLIB_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 FST2TXT      = Fst2Txt
@@ -1583,7 +1583,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   GrfSvn_lib.o DebugMode.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o \
                   SpellChecking.o Keyboard.o VirtualFiles.o Persistence.o PersistenceInterface.o PersistResource.o \
                   TfstTag.o PRLG.o KeyWords.o KeyWords_lib.o \
-                  RegExFacade.o SelectOutput.o UnitexLibIO.o $(TRE_LINK_OBJS) \
+                  RegExFacade.o SelectOutput.o UnitexLibIO.o Multi2Delaf.o $(TRE_LINK_OBJS) \
                   $(YAML_LINK_OBJS) $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(UNITEX_BASE_OBJECT) $(UNITEX_ELGLIB_OBJECT) $(VIRTOPTIMIZATION_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBLOGGER)
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger

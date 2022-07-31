@@ -39,6 +39,7 @@
 #include "MorphologicalLocate.h"
 #include "Korean.h"
 #include "Dico.h"
+#include "Multi2Delaf.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -84,6 +85,9 @@ const char* usage_Fst2List =
         "-D <file>, morphological dictionary file to load, <file> must have the extension \".bin\"\r\n"
         "-E <path>/--elg_extensions_path=<path>: uses ELGs extensions directory X instead of App/elg\n"
         "-V, --only_verify_arguments: only verify arguments syntax and exit\r\n"
+        "-M, indicate that the <fname> argument is a morphological dictionary-graph (-M requires -P)\r\n"
+        "-C <configuration file>: use <configuration file> to compile morphological dictionary-graph into DELAF dictionary\r\n"
+        "(-C requires -M, otherwise produces a fatal_error)\r\n"
         "-h, --help: display this help and exit";
 
 static void usage() {
@@ -295,6 +299,10 @@ public:
   bool isMdg;  // true if the graph is a morphological dictionary-graph
   struct hash_table* path_to_stop; /* a hash table to know all the Fst2Tag whose path exploration must be interrupted */
   struct hash_table* dela_entries; /* a hash table to get the dela_entries of created boxes when lexical masks are processed */
+  bool compileToDelaf = false;
+  Multi2Delaf *multi2Delaf = nullptr;
+  bool isMorphological = false;
+  bool makeDic = false;
 
   void fileNameSet(char *ifn, char *ofn) {
     char tmp[512];
@@ -400,6 +408,9 @@ public:
       free(numOfIgnore);
     }
     deleteCallIdMap();
+    if (multi2Delaf != nullptr) {
+      delete multi2Delaf;
+    }
   }
   ;
   void resetCounters() {
@@ -960,9 +971,14 @@ public:
         Hanguls_to_Jamos(INPUTBUFFER, jamos, korean, 1);
         convert_jamo_to_hangul(jamos, INPUTBUFFER, korean);
       }
-      u_fputs(INPUTBUFFER, foutput);
+      if (!isMorphological || !compileToDelaf) {
+        u_fputs(INPUTBUFFER, foutput);
+      }
       if ((automateMode == TRANMODE) && outBufferCnt) {
         OUTPUTBUFFER[outBufferCnt] = 0;
+        if (compileToDelaf) {
+          multi2Delaf->translate_multidelaf_to_delaf(INPUTBUFFER, OUTPUTBUFFER);
+        }
         u_fprintf(foutput, "%S%S", saveSep, OUTPUTBUFFER);
       }
       if (display_control == FST2LIST_DEBUG) {
@@ -2518,6 +2534,11 @@ int CFstApp::outWordsOfGraph(int depth) {
         if (Tag->output != NULL) {
           outputBufferPtr = (u_strcmp(Tag->output, u_epsilon_string)) ? Tag->output : u_null_string;
           if(!u_strcmp(Tag->output, "/")) {  // if the output is '/', it's a MDG, this output is not put in the outputfile
+            if (makeDic && !isMorphological) {
+              fatal_error(
+                "Current graph is a morphological dictionary graph (maybe in "
+                "some paths)\n");
+            }
             isMdg = true;
             outputBufferPtr = u_null_string;
           }
@@ -2525,6 +2546,11 @@ int CFstApp::outWordsOfGraph(int depth) {
             outputBufferPtr = u_null_string;
           }
           else{
+            if (makeDic && !isMdg && isMorphological) {
+              fatal_error(
+                "Current graph is not a morphological dictionary graph "
+                "(maybe in some paths)\n");
+            }
             value = get_value(dela_entries, Tag, HT_DONT_INSERT, &return_value);
             if(return_value == HT_KEY_ALREADY_THERE && Tag->output[0] == (unichar)'$'
             && Tag->output[u_strlen(Tag->output) - 1] == (unichar)'$')
@@ -2874,7 +2900,7 @@ int CFstApp::outWordsOfGraph(int depth) {
 //
 //
 
-const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVKPhs:q:r:c:g:D:Q:E:";
+const char* optstring_Fst2List=":o:Sp:a:t:l:i:mdf:vVKPhs:q:r:c:g:D:Q:E:C:M";
 const struct option_TS lopts_Fst2List[]= {
   {"output",required_argument_TS,NULL,'o'},
   {"ignore_outputs",required_argument_TS,NULL,'a'},
@@ -2900,12 +2926,15 @@ const struct option_TS lopts_Fst2List[]= {
   {"help",no_argument_TS,NULL,'h'},
   {"binary dics",required_argument_TS,NULL,'D'},
   {"elg_extensions_path",required_argument_TS,NULL,'E'},
+  {"compile_into_delaf", required_argument_TS, NULL, 'C'},
+  {"is_morphological_dictionary_graph", no_argument_TS, NULL, 'M'},
   {NULL,no_argument_TS,NULL,0}
 };
 
 int main_Fst2List(int argc, char* const argv[]) {
   char* ofilename = NULL;
   char morpho_dic[1025] = "";
+  char *config_file_name = NULL;
 
   unichar changeStrTo[16][MAX_CHANGE_SYMBOL_SIZE];
   int changeStrToIdx;
@@ -2924,7 +2953,6 @@ int main_Fst2List(int argc, char* const argv[]) {
   bool only_verify_arguments = false;
   UnitexGetOpt options;
   VersatileEncodingConfig vec = VEC_DEFAULT;
-  bool makeDic = false;
 
   char elg_extensions_path[FILENAME_MAX]="";
 
@@ -2967,7 +2995,7 @@ int main_Fst2List(int argc, char* const argv[]) {
       strcpy(elg_extensions_path,options.vars()->optarg);
       break;
     case 'P':
-      makeDic = true;
+      aa.makeDic = true;
       break;
     case 'S':
       ofilename = (char *)malloc((strlen(MAGIC_OUT_STDOUT) + 1) * sizeof(char));
@@ -3217,6 +3245,21 @@ int main_Fst2List(int argc, char* const argv[]) {
           &(vec.bom_output), arg);
       break;
     }
+    case 'C': {
+      config_file_name = (char *)malloc(
+        (strlen((char *)&options.vars()->optarg[0]) + 1) * sizeof(char));
+      if (config_file_name == NULL) {
+        fatal_alloc_error("main_Fst2List");
+      }
+      strcpy(config_file_name, (char *)&options.vars()->optarg[0]);
+      aa.compileToDelaf = true;
+      aa.multi2Delaf = new Multi2Delaf(config_file_name);
+      break;
+    }
+    case 'M': {
+      aa.isMorphological = true;
+      break;
+    }
     case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                           error("Missing argument for option --%s\n",lopts_Fst2List[index].name);
               return USAGE_ERROR_CODE;
@@ -3236,6 +3279,11 @@ int main_Fst2List(int argc, char* const argv[]) {
   if (only_verify_arguments) {
     free(ofilename);
     return SUCCESS_RETURN_CODE;
+  }
+  if (aa.compileToDelaf && !aa.isMorphological) {
+    free(ofilename);
+    free(config_file_name);
+    fatal_error("Internal error: Bad use of -C option\r\n");
   }
 
   strcpy(fst2_filename,argv[options.vars()->optind]);
@@ -3312,8 +3360,11 @@ int main_Fst2List(int argc, char* const argv[]) {
   aa.p->elg->setup_local_environment();
   // --------------------------------------------------------------------------
 
-  if(makeDic) {
+  if(aa.makeDic) {
     aa.setGrammarMode(fst2_filename);
+  }
+  if (aa.compileToDelaf) {
+    aa.multi2Delaf->parse_config_file();
   }
   aa.getWordsFromGraph(changeStrToIdx, changeStrTo, fst2_filename);
 
@@ -3323,6 +3374,7 @@ int main_Fst2List(int argc, char* const argv[]) {
   // --------------------------------------------------------------------------
 
   free(ofilename);
+  free(config_file_name);
 
   free_stack_unichar(aa.p->literal_output);
   free_stack_unichar(aa.p->stack_elg);
