@@ -23,9 +23,6 @@
 
 #include <stdlib.h>
 
-#include <algorithm>
-#include <memory>
-#include <utility>
 #include <vector>
 
 #include "DELA.h"
@@ -363,7 +360,7 @@ struct ConfigLine* new_config_line(struct pattern* pattern, int nb_required_tag,
 
 /**
  * Tokenize a config line.
- * Returns a std::unique_ptr<ConfigLine> if there is a well-formed line.
+ * Returns a struct ConfigLine* if there is a well-formed line.
  * otherwise returns nullptr.
  * Raises a fatal error in case of malformed line.
  */
@@ -542,17 +539,17 @@ void Multi2Delaf::load_config_file(U_FILE* config_file) {
   int eof                       = 0;
   while (EOF !=
          (eof = read_line_config_file(config_file, line, INPUTSIZEBUFFER))) {
-    auto config_line =
+    struct ConfigLine* config_line =
         tokenize_config_line(line, filename_without_path(_config_filename));
     if (config_line != nullptr) {
-      _config_lines.emplace_back(std::move(config_line));
+      _config_lines.emplace_back(config_line);
     }
   }
   // the last line is potentially a config line
   auto config_line =
       tokenize_config_line(line, filename_without_path(_config_filename));
   if (config_line != nullptr) {
-    _config_lines.emplace_back(std::move(config_line));
+    _config_lines.emplace_back(config_line);
   }
 }
 
@@ -593,10 +590,13 @@ struct dela_entry* Multi2Delaf::tokenize_delaf_tag(unichar** ptr) {
 int Multi2Delaf::nb_delaf_tag_that_match_pattern(
     const std::vector<struct dela_entry*>& delaf_tags,
     const struct pattern* pattern) {
-  return std::count_if(delaf_tags.begin(), delaf_tags.end(),
-                       [&pattern](const auto& tag) {
-                         return is_entry_compatible_with_pattern(tag, pattern);
-                       });
+  int res = 0;
+  for (auto& tag : delaf_tags) {
+    if (is_entry_compatible_with_pattern(tag, pattern)) {
+      res++;
+    }
+  }
+  return res;
 }
 
 /**
@@ -620,7 +620,8 @@ unichar* Multi2Delaf::escape_inflected_input(const unichar* input) {
     i_buffer++;
     i_input++;
   }
-  buffer[std::min(i_buffer, INPUTSIZEBUFFER - 1)] = '\0';
+  buffer[i_buffer < INPUTSIZEBUFFER - 1 ? i_buffer : INPUTSIZEBUFFER - 1] =
+      '\0';
   return u_strdup(buffer);
 }
 

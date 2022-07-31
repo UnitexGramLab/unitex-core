@@ -26,7 +26,6 @@
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
-#include <memory>
 #include <vector>
 
 #include "DELA.h"
