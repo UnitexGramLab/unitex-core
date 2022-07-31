@@ -23,8 +23,6 @@
 
 #include <stdlib.h>
 
-#include <vector>
-
 #include "DELA.h"
 #include "File.h"
 #include "Pattern.h"
@@ -275,8 +273,6 @@ void free_config_command(struct ConfigCommand* command) {
   free(command);
 }
 
-
-
 /*=================================================================
  * ConfigLine class method
  *================================================================= */
@@ -425,7 +421,202 @@ void free_config_line(void* void_line) {
   free_config_command(line->config_command);
 }
 
+/**
+ * Return the first delaf tag at the address *ptr.
+ * Return nullptr to indicate that there is no more tag.
+ * Set *ptr to the next unread character.
+ * Raises a fatal error if the delaf tag is not enclosed in curly braces.
+ */
+struct dela_entry* tokenize_delaf_tag(unichar** ptr) {
+  unichar* line               = *ptr;
+  unichar* next_no_blank_char = line;
+  if (advance_to_next_no_blank_char(&next_no_blank_char)) {
+    return nullptr;  // end of the line, no more dela_entry
+  }
+  if (next_no_blank_char[0] != '{') {
+    fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n",
+                line);
+  }
+  int i = 1;
+  while (next_no_blank_char[i] != '\0' && next_no_blank_char[i] != '}') {
+    i++;
+  }
+  if (next_no_blank_char[i] == '\0') {
+    fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n",
+                line);
+  }
+  unichar* token_dela_entry = u_strndup(next_no_blank_char + 1, i - 1);
+  struct dela_entry* tag    = tokenize_DELAF_line(token_dela_entry);
+  free(token_dela_entry);
+  *ptr = next_no_blank_char + i + 1;  // + 1 to skip closing brace '}'
+  return tag;
+}
 
+/**
+ * Read a line from the configuration file, and save the result in buffer.
+ * Returns EOF if end of file occurs, otherwise the number of unichar readed.
+ */
+int read_line_config_file(U_FILE* config_file, unichar* buffer,
+                          int size_buffer) {
+  int c = 0;
+  int i = 0;
+  while (i < size_buffer - 1 && EOF != (c = u_fgetc(config_file))) {
+    if (c == '\r') {
+      if ('\n' == (c = u_fgetc(config_file))) {
+        buffer[i] = '\0';
+        return i;
+      }
+      unichar rest_of_line[INPUTSIZEBUFFER] = {0};
+      int j                                 = 0;
+      while (j < INPUTSIZEBUFFER - 1 && EOF != (c = u_fgetc(config_file))) {
+        if (c != '\n') {
+          rest_of_line[j] = c;
+          j++;
+        } else {
+          rest_of_line[j] = '\0';
+          u_fprintf(U_STDERR, "\\r not followed by a \\n, '%S' is ignored\n",
+                    rest_of_line);
+          return i + j;
+        }
+      }
+    }
+    if (c == '\n') {
+      buffer[i] = '\0';
+      return i;
+    }
+    buffer[i] = c;
+    i++;
+  }
+  buffer[i] = '\0';
+  return EOF;
+}
+
+/**
+ * Return the number of delaf tags that match the pattern.
+ */
+int nb_delaf_tag_that_match_pattern(
+    const std::vector<struct dela_entry*>& delaf_tags,
+    const struct pattern* pattern) {
+  int res = 0;
+  for (auto& tag : delaf_tags) {
+    if (is_entry_compatible_with_pattern(tag, pattern)) {
+      res++;
+    }
+  }
+  return res;
+}
+
+/**
+ * Return a new allocated unicode string.
+ */
+unichar* escape_inflected_input(const unichar* input) {
+  unichar buffer[INPUTSIZEBUFFER] = {0};
+  int i_input                     = 0;
+  int i_buffer                    = 0;
+  while (i_input < INPUTSIZEBUFFER - 1 && i_buffer < INPUTSIZEBUFFER - 1) {
+    if (input[i_input] == ' ' && input[i_input + 1] == '\0') {
+      buffer[i_buffer] = '\0';
+      return u_strdup(buffer);
+    }
+    if (input[i_input] == '=' || input[i_input] == '.' ||
+        input[i_input] == ',') {
+      buffer[i_buffer] = '\\';
+      i_buffer++;
+    }
+    buffer[i_buffer] = input[i_input];
+    i_buffer++;
+    i_input++;
+  }
+  buffer[i_buffer < INPUTSIZEBUFFER - 1 ? i_buffer : INPUTSIZEBUFFER - 1] =
+      '\0';
+  return u_strdup(buffer);
+}
+
+/**
+ * Returns a new string containing the first one and the second one without duplicates.
+ */
+unichar* complete_first_with_second(const unichar* first,
+                                    const unichar* second) {
+  unichar to_add[INPUTSIZEBUFFER] = {0};
+  unichar res[INPUTSIZEBUFFER]    = {0};
+  int j                           = 0;
+  for (size_t i = 0; i < u_strlen(second); i++) {
+    if (u_strchr(first, second[i]) == nullptr) {
+      to_add[j] = second[i];
+      j++;
+    }
+  }
+  to_add[j] = '\0';
+  u_sprintf(res, "%S%S", first, to_add);
+  return u_strdup(res);
+}
+
+/**
+ * Returns a new list where ::copy has been replaced by the inflectional codes of the tag.
+ */
+struct list_ustring* clone_and_replace_copy_command(
+    const struct list_ustring* inflectional_command,
+    const struct dela_entry* tag) {
+  struct list_ustring* res = nullptr;
+
+  while (inflectional_command != nullptr) {
+    if (u_strcmp(inflectional_command->string, Multi2Delaf::COLUMN_COPY) != 0) {
+      res = sorted_insert(inflectional_command->string, res);
+    } else {
+      for (int i = 0; i < tag->n_inflectional_codes; i++) {
+        res = sorted_insert(tag->inflectional_codes[i], res);
+      }
+    }
+    inflectional_command = inflectional_command->next;
+  }
+  return res;
+}
+
+/**
+ * Create a new allocated list containing the Cartesian product of the two lists in parameter
+ * and substituate ::copy command by codes in the delaf tag.
+ * Suppose that l2 is not the empty list.
+ */
+struct list_ustring* product(struct list_ustring* l1, struct list_ustring* l2) {
+  unichar* tmp_code           = nullptr;
+  struct list_ustring* res    = nullptr;
+  struct list_ustring* ptr_l1 = l1;
+  struct list_ustring* ptr_l2 = l2;
+  if (l1 == nullptr) {
+    return clone(l2);
+  }
+  while (ptr_l1 != nullptr) {
+    ptr_l2 = l2;
+    while (ptr_l2 != nullptr) {
+      tmp_code = complete_first_with_second(ptr_l1->string, ptr_l2->string);
+      res      = sorted_insert(tmp_code, res);
+      free(tmp_code);
+      ptr_l2 = ptr_l2->next;
+    }
+    ptr_l1 = ptr_l1->next;
+  }
+  return res;
+}
+
+/**
+ * Return a new allocated unicode string.
+ */
+unichar* build_output_codes(const struct list_ustring* codes, char prefix) {
+  unichar buffer[INPUTSIZEBUFFER] = {0};
+  if (codes == nullptr) {
+    return u_strdup("");
+  }
+  while (codes != nullptr) {
+    if (u_strlen(buffer) + u_strlen(codes->string) + 2 >= INPUTSIZEBUFFER - 1) {
+      fatal_error(
+          "internal err(build_output_codes): buffer is not "
+          "big enough\n");
+    }
+    u_sprintf(buffer, "%S%c%S", buffer, prefix, codes->string);
+    codes = codes->next;
+  }
+  return u_strdup(buffer);
+}
 
 /*=================================================================
  * Multi2Delaf class method
@@ -490,44 +681,7 @@ void Multi2Delaf::translate_multidelaf_to_delaf(const unichar* inflected_input,
   }
 }
 
-/**
- * Read a line from the configuration file, and save the result in buffer.
- * Returns EOF if end of file occurs, otherwise the number of unichar readed.
- */
-int Multi2Delaf::read_line_config_file(U_FILE* config_file, unichar* buffer,
-                                       int size_buffer) {
-  int c = 0;
-  int i = 0;
-  while (i < size_buffer - 1 && EOF != (c = u_fgetc(config_file))) {
-    if (c == '\r') {
-      if ('\n' == (c = u_fgetc(config_file))) {
-        buffer[i] = '\0';
-        return i;
-      }
-      unichar rest_of_line[INPUTSIZEBUFFER] = {0};
-      int j                                 = 0;
-      while (j < INPUTSIZEBUFFER - 1 && EOF != (c = u_fgetc(config_file))) {
-        if (c != '\n') {
-          rest_of_line[j] = c;
-          j++;
-        } else {
-          rest_of_line[j] = '\0';
-          u_fprintf(U_STDERR, "\\r not followed by a \\n, '%S' is ignored\n",
-                    rest_of_line);
-          return i + j;
-        }
-      }
-    }
-    if (c == '\n') {
-      buffer[i] = '\0';
-      return i;
-    }
-    buffer[i] = c;
-    i++;
-  }
-  buffer[i] = '\0';
-  return EOF;
-}
+
 
 /**
  * Load the configuration file.
@@ -550,78 +704,6 @@ void Multi2Delaf::load_config_file(U_FILE* config_file) {
   if (config_line != nullptr) {
     _config_lines = new_list_pointer(config_line, _config_lines);
   }
-}
-
-/**
- * Return the first delaf tag at the address *ptr.
- * Return nullptr to indicate that there is no more tag.
- * Set *ptr to the next unread character.
- * Raises a fatal error if the delaf tag is not enclosed in curly braces.
- */
-struct dela_entry* Multi2Delaf::tokenize_delaf_tag(unichar** ptr) {
-  unichar* line               = *ptr;
-  unichar* next_no_blank_char = line;
-  if (advance_to_next_no_blank_char(&next_no_blank_char)) {
-    return nullptr;  // end of the line, no more dela_entry
-  }
-  if (next_no_blank_char[0] != '{') {
-    fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n",
-                line);
-  }
-  int i = 1;
-  while (next_no_blank_char[i] != '\0' && next_no_blank_char[i] != '}') {
-    i++;
-  }
-  if (next_no_blank_char[i] == '\0') {
-    fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n",
-                line);
-  }
-  unichar* token_dela_entry = u_strndup(next_no_blank_char + 1, i - 1);
-  struct dela_entry* tag    = tokenize_DELAF_line(token_dela_entry);
-  free(token_dela_entry);
-  *ptr = next_no_blank_char + i + 1;  // + 1 to skip closing brace '}'
-  return tag;
-}
-
-/**
- * Return the number of delaf tags that match the pattern.
- */
-int Multi2Delaf::nb_delaf_tag_that_match_pattern(
-    const std::vector<struct dela_entry*>& delaf_tags,
-    const struct pattern* pattern) {
-  int res = 0;
-  for (auto& tag : delaf_tags) {
-    if (is_entry_compatible_with_pattern(tag, pattern)) {
-      res++;
-    }
-  }
-  return res;
-}
-
-/**
- * Return a new allocated unicode string.
- */
-unichar* Multi2Delaf::escape_inflected_input(const unichar* input) {
-  unichar buffer[INPUTSIZEBUFFER] = {0};
-  int i_input                     = 0;
-  int i_buffer                    = 0;
-  while (i_input < INPUTSIZEBUFFER - 1 && i_buffer < INPUTSIZEBUFFER - 1) {
-    if (input[i_input] == ' ' && input[i_input + 1] == '\0') {
-      buffer[i_buffer] = '\0';
-      return u_strdup(buffer);
-    }
-    if (input[i_input] == '=' || input[i_input] == '.' ||
-        input[i_input] == ',') {
-      buffer[i_buffer] = '\\';
-      i_buffer++;
-    }
-    buffer[i_buffer] = input[i_input];
-    i_buffer++;
-    i_input++;
-  }
-  buffer[i_buffer < INPUTSIZEBUFFER - 1 ? i_buffer : INPUTSIZEBUFFER - 1] =
-      '\0';
-  return u_strdup(buffer);
 }
 
 /**
@@ -788,72 +870,7 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
   return res;
 }
 
-/**
- * Returns a new string containing the first one and the second one without duplicates.
- */
-unichar* Multi2Delaf::complete_first_with_second(const unichar* first,
-                                                 const unichar* second) {
-  unichar to_add[INPUTSIZEBUFFER] = {0};
-  unichar res[INPUTSIZEBUFFER]    = {0};
-  int j                           = 0;
-  for (size_t i = 0; i < u_strlen(second); i++) {
-    if (u_strchr(first, second[i]) == nullptr) {
-      to_add[j] = second[i];
-      j++;
-    }
-  }
-  to_add[j] = '\0';
-  u_sprintf(res, "%S%S", first, to_add);
-  return u_strdup(res);
-}
 
-/**
- * Returns a new list where ::copy has been replaced by the inflectional codes of the tag.
- */
-struct list_ustring* Multi2Delaf::clone_and_replace_copy_command(
-    const struct list_ustring* inflectional_command,
-    const struct dela_entry* tag) {
-  struct list_ustring* res = nullptr;
-
-  while (inflectional_command != nullptr) {
-    if (u_strcmp(inflectional_command->string, Multi2Delaf::COLUMN_COPY) != 0) {
-      res = sorted_insert(inflectional_command->string, res);
-    } else {
-      for (int i = 0; i < tag->n_inflectional_codes; i++) {
-        res = sorted_insert(tag->inflectional_codes[i], res);
-      }
-    }
-    inflectional_command = inflectional_command->next;
-  }
-  return res;
-}
-
-/**
- * Create a new allocated list containing the Cartesian product of the two lists in parameter
- * and substituate ::copy command by codes in the delaf tag.
- * Suppose that l2 is not the empty list.
- */
-struct list_ustring* Multi2Delaf::product(struct list_ustring* l1,
-                                          struct list_ustring* l2) {
-  unichar* tmp_code           = nullptr;
-  struct list_ustring* res    = nullptr;
-  struct list_ustring* ptr_l1 = l1;
-  struct list_ustring* ptr_l2 = l2;
-  if (l1 == nullptr) {
-    return clone(l2);
-  }
-  while (ptr_l1 != nullptr) {
-    ptr_l2 = l2;
-    while (ptr_l2 != nullptr) {
-      tmp_code = complete_first_with_second(ptr_l1->string, ptr_l2->string);
-      res      = sorted_insert(tmp_code, res);
-      free(tmp_code);
-      ptr_l2 = ptr_l2->next;
-    }
-    ptr_l1 = ptr_l1->next;
-  }
-  return res;
-}
 
 /**
  * Retrieves inflectional codes according to the specification:
@@ -923,27 +940,6 @@ unichar* Multi2Delaf::retrieve_inflectional_codes(
     free_list_ustring(codes);
   }
   return res;
-}
-
-/**
- * Return a new allocated unicode string.
- */
-unichar* Multi2Delaf::build_output_codes(const struct list_ustring* codes,
-                                         char prefix) {
-  unichar buffer[INPUTSIZEBUFFER] = {0};
-  if (codes == nullptr) {
-    return u_strdup("");
-  }
-  while (codes != nullptr) {
-    if (u_strlen(buffer) + u_strlen(codes->string) + 2 >= INPUTSIZEBUFFER - 1) {
-      fatal_error(
-          "internal err(Multi2Delaf::build_output_codes): buffer is not "
-          "big enough\n");
-    }
-    u_sprintf(buffer, "%S%c%S", buffer, prefix, codes->string);
-    codes = codes->next;
-  }
-  return u_strdup(buffer);
 }
 
 }  // namespace unitex

@@ -85,14 +85,7 @@ class Multi2Delaf {
   ~Multi2Delaf();
 
  private:
-  static int read_line_config_file(U_FILE* config_file, unichar* buffer,
-                                   int size_buffer);
   void load_config_file(U_FILE* config_file);
-  static struct dela_entry* tokenize_delaf_tag(unichar** next);
-  static int nb_delaf_tag_that_match_pattern(
-      const std::vector<struct dela_entry*>& delaf_tags,
-      const struct pattern* pattern);
-  static unichar* escape_inflected_input(const unichar* input);
   unichar* retrieve_lemma(const std::vector<struct dela_entry*>& delaf_tags,
                           const unichar* multidelaf_string) const;
   unichar* retrieve_part_of_speech(
@@ -100,19 +93,10 @@ class Multi2Delaf {
       const unichar* multidelaf_string) const;
   unichar* retrieve_semantic_codes(
       const std::vector<struct dela_entry*>& delaf_tags) const;
-  static unichar* complete_first_with_second(const unichar* first,
-                                             const unichar* second);
-  static struct list_ustring* clone_and_replace_copy_command(
-      const struct list_ustring* inflectional_command,
-      const struct dela_entry* tag);
-  static struct list_ustring* product(struct list_ustring* l1,
-                                      struct list_ustring* l2);
   unichar* retrieve_inflectional_codes(
       const std::vector<struct dela_entry*>& delaf_tags) const;
-  static unichar* build_output_codes(const struct list_ustring* list,
-                                     char separator);
+
   const VersatileEncodingConfig _vec = VEC_DEFAULT;
-  //std::vector<struct ConfigLine*> _config_lines;
   struct list_pointer* _config_lines = nullptr;
   const char* _config_filename;
 };
