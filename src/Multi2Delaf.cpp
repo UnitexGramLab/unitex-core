@@ -494,14 +494,15 @@ int read_line_config_file(U_FILE* config_file, unichar* buffer,
 /**
  * Return the number of delaf tags that match the pattern.
  */
-int nb_delaf_tag_that_match_pattern(
-    const std::vector<struct dela_entry*>& delaf_tags,
-    const struct pattern* pattern) {
+int nb_delaf_tag_that_match_pattern(struct list_pointer* delaf_tags,
+                                    const struct pattern* pattern) {
   int res = 0;
-  for (auto& tag : delaf_tags) {
+  while (delaf_tags != NULL) {
+    struct dela_entry* tag = (struct dela_entry*)delaf_tags->pointer;
     if (is_entry_compatible_with_pattern(tag, pattern)) {
       res++;
     }
+    delaf_tags = delaf_tags->next;
   }
   return res;
 }
@@ -651,11 +652,11 @@ void Multi2Delaf::parse_config_file() {
  */
 void Multi2Delaf::translate_multidelaf_to_delaf(const unichar* inflected_input,
                                                 unichar* buffer) const {
-  unichar* ptr               = buffer;
-  auto delaf_tags            = std::vector<struct dela_entry*>();
-  struct dela_entry* new_tag = nullptr;
+  unichar* ptr                    = buffer;
+  struct list_pointer* delaf_tags = NULL;
+  struct dela_entry* new_tag      = nullptr;
   while (nullptr != (new_tag = tokenize_delaf_tag(&ptr))) {
-    delaf_tags.push_back(new_tag);
+    delaf_tags = new_list_pointer(new_tag, delaf_tags);
   }
   unichar* inflected          = escape_inflected_input(inflected_input);
   unichar* lemma              = retrieve_lemma(delaf_tags, buffer);
@@ -676,9 +677,12 @@ void Multi2Delaf::translate_multidelaf_to_delaf(const unichar* inflected_input,
   free(part_of_speech);
   free(semantic_codes);
   free(inflectional_codes);
-  for (const auto& tag : delaf_tags) {
-    free_dela_entry(tag);
+  struct list_pointer* delaf_tags_ptr = delaf_tags;
+  while (delaf_tags_ptr != NULL) {
+    free_dela_entry((struct dela_entry*)delaf_tags_ptr->pointer);
+    delaf_tags_ptr = delaf_tags_ptr->next;
   }
+  free_list_pointer(delaf_tags);
 }
 
 
@@ -712,10 +716,11 @@ void Multi2Delaf::load_config_file(U_FILE* config_file) {
  * If no lemma is corresponding, raises a fatal_error().
  * Return a new allocated unicode string describing the lemma.
  */
-unichar* Multi2Delaf::retrieve_lemma(
-    const std::vector<struct dela_entry*>& delaf_tags,
-    const unichar* multidelaf_string) const {
+unichar* Multi2Delaf::retrieve_lemma(struct list_pointer* delaf_tags,
+                                     const unichar* multidelaf_string) const {
   struct list_pointer* current_line_ptr = _config_lines;
+  struct list_pointer* delaf_tags_ptr   = delaf_tags;
+  struct dela_entry* tag                = NULL;
 
   while (current_line_ptr != NULL) {
     struct ConfigLine* current_line =
@@ -724,7 +729,9 @@ unichar* Multi2Delaf::retrieve_lemma(
       current_line_ptr = current_line_ptr->next;
       continue;
     }
-    for (const auto& tag : delaf_tags) {
+    delaf_tags_ptr = delaf_tags;
+    while (delaf_tags_ptr != NULL) {
+      tag = (struct dela_entry*)delaf_tags_ptr->pointer;
       if (is_entry_compatible_with_pattern(tag, current_line->pattern)) {
         if (u_strcmp(current_line->config_command->lemma,
                      Multi2Delaf::COMMA_COPY) == 0) {
@@ -747,6 +754,7 @@ unichar* Multi2Delaf::retrieve_lemma(
           return u_strdup(current_line->config_command->lemma);
         }
       }
+      delaf_tags_ptr = delaf_tags_ptr->next;
     }
     if (current_line->nb_required_tag == 0) {
       return u_strdup(current_line->config_command->lemma);
@@ -765,9 +773,10 @@ unichar* Multi2Delaf::retrieve_lemma(
  * Return a new allocated unicode string describing the part of speech.
  */
 unichar* Multi2Delaf::retrieve_part_of_speech(
-    const std::vector<struct dela_entry*>& delaf_tags,
-    const unichar* multidelaf_string) const {
+    struct list_pointer* delaf_tags, const unichar* multidelaf_string) const {
   struct list_pointer* current_line_ptr = _config_lines;
+  struct list_pointer* delaf_tag_ptr    = delaf_tags;
+  struct dela_entry* tag                = NULL;
   while (current_line_ptr != NULL) {
     struct ConfigLine* current_line =
         (struct ConfigLine*)current_line_ptr->pointer;
@@ -775,7 +784,10 @@ unichar* Multi2Delaf::retrieve_part_of_speech(
       current_line_ptr = current_line_ptr->next;
       continue;
     }
-    for (const auto& tag : delaf_tags) {
+    delaf_tag_ptr = delaf_tags;
+    while (delaf_tag_ptr != NULL) {
+      // for (const auto& tag : delaf_tags) {
+      tag = (struct dela_entry*)delaf_tag_ptr->pointer;
       if (is_entry_compatible_with_pattern(tag, current_line->pattern)) {
         if (u_strcmp(current_line->config_command->part_of_speech,
                      Multi2Delaf::DOT_COPY) == 0) {
@@ -797,6 +809,7 @@ unichar* Multi2Delaf::retrieve_part_of_speech(
           return u_strdup(current_line->config_command->part_of_speech);
         }
       }
+      delaf_tag_ptr = delaf_tag_ptr->next;
     }
     if (current_line->nb_required_tag == 0) {
       return u_strdup(current_line->config_command->part_of_speech);
@@ -817,12 +830,16 @@ unichar* Multi2Delaf::retrieve_part_of_speech(
  * Return a new allocated unicode string describing semantic codes.
  */
 unichar* Multi2Delaf::retrieve_semantic_codes(
-    const std::vector<struct dela_entry*>& delaf_tags) const {
+    struct list_pointer* delaf_tags) const {
   struct list_ustring* codes            = nullptr;
   struct list_ustring* ptr_command      = nullptr;
   struct list_pointer* config_lines_ptr = _config_lines;
+  struct list_pointer* delaf_tag_ptr    = delaf_tags;
+  struct dela_entry* tag                = NULL;
 
-  for (const auto& tag : delaf_tags) {
+  while (delaf_tag_ptr != NULL) {
+    // for (const auto& tag : delaf_tags) {
+    tag              = (struct dela_entry*)delaf_tag_ptr->pointer;
     config_lines_ptr = _config_lines;
     while (config_lines_ptr != NULL) {
       struct ConfigLine* line = (struct ConfigLine*)config_lines_ptr->pointer;
@@ -862,6 +879,7 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
       }
       config_lines_ptr = config_lines_ptr->next;
     }
+    delaf_tag_ptr = delaf_tag_ptr->next;
   }
   unichar* res = build_output_codes(codes, '+');
   if (codes) {
@@ -880,13 +898,17 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
  * Return a new allocated unicode string describing inflectional codes.
  */
 unichar* Multi2Delaf::retrieve_inflectional_codes(
-    const std::vector<struct dela_entry*>& delaf_tags) const {
-  struct list_ustring* codes       = nullptr;
-  struct list_ustring* tmp_codes   = nullptr;
-  struct list_ustring* ptr_command = nullptr;
-  struct list_pointer* line_ptr    = _config_lines;
+    struct list_pointer* delaf_tags) const {
+  struct list_ustring* codes         = nullptr;
+  struct list_ustring* tmp_codes     = nullptr;
+  struct list_ustring* ptr_command   = nullptr;
+  struct list_pointer* line_ptr      = _config_lines;
+  struct list_pointer* delaf_tag_ptr = delaf_tags;
+  struct dela_entry* tag             = NULL;
 
-  for (const auto& tag : delaf_tags) {
+  while (delaf_tag_ptr != NULL) {
+    // for (const auto& tag : delaf_tags) {
+    tag      = (struct dela_entry*)delaf_tag_ptr->pointer;
     line_ptr = _config_lines;
     while (line_ptr != NULL) {
       struct ConfigLine* line = (struct ConfigLine*)line_ptr->pointer;
@@ -934,6 +956,7 @@ unichar* Multi2Delaf::retrieve_inflectional_codes(
       }
       line_ptr = line_ptr->next;
     }
+    delaf_tag_ptr = delaf_tag_ptr->next;
   }
   unichar* res = build_output_codes(codes, ':');
   if (codes) {

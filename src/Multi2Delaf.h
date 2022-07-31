@@ -26,7 +26,6 @@
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
-#include <vector>
 
 #include "DELA.h"
 #include "List_pointer.h"
@@ -86,15 +85,12 @@ class Multi2Delaf {
 
  private:
   void load_config_file(U_FILE* config_file);
-  unichar* retrieve_lemma(const std::vector<struct dela_entry*>& delaf_tags,
+  unichar* retrieve_lemma(struct list_pointer* delaf_tags,
                           const unichar* multidelaf_string) const;
-  unichar* retrieve_part_of_speech(
-      const std::vector<struct dela_entry*>& delaf_tags,
-      const unichar* multidelaf_string) const;
-  unichar* retrieve_semantic_codes(
-      const std::vector<struct dela_entry*>& delaf_tags) const;
-  unichar* retrieve_inflectional_codes(
-      const std::vector<struct dela_entry*>& delaf_tags) const;
+  unichar* retrieve_part_of_speech(struct list_pointer* delaf_tags,
+                                   const unichar* multidelaf_string) const;
+  unichar* retrieve_semantic_codes(struct list_pointer* delaf_tags) const;
+  unichar* retrieve_inflectional_codes(struct list_pointer* delaf_tags) const;
 
   const VersatileEncodingConfig _vec = VEC_DEFAULT;
   struct list_pointer* _config_lines = nullptr;
