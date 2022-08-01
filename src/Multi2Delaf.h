@@ -93,7 +93,7 @@ class Multi2Delaf {
   unichar* retrieve_inflectional_codes(struct list_pointer* delaf_tags) const;
 
   const VersatileEncodingConfig _vec = VEC_DEFAULT;
-  struct list_pointer* _config_lines = nullptr;
+  struct list_pointer* _config_lines = NULL;
   const char* _config_filename;
 };
 
