@@ -73,6 +73,7 @@ class Multi2Delaf {
   static constexpr int NOT_SPECIFIED = -1;  // nb_required_tag default value
 
   Multi2Delaf(const char* config_filename);
+  ~Multi2Delaf();
   // Not copyable or movable
   Multi2Delaf(const Multi2Delaf&) UNITEX_EQ_DELETE;
   Multi2Delaf(Multi2Delaf&&) UNITEX_EQ_DELETE;
@@ -81,7 +82,6 @@ class Multi2Delaf {
   void parse_config_file();
   void translate_multidelaf_to_delaf(const unichar* inflected_input,
                                      unichar* buffer) const;
-  ~Multi2Delaf();
 
  private:
   void load_config_file(U_FILE* config_file);

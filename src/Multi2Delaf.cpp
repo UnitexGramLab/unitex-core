@@ -150,7 +150,7 @@ struct list_ustring* tokenize_semantic_codes(unichar** ptr,
                                              const char* config_filename) {
   unichar* line              = *ptr;
   unichar* next_code         = line;
-  struct list_ustring* codes = nullptr;
+  struct list_ustring* codes = NULL;
   while (*next_code != '\0' && *next_code != ':') {
     if (*next_code == '+') {
       unichar* new_code =
@@ -198,7 +198,7 @@ unichar* tokenize_one_inflectional_code(unichar** ptr,
  */
 struct list_ustring* tokenize_inflectional_codes(unichar* str,
                                                  const char* config_filename) {
-  struct list_ustring* codes = nullptr;
+  struct list_ustring* codes = NULL;
   unichar* next_code         = str;
   while (*next_code != '\0') {
     if (*next_code == ':') {
@@ -236,10 +236,10 @@ struct ConfigCommand* new_config_command(
  */
 struct ConfigCommand* tokenize_config_command(unichar* str,
                                               const char* config_filename) {
-  unichar* lemma                          = nullptr;
-  unichar* part_of_speech                 = nullptr;
-  struct list_ustring* semantic_codes     = nullptr;
-  struct list_ustring* inflectional_codes = nullptr;
+  unichar* lemma                          = NULL;
+  unichar* part_of_speech                 = NULL;
+  struct list_ustring* semantic_codes     = NULL;
+  struct list_ustring* inflectional_codes = NULL;
   unichar* ptr                            = str;
   if (str[0] == ',') {
     lemma = tokenize_lemma(&ptr, config_filename);
@@ -272,10 +272,6 @@ void free_config_command(struct ConfigCommand* command) {
   }
   free(command);
 }
-
-/*=================================================================
- * ConfigLine class method
- *================================================================= */
 
 /**
  * Return 1 if error occurs, otherwise 0.
@@ -334,7 +330,7 @@ int tokenize_nb_required_tag(unichar** ptr, int* res) {
         return 1;
       }
       res[index_buffer] = '\0';
-      *res              = u_parse_int(buffer, nullptr);
+      *res              = u_parse_int(buffer, NULL);
       *ptr              = line + index + 1;
       return 0;
     }
@@ -357,7 +353,7 @@ struct ConfigLine* new_config_line(struct pattern* pattern, int nb_required_tag,
 /**
  * Tokenize a config line.
  * Returns a struct ConfigLine* if there is a well-formed line.
- * otherwise returns nullptr.
+ * otherwise returns NULL.
  * Raises a fatal error in case of malformed line.
  */
 struct ConfigLine* tokenize_config_line(unichar* line,
@@ -365,10 +361,10 @@ struct ConfigLine* tokenize_config_line(unichar* line,
   unichar* nextNoEmptyUnichar           = line;
   unichar patternToken[INPUTSIZEBUFFER] = {0};
   if (advance_to_next_no_blank_char(&nextNoEmptyUnichar)) {
-    return nullptr;  // skip empty line
+    return NULL;  // skip empty line
   }
   if (nextNoEmptyUnichar[0] == '#') {
-    return nullptr;  // skip comment line
+    return NULL;  // skip comment line
   }
   if (recognize_pattern_token(&nextNoEmptyUnichar, patternToken)) {
     fatal_error(
@@ -377,10 +373,10 @@ struct ConfigLine* tokenize_config_line(unichar* line,
         config_filename, line);
   }
   // build pattern
-  struct pattern* pattern = build_pattern(patternToken, nullptr, 0, nullptr);
+  struct pattern* pattern = build_pattern(patternToken, NULL, 0, NULL);
   if (advance_to_next_no_blank_char(&nextNoEmptyUnichar)) {
     // if there is no command, we skip the current line like comment line
-    return nullptr;
+    return NULL;
   }
   // build nb_required_tag
   int nb_required_tag = Multi2Delaf::NOT_SPECIFIED;
@@ -392,7 +388,7 @@ struct ConfigLine* tokenize_config_line(unichar* line,
   }
   if (advance_to_next_no_blank_char(&nextNoEmptyUnichar)) {
     // if there is no command, we skip the current line like comment line
-    return nullptr;
+    return NULL;
   }
   // build config command
   struct ConfigCommand* config_command =
@@ -408,7 +404,7 @@ struct ConfigLine* tokenize_config_line(unichar* line,
       nb_required_tag != Multi2Delaf::NOT_SPECIFIED && nb_required_tag != 1) {
     fatal_error(
         "Command ..copy is incompatible with an integer enclosed in curly "
-        "braces, except for {1}in file:%s, line: '%S'\n",
+        "braces, except for {1} in file:%s, line: '%S'\n",
         config_filename, line);
   }
   return new_config_line(pattern, nb_required_tag, config_command);
@@ -423,7 +419,7 @@ void free_config_line(void* void_line) {
 
 /**
  * Return the first delaf tag at the address *ptr.
- * Return nullptr to indicate that there is no more tag.
+ * Return NULL to indicate that there is no more tag.
  * Set *ptr to the next unread character.
  * Raises a fatal error if the delaf tag is not enclosed in curly braces.
  */
@@ -431,7 +427,7 @@ struct dela_entry* tokenize_delaf_tag(unichar** ptr) {
   unichar* line               = *ptr;
   unichar* next_no_blank_char = line;
   if (advance_to_next_no_blank_char(&next_no_blank_char)) {
-    return nullptr;  // end of the line, no more dela_entry
+    return NULL;  // end of the line, no more dela_entry
   }
   if (next_no_blank_char[0] != '{') {
     fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n",
@@ -542,7 +538,7 @@ unichar* complete_first_with_second(const unichar* first,
   unichar res[INPUTSIZEBUFFER]    = {0};
   int j                           = 0;
   for (size_t i = 0; i < u_strlen(second); i++) {
-    if (u_strchr(first, second[i]) == nullptr) {
+    if (u_strchr(first, second[i]) == NULL) {
       to_add[j] = second[i];
       j++;
     }
@@ -558,9 +554,9 @@ unichar* complete_first_with_second(const unichar* first,
 struct list_ustring* clone_and_replace_copy_command(
     const struct list_ustring* inflectional_command,
     const struct dela_entry* tag) {
-  struct list_ustring* res = nullptr;
+  struct list_ustring* res = NULL;
 
-  while (inflectional_command != nullptr) {
+  while (inflectional_command != NULL) {
     if (u_strcmp(inflectional_command->string, Multi2Delaf::COLUMN_COPY) != 0) {
       res = sorted_insert(inflectional_command->string, res);
     } else {
@@ -579,16 +575,16 @@ struct list_ustring* clone_and_replace_copy_command(
  * Suppose that l2 is not the empty list.
  */
 struct list_ustring* product(struct list_ustring* l1, struct list_ustring* l2) {
-  unichar* tmp_code           = nullptr;
-  struct list_ustring* res    = nullptr;
+  unichar* tmp_code           = NULL;
+  struct list_ustring* res    = NULL;
   struct list_ustring* ptr_l1 = l1;
   struct list_ustring* ptr_l2 = l2;
-  if (l1 == nullptr) {
+  if (l1 == NULL) {
     return clone(l2);
   }
-  while (ptr_l1 != nullptr) {
+  while (ptr_l1 != NULL) {
     ptr_l2 = l2;
-    while (ptr_l2 != nullptr) {
+    while (ptr_l2 != NULL) {
       tmp_code = complete_first_with_second(ptr_l1->string, ptr_l2->string);
       res      = sorted_insert(tmp_code, res);
       free(tmp_code);
@@ -604,10 +600,10 @@ struct list_ustring* product(struct list_ustring* l1, struct list_ustring* l2) {
  */
 unichar* build_output_codes(const struct list_ustring* codes, char prefix) {
   unichar buffer[INPUTSIZEBUFFER] = {0};
-  if (codes == nullptr) {
+  if (codes == NULL) {
     return u_strdup("");
   }
-  while (codes != nullptr) {
+  while (codes != NULL) {
     if (u_strlen(buffer) + u_strlen(codes->string) + 2 >= INPUTSIZEBUFFER - 1) {
       fatal_error(
           "internal err(build_output_codes): buffer is not "
@@ -638,7 +634,7 @@ Multi2Delaf::~Multi2Delaf() {
  */
 void Multi2Delaf::parse_config_file() {
   U_FILE* config_file = u_fopen(&_vec, _config_filename, U_READ);
-  if (config_file == nullptr) {
+  if (config_file == NULL) {
     fatal_error("Cannot open configuration file %s\n", _config_filename);
   }
   load_config_file(config_file);
@@ -654,8 +650,8 @@ void Multi2Delaf::translate_multidelaf_to_delaf(const unichar* inflected_input,
                                                 unichar* buffer) const {
   unichar* ptr                    = buffer;
   struct list_pointer* delaf_tags = NULL;
-  struct dela_entry* new_tag      = nullptr;
-  while (nullptr != (new_tag = tokenize_delaf_tag(&ptr))) {
+  struct dela_entry* new_tag      = NULL;
+  while (NULL != (new_tag = tokenize_delaf_tag(&ptr))) {
     delaf_tags = new_list_pointer(new_tag, delaf_tags);
   }
   unichar* inflected          = escape_inflected_input(inflected_input);
@@ -698,14 +694,14 @@ void Multi2Delaf::load_config_file(U_FILE* config_file) {
          (eof = read_line_config_file(config_file, line, INPUTSIZEBUFFER))) {
     struct ConfigLine* config_line =
         tokenize_config_line(line, filename_without_path(_config_filename));
-    if (config_line != nullptr) {
+    if (config_line != NULL) {
       _config_lines = new_list_pointer(config_line, _config_lines);
     }
   }
   // the last line is potentially a config line
   struct ConfigLine* config_line =
       tokenize_config_line(line, filename_without_path(_config_filename));
-  if (config_line != nullptr) {
+  if (config_line != NULL) {
     _config_lines = new_list_pointer(config_line, _config_lines);
   }
 }
@@ -725,7 +721,7 @@ unichar* Multi2Delaf::retrieve_lemma(struct list_pointer* delaf_tags,
   while (current_line_ptr != NULL) {
     struct ConfigLine* current_line =
         (struct ConfigLine*)current_line_ptr->pointer;
-    if (current_line->config_command->lemma == nullptr) {
+    if (current_line->config_command->lemma == NULL) {
       current_line_ptr = current_line_ptr->next;
       continue;
     }
@@ -763,7 +759,7 @@ unichar* Multi2Delaf::retrieve_lemma(struct list_pointer* delaf_tags,
   }
   fatal_error("No lemma is provided for this multidelaf string: %S\n",
               multidelaf_string);
-  return nullptr;
+  return NULL;
 }
 
 /**
@@ -780,7 +776,7 @@ unichar* Multi2Delaf::retrieve_part_of_speech(
   while (current_line_ptr != NULL) {
     struct ConfigLine* current_line =
         (struct ConfigLine*)current_line_ptr->pointer;
-    if (current_line->config_command->part_of_speech == nullptr) {
+    if (current_line->config_command->part_of_speech == NULL) {
       current_line_ptr = current_line_ptr->next;
       continue;
     }
@@ -819,7 +815,7 @@ unichar* Multi2Delaf::retrieve_part_of_speech(
   fatal_error(
       "No grammatical cathegory is provided for this multidelaf string: %S\n",
       multidelaf_string);
-  return nullptr;
+  return NULL;
 }
 
 /**
@@ -831,8 +827,8 @@ unichar* Multi2Delaf::retrieve_part_of_speech(
  */
 unichar* Multi2Delaf::retrieve_semantic_codes(
     struct list_pointer* delaf_tags) const {
-  struct list_ustring* codes            = nullptr;
-  struct list_ustring* ptr_command      = nullptr;
+  struct list_ustring* codes            = NULL;
+  struct list_ustring* ptr_command      = NULL;
   struct list_pointer* config_lines_ptr = _config_lines;
   struct list_pointer* delaf_tag_ptr    = delaf_tags;
   struct dela_entry* tag                = NULL;
@@ -843,13 +839,13 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
     config_lines_ptr = _config_lines;
     while (config_lines_ptr != NULL) {
       struct ConfigLine* line = (struct ConfigLine*)config_lines_ptr->pointer;
-      if (line->config_command->semantic_codes == nullptr) {
+      if (line->config_command->semantic_codes == NULL) {
         config_lines_ptr = config_lines_ptr->next;
         continue;
       }
       if (is_entry_compatible_with_pattern(tag, line->pattern)) {
         ptr_command = line->config_command->semantic_codes;
-        while (ptr_command != nullptr) {
+        while (ptr_command != NULL) {
           if (line->nb_required_tag == Multi2Delaf::NOT_SPECIFIED ||
               line->nb_required_tag ==
                   nb_delaf_tag_that_match_pattern(delaf_tags, line->pattern)) {
@@ -871,7 +867,7 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
             0 == nb_delaf_tag_that_match_pattern(delaf_tags, line->pattern)) {
           struct list_ustring* ptr_command =
               line->config_command->semantic_codes;
-          while (ptr_command != nullptr) {
+          while (ptr_command != NULL) {
             codes       = sorted_insert(ptr_command->string, codes);
             ptr_command = ptr_command->next;
           }
@@ -899,9 +895,9 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
  */
 unichar* Multi2Delaf::retrieve_inflectional_codes(
     struct list_pointer* delaf_tags) const {
-  struct list_ustring* codes         = nullptr;
-  struct list_ustring* tmp_codes     = nullptr;
-  struct list_ustring* ptr_command   = nullptr;
+  struct list_ustring* codes         = NULL;
+  struct list_ustring* tmp_codes     = NULL;
+  struct list_ustring* ptr_command   = NULL;
   struct list_pointer* line_ptr      = _config_lines;
   struct list_pointer* delaf_tag_ptr = delaf_tags;
   struct dela_entry* tag             = NULL;
@@ -913,7 +909,7 @@ unichar* Multi2Delaf::retrieve_inflectional_codes(
     while (line_ptr != NULL) {
       struct ConfigLine* line = (struct ConfigLine*)line_ptr->pointer;
       tmp_codes               = codes;
-      if (line->config_command->inflectional_codes == nullptr) {
+      if (line->config_command->inflectional_codes == NULL) {
         line_ptr = line_ptr->next;
         continue;
       }
@@ -926,8 +922,8 @@ unichar* Multi2Delaf::retrieve_inflectional_codes(
           if (is_in_list(Multi2Delaf::COLUMN_COPY, ptr_command)) {
             struct list_ustring* tmp_lst =
                 clone_and_replace_copy_command(ptr_command, tag);
-            if (tmp_lst == nullptr) {
-              codes = product(nullptr, tmp_codes);
+            if (tmp_lst == NULL) {
+              codes = product(NULL, tmp_codes);
             } else {
               codes = product(tmp_codes, tmp_lst);
               free_list_ustring(tmp_lst);

@@ -300,7 +300,7 @@ public:
   struct hash_table* path_to_stop; /* a hash table to know all the Fst2Tag whose path exploration must be interrupted */
   struct hash_table* dela_entries; /* a hash table to get the dela_entries of created boxes when lexical masks are processed */
   bool compileToDelaf = false;
-  Multi2Delaf *multi2Delaf = nullptr;
+  Multi2Delaf *multi2Delaf = NULL;
   bool isMorphological = false;
   bool makeDic = false;
 
@@ -408,7 +408,7 @@ public:
       free(numOfIgnore);
     }
     deleteCallIdMap();
-    if (multi2Delaf != nullptr) {
+    if (multi2Delaf != NULL) {
       delete multi2Delaf;
     }
   }
