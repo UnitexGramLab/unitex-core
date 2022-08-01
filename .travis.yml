@@ -122,7 +122,9 @@ jobs:
 notifications:
   email:
     recipients:
-      - unitex-devel@univ-mlv.fr
+      # Avoid receiving email notifications from forks
+      # travis encrypt "ci@example.org" --add notifications.email.recipients
+      secure: A5ZfYOOtPUHknivpAHu63xx7OKNhpwNDqbxCtHUA5wwDC7bFUZ5rD5OSYJwMRQxYckJWfQGYfSlnZmfcgKsYC8Jt0saa4dHpio6pQHUYutu9miOnocNHUWe8zDQZylGY9abkKDS0VHvlGJ8ViY7tnevZt97ktZXwEuAVuw4Cgys5A8/xNcWmI6w+tlaqy3aFD4XwbaK5vpWHSArIRu/UWtVUH9w4vn9ISOfGzQOtpoycsweeC0t5anjVcZsLKZ2NAL7Mcejj5Xqn+Ugl7eJ0QY5dcGlL65btCTWjfsNdAHxWmRr0URS9o/kgxUp0xOkXZXKosLLoXb8Xlp+15Yz9r8H3fflVrW/hmFvdUosCTyI4BIUu8Ff4yYn86SRM/HMEPhvAt3w1yWnHC5w5fqkFUY/Fhzdw87LBywrYeYu+cti3EZk9M4mYetpXa2pF08lQr3wT3yHCmcvlVd4VTspReWX5o+xHy0ZoejCKJ41MTu2hmNJTgVAeRl5kz6MGpiMY2R93M375QwVD6ZiOQLkZJMfByXo7UDKV93m3IxtRZg9+dh+pcMt3eK8n0raAfPKbwOtMJvxQuHbekvs6sev5/PCuwBBgXCG6oezBaWrMXZX0/PXGcP0wVEqMEAKAdvy8XWX9sdkEA9M1OT1Qd/LL01lOhSH6bL3WVEcqTI2/Cs8=
     on_success: change
     on_failure: always
   slack:
