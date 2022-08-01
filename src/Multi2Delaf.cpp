@@ -38,6 +38,11 @@
 
 namespace unitex {
 
+const char* COMMA_COPY  = ",copy";
+const char* DOT_COPY    = ".copy";
+const char* PLUS_COPY   = "+copy";
+const char* COLUMN_COPY = ":copy";
+
 /**
  * Set *str to the next no blank character.
  * Assumes that *str ended with '\0'.
@@ -64,16 +69,16 @@ unichar* tokenize_lemma(unichar** ptr, const char* config_filename) {
   unichar* line = *ptr;
   // try to read ,,copy
   if (line[0] == ',' && line[1] == ',') {
-    if (!u_starts_with(line + 1, Multi2Delaf::COMMA_COPY)) {
+    if (!u_starts_with(line + 1, COMMA_COPY)) {
       fatal_error("Double ',' in file: %s, line: '%S'\n", config_filename,
                   line);
     }
-    *ptr = line + 1 + strlen(Multi2Delaf::COMMA_COPY);
+    *ptr = line + 1 + strlen(COMMA_COPY);
     if (**ptr != '\0' && **ptr != '.' && **ptr != '+' && **ptr != ':') {
       fatal_error("Double ',' in file: %s, line: '%S'\n", config_filename,
                   line);
     }
-    return u_strdup(Multi2Delaf::COMMA_COPY);
+    return u_strdup(COMMA_COPY);
   }
   int i = 1;
   while (line[i] != '\0' && line[i] != '.' && line[i] != '+' &&
@@ -93,16 +98,16 @@ unichar* tokenize_part_of_speech(unichar** ptr, const char* config_filename) {
   unichar* line = *ptr;
   // try to read ..copy
   if (line[0] == '.' && line[1] == '.') {
-    if (!u_starts_with(line + 1, Multi2Delaf::DOT_COPY)) {
+    if (!u_starts_with(line + 1, DOT_COPY)) {
       fatal_error("Double '.' in file: %s, line: '%S'\n", config_filename,
                   line);
     }
-    *ptr = line + 1 + strlen(Multi2Delaf::DOT_COPY);
+    *ptr = line + 1 + strlen(DOT_COPY);
     if (**ptr != '\0' && **ptr != '+' && **ptr != ':') {
       fatal_error("Double '.' in file: %s, line: '%S'\n", config_filename,
                   line);
     }
-    return u_strdup(Multi2Delaf::DOT_COPY);
+    return u_strdup(DOT_COPY);
   }
   int i = 1;
   while (line[i] != '\0' && line[i] != '+' && line[i] != ':') {
@@ -122,16 +127,16 @@ unichar* tokenize_one_semantic_code(unichar** ptr,
   unichar* line = *ptr;
   // try to read ++copy
   if (line[0] == '+' && line[1] == '+') {
-    if (!u_starts_with(line + 1, Multi2Delaf::PLUS_COPY)) {
+    if (!u_starts_with(line + 1, PLUS_COPY)) {
       fatal_error("Double '+' in file: %s, line: '%S'\n", config_filename,
                   line);
     }
-    *ptr = line + 1 + strlen(Multi2Delaf::PLUS_COPY);
+    *ptr = line + 1 + strlen(PLUS_COPY);
     if (**ptr != '\0' && **ptr != '+' && **ptr != ':') {
       fatal_error("Double '+' in file: %s, line: '%S'\n", config_filename,
                   line);
     }
-    return u_strdup(Multi2Delaf::PLUS_COPY);
+    return u_strdup(PLUS_COPY);
   }
   int i = 1;
   while (line[i] != '\0' && line[i] != '+' && line[i] != ':') {
@@ -173,16 +178,16 @@ unichar* tokenize_one_inflectional_code(unichar** ptr,
   unichar* line = *ptr;
   // try to read ::copy
   if (line[0] == ':' && line[1] == ':') {
-    if (!u_starts_with(line + 1, Multi2Delaf::COLUMN_COPY)) {
+    if (!u_starts_with(line + 1, COLUMN_COPY)) {
       fatal_error("Double ':' in file: %s, line: '%S'\n", config_filename,
                   line);
     }
-    *ptr = line + 1 + strlen(Multi2Delaf::COLUMN_COPY);
+    *ptr = line + 1 + strlen(COLUMN_COPY);
     if (**ptr != '\0' && **ptr != ':') {
       fatal_error("Double ':' in file: %s, line: '%S'\n", config_filename,
                   line);
     }
-    return u_strdup(Multi2Delaf::COLUMN_COPY);
+    return u_strdup(COLUMN_COPY);
   }
   int i = 1;
   while (line[i] != '\0' && line[i] != ':') {
@@ -393,14 +398,14 @@ struct ConfigLine* tokenize_config_line(unichar* line,
   // build config command
   struct ConfigCommand* config_command =
       tokenize_config_command(nextNoEmptyUnichar, config_filename);
-  if (u_strcmp(config_command->lemma, Multi2Delaf::COMMA_COPY) == 0 &&
+  if (u_strcmp(config_command->lemma, COMMA_COPY) == 0 &&
       nb_required_tag != Multi2Delaf::NOT_SPECIFIED && nb_required_tag != 1) {
     fatal_error(
         "Command ,,copy is incompatible with an integer enclosed in curly "
         "braces, except for {1} in file: %s, line: '%S'\n",
         config_filename, line);
   }
-  if (u_strcmp(config_command->part_of_speech, Multi2Delaf::DOT_COPY) == 0 &&
+  if (u_strcmp(config_command->part_of_speech, DOT_COPY) == 0 &&
       nb_required_tag != Multi2Delaf::NOT_SPECIFIED && nb_required_tag != 1) {
     fatal_error(
         "Command ..copy is incompatible with an integer enclosed in curly "
@@ -557,7 +562,7 @@ struct list_ustring* clone_and_replace_copy_command(
   struct list_ustring* res = NULL;
 
   while (inflectional_command != NULL) {
-    if (u_strcmp(inflectional_command->string, Multi2Delaf::COLUMN_COPY) != 0) {
+    if (u_strcmp(inflectional_command->string, COLUMN_COPY) != 0) {
       res = sorted_insert(inflectional_command->string, res);
     } else {
       for (int i = 0; i < tag->n_inflectional_codes; i++) {
@@ -729,8 +734,7 @@ unichar* Multi2Delaf::retrieve_lemma(struct list_pointer* delaf_tags,
     while (delaf_tags_ptr != NULL) {
       tag = (struct dela_entry*)delaf_tags_ptr->pointer;
       if (is_entry_compatible_with_pattern(tag, current_line->pattern)) {
-        if (u_strcmp(current_line->config_command->lemma,
-                     Multi2Delaf::COMMA_COPY) == 0) {
+        if (u_strcmp(current_line->config_command->lemma, COMMA_COPY) == 0) {
           if (nb_delaf_tag_that_match_pattern(delaf_tags,
                                               current_line->pattern) != 1) {
             fatal_error(
@@ -785,8 +789,8 @@ unichar* Multi2Delaf::retrieve_part_of_speech(
       // for (const auto& tag : delaf_tags) {
       tag = (struct dela_entry*)delaf_tag_ptr->pointer;
       if (is_entry_compatible_with_pattern(tag, current_line->pattern)) {
-        if (u_strcmp(current_line->config_command->part_of_speech,
-                     Multi2Delaf::DOT_COPY) == 0) {
+        if (u_strcmp(current_line->config_command->part_of_speech, DOT_COPY) ==
+            0) {
           if (nb_delaf_tag_that_match_pattern(delaf_tags,
                                               current_line->pattern) != 1) {
             fatal_error(
@@ -849,7 +853,7 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
           if (line->nb_required_tag == Multi2Delaf::NOT_SPECIFIED ||
               line->nb_required_tag ==
                   nb_delaf_tag_that_match_pattern(delaf_tags, line->pattern)) {
-            if (u_strcmp(ptr_command->string, Multi2Delaf::PLUS_COPY) == 0) {
+            if (u_strcmp(ptr_command->string, PLUS_COPY) == 0) {
               for (int i = 1; i < tag->n_semantic_codes;
                    i++) {  // begin at 1 to skip the grammatical catergory
                 codes = sorted_insert(tag->semantic_codes[i], codes);
@@ -919,7 +923,7 @@ unichar* Multi2Delaf::retrieve_inflectional_codes(
         if (line->nb_required_tag == Multi2Delaf::NOT_SPECIFIED ||
             line->nb_required_tag ==
                 nb_delaf_tag_that_match_pattern(delaf_tags, line->pattern)) {
-          if (is_in_list(Multi2Delaf::COLUMN_COPY, ptr_command)) {
+          if (is_in_list(COLUMN_COPY, ptr_command)) {
             struct list_ustring* tmp_lst =
                 clone_and_replace_copy_command(ptr_command, tag);
             if (tmp_lst == NULL) {

@@ -66,11 +66,7 @@ struct ConfigLine {
  */
 class Multi2Delaf {
  public:
-  static const char* const COMMA_COPY  = ",copy";
-  static const char* const DOT_COPY    = ".copy";
-  static const char* const PLUS_COPY   = "+copy";
-  static const char* const COLUMN_COPY = ":copy";
-  static const int NOT_SPECIFIED       = -1;  // nb_required_tag default value
+  static const int NOT_SPECIFIED = -1;  // nb_required_tag default value
 
   Multi2Delaf(const char* config_filename);
   ~Multi2Delaf();
