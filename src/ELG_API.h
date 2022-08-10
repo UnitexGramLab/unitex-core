@@ -551,7 +551,7 @@ int set(lua_State * L) {
     }
     UnitexString* varname = lua_checkudata_cast(L, varname_index, UnitexString);
 
-    if (vartype | DIC_VARIABLE) {
+    if (vartype & DIC_VARIABLE) {
       // param2: the dictionary variable
      UnitexDicEntry* entry = lua_checkudata_cast(L, 3, UnitexDicEntry);
 
