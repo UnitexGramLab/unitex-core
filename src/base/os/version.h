@@ -211,7 +211,8 @@
 // format for a stack-based virtual machine
 # elif   defined(__EMSCRIPTEN__)
 # include <emscripten/version.h>    // __EMSCRIPTEN_major__
-#   define UNITEX_OS_UNIX_EMSCRIPTEN                 1
+// WebAssembly runtime environments (RE)
+#   define UNITEX_OS_UNIX_WEBASSEMBLY_RE             1
 // Android
 // - UNITEX_OS_UNIX_IS(ANDROID)
 # elif   defined(__ANDROID__)
@@ -667,8 +668,8 @@
 #  define UNITEX_OS_NAME  "unix.apple.osx"
 # elif UNITEX_OS_UNIX_IS(DRAGONFLY)
 #  define UNITEX_OS_NAME  "unix.dragonfly"
-# elif UNITEX_OS_UNIX_IS(EMSCRIPTEN)
-#  define UNITEX_OS_NAME  "unix.emscripten"
+# elif UNITEX_OS_UNIX_IS(WEBASSEMBLY_RE)
+#  define UNITEX_OS_NAME  "unix.webassembly_re"
 # elif UNITEX_OS_UNIX_IS(FREEBSD)
 #  define UNITEX_OS_NAME  "unix.freebsd"
 # elif UNITEX_OS_UNIX_IS(GNU_HURD)
