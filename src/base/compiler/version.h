@@ -136,9 +136,17 @@
 #  define UNITEX_COMPILER_CLANG   (__clang_major__       * 10000000 \
                                  + __clang_minor__       * 100000   \
                                  + __clang_patchlevel__  * 1)
+// Emscripten uses Clang/LLVM as its underlying codegen compiler
+#if defined(__EMSCRIPTEN__)
+// UNITEX_COMPILER_IS_CLANG_EMSCRIPTEN
+#  define UNITEX_COMPILER_IS_CLANG_EMSCRIPTEN  1
+#  define UNITEX_COMPILER_CLANG_EMSCRIPTEN\
+                      (__EMSCRIPTEN_major__  * 10000000 \
+                     + __EMSCRIPTEN_minor__  * 100000   \
+                     + __EMSCRIPTEN_tiny__   * 1)
 // Take notice that Apple's Clang distribution bundled with XCode may rewrite
 // __clang_major__ and __clang_minor__ open source Clang distribution' values
-#if defined(__apple_build_version__)
+#elif defined(__apple_build_version__)
 // UNITEX_COMPILER_IS_CLANG_APPLE
 #  define UNITEX_COMPILER_IS_CLANG_APPLE  1
 // __APPLE_CC__   // distinguish  compilers based on the same version of GCC
@@ -568,6 +576,10 @@ const struct /* compiler_name_version_table_t */ {
 // MINGW
 # define UNITEX_COMPILER_NAME         "mingw"
 # define UNITEX_COMPILER_VERSION      UNITEX_COMPILER_MINGW
+#elif UNITEX_COMPILER_IS(CLANG_EMSCRIPTEN)
+// CLANG_EMSCRIPTEN
+# define UNITEX_COMPILER_NAME         "clang.emscripten"
+# define UNITEX_COMPILER_VERSION      UNITEX_COMPILER_CLANG_EMSCRIPTEN
 #elif UNITEX_COMPILER_IS(CLANG_APPLE)
 // CLANG_APPLE
 # define UNITEX_COMPILER_NAME         "clang.apple"
