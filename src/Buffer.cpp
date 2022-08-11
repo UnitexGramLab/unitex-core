@@ -86,7 +86,14 @@ fseek(fileread,0,SEEK_END);
 long file_size=ftell(fileread);
 fseek(fileread,save_pos,SEEK_SET);
 int capacity=(int)((file_size/item_size)+0x10);
-if ((capacity_limit != 0) && (capacity>capacity_limit)) {
+// FIXME() if file_size is larger than sizeof(int) thus capacity
+// can be negative and a "Not enough memory in new_buffer" arises,
+// ideally capacity must not be of type int but rather of type size_t
+// in order to be use with subsequent malloc() calls. However, this
+// change implies to check all current calls to new_buffer() in order
+// to make sure that unsigned capacities (e.g -1) are not being casted
+// to signed numbers, e.g. (int) -1 ==> (size_t) 4294967295
+if ((capacity < 0) || ((capacity_limit != 0) && (capacity>capacity_limit))) {
     capacity=capacity_limit;
 }
 return new_buffer(capacity,type);
