@@ -10,6 +10,8 @@ Unitex is the Natural Language Processing (NLP) engine of [Unitex/GramLab][unite
     cd unitex-core/src/build
     make DEBUG=yes 64BITS=yes UNITEXTOOLLOGGERONLY=yes
 
+> Once compiled, the `UnitexToolLogger` binary will be found in the `unitex-core/bin` folder. Additional instructions will be displayed after running the make command.
+
 ## Contributing
 
 We welcome everyone to contribute to improve this project. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) 
