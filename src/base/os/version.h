@@ -204,6 +204,15 @@
 #  if    defined(__pnacl__)
 #   define UNITEX_OS_UNIX_NACL_PORTABLE              1
 #  endif  // !defined(__native_client_nonsfi__)
+// Emscripten behaves like a variant of Unix, so the preprocessor defines unix,
+// _unix and __unix__ are always present when compiling code with Emscripten
+// Note that Native Client sandbox technologies were deprecated on Q4 2019 in
+// favor of WebAssembly. WebAssembly (abbreviated Wasm) is a binary instruction
+// format for a stack-based virtual machine
+# elif   defined(__EMSCRIPTEN__)
+# include <emscripten/version.h>    // __EMSCRIPTEN_major__
+// WebAssembly runtime environments (RE)
+#   define UNITEX_OS_UNIX_WEBASSEMBLY_RE             1
 // Android
 // - UNITEX_OS_UNIX_IS(ANDROID)
 # elif   defined(__ANDROID__)
@@ -659,6 +668,8 @@
 #  define UNITEX_OS_NAME  "unix.apple.osx"
 # elif UNITEX_OS_UNIX_IS(DRAGONFLY)
 #  define UNITEX_OS_NAME  "unix.dragonfly"
+# elif UNITEX_OS_UNIX_IS(WEBASSEMBLY_RE)
+#  define UNITEX_OS_NAME  "unix.webassembly_re"
 # elif UNITEX_OS_UNIX_IS(FREEBSD)
 #  define UNITEX_OS_NAME  "unix.freebsd"
 # elif UNITEX_OS_UNIX_IS(GNU_HURD)
