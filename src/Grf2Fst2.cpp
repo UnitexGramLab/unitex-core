@@ -354,7 +354,7 @@ if (fst2_file_name[0]=='\0') {
 }
 remove_extension(fst2_file_name);
 if (pack_fst2) {
-  strcpy(fst2_packed_file_name, fst2_file_name); 
+  strcpy(fst2_packed_file_name, fst2_file_name);
   strcat(fst2_packed_file_name, ".fst2");
   strcat(fst2_file_name, "_unpacked");
 }
@@ -375,7 +375,7 @@ if (result==0) {
    return DEFAULT_ERROR_CODE;
 }
 
-write_tags(infos->fst2,infos->tags);
+write_tags(infos->fst2,infos->tags,infos->debug);
 u_fclose(infos->fst2);
 free_alphabet(infos->alphabet);
 

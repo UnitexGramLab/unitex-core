@@ -1737,16 +1737,21 @@ u_fclose(f);
 /**
  * Dumps into the given fst2 the tags contained in the given string_hash.
  */
-void write_tags(U_FILE* fst2,struct string_hash* tags) {
+void write_tags(U_FILE* fst2,struct string_hash* tags,int debug) {
 int n_tags=tags->size;
 for (int i=0;i<n_tags;i++) {
    if (tags->value[i][0]=='@') {
-      /* During the construction of the tags, only strict-case tags are
-       * prefixed with '@'. Tags that tolerate case variations are not
-       * prefixed with '%' */
+      // the following two checks are used to recognize the token @, in normal
+      // mode and in debug mode, without interpreting it as the prefix of a
+      // strict-case tag
       if (tags->value[i][1]=='\0') {
          u_fprintf(fst2,"%%@\n");
+      } else if (debug && tags->value[i][1] == '/' ) {
+        u_fprintf(fst2,"%%%S\n",tags->value[i]);
       } else {
+        /* During the construction of the tags, only strict-case tags are
+        * prefixed with '@'. Tags that tolerate case variations are
+        * prefixed with '%' */
          u_fprintf(fst2,"%S\n",tags->value[i]);
       }
    } else {
