@@ -71,10 +71,7 @@ class Multi2Delaf {
   Multi2Delaf(const char* config_filename);
   ~Multi2Delaf();
   // Not copyable or movable
-  Multi2Delaf(const Multi2Delaf&) UNITEX_EQ_DELETE;
-  Multi2Delaf(Multi2Delaf&&) UNITEX_EQ_DELETE;
-  Multi2Delaf& operator=(const Multi2Delaf& other) UNITEX_EQ_DELETE;
-  Multi2Delaf& operator=(Multi2Delaf&& other) UNITEX_EQ_DELETE;
+  UNITEX_DISALLOW_COPY_AND_ASSIGN(Multi2Delaf);
   void parse_config_file();
   void translate_multidelaf_to_delaf(const unichar* inflected_input,
                                      unichar* buffer) const;
