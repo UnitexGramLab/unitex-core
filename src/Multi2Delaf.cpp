@@ -695,18 +695,36 @@ void Multi2Delaf::translate_multidelaf_to_delaf(const unichar* inflected_input,
 void Multi2Delaf::load_config_file(U_FILE* config_file) {
   unichar line[INPUTSIZEBUFFER] = {0};
   int eof                       = 0;
+  struct list_pointer* lines_index = NULL;
   while (EOF !=
          (eof = read_line_config_file(config_file, line, INPUTSIZEBUFFER))) {
     struct ConfigLine* config_line =
         tokenize_config_line(line, filename_without_path(_config_filename));
     if (config_line != NULL) {
-      _config_lines = new_list_pointer(config_line, _config_lines);
+      if(_config_lines == NULL) {
+        _config_lines = new_list_pointer(config_line, NULL);
+      } else {
+        lines_index = _config_lines;
+        while(lines_index->next != NULL) {
+          lines_index = lines_index->next;
+        }
+        lines_index->next = new_list_pointer(config_line, NULL);
+      }
     }
   }
   // the last line is potentially a config line
   struct ConfigLine* config_line =
       tokenize_config_line(line, filename_without_path(_config_filename));
   if (config_line != NULL) {
+    if (_config_lines == NULL) {
+      _config_lines = new_list_pointer(config_line, _config_lines);
+    }else {
+      lines_index = _config_lines;
+      while(lines_index->next != NULL) {
+        lines_index = lines_index->next;
+      }
+      lines_index->next = new_list_pointer(config_line, NULL);
+    }
     _config_lines = new_list_pointer(config_line, _config_lines);
   }
 }
