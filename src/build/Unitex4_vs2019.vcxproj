@@ -522,6 +522,7 @@
     <ClCompile Include="..\logger\UnpackFile.cpp" />
     <ClCompile Include="..\logger\UnpackFileTool.cpp" />
     <ClCompile Include="..\MsgLogger.cpp" />
+    <ClCompile Include="..\Multi2Delaf.cpp" />
     <ClCompile Include="..\Offsets.cpp" />
     <ClCompile Include="..\Overlap.cpp" />
     <ClCompile Include="..\PackFst2.cpp" />
