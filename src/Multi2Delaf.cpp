@@ -416,10 +416,13 @@ struct ConfigLine* tokenize_config_line(unichar* line,
 }
 
 void free_config_line(void* void_line) {
+  if(void_line == NULL) {
+    return;
+  }
   struct ConfigLine* line = (struct ConfigLine*)void_line;
   free_pattern(line->pattern);
-  free(line);
   free_config_command(line->config_command);
+  free(line);
 }
 
 /**
@@ -717,7 +720,7 @@ void Multi2Delaf::load_config_file(U_FILE* config_file) {
       tokenize_config_line(line, filename_without_path(_config_filename));
   if (config_line != NULL) {
     if (_config_lines == NULL) {
-      _config_lines = new_list_pointer(config_line, _config_lines);
+      _config_lines = new_list_pointer(config_line, NULL);
     }else {
       lines_index = _config_lines;
       while(lines_index->next != NULL) {
@@ -725,7 +728,6 @@ void Multi2Delaf::load_config_file(U_FILE* config_file) {
       }
       lines_index->next = new_list_pointer(config_line, NULL);
     }
-    _config_lines = new_list_pointer(config_line, _config_lines);
   }
 }
 
