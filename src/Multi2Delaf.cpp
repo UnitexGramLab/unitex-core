@@ -806,7 +806,6 @@ unichar* Multi2Delaf::retrieve_part_of_speech(
     }
     delaf_tag_ptr = delaf_tags;
     while (delaf_tag_ptr != NULL) {
-      // for (const auto& tag : delaf_tags) {
       tag = (struct dela_entry*)delaf_tag_ptr->pointer;
       if (is_entry_compatible_with_pattern(tag, current_line->pattern)) {
         if (u_strcmp(current_line->config_command->part_of_speech, DOT_COPY) ==
@@ -858,7 +857,6 @@ unichar* Multi2Delaf::retrieve_semantic_codes(
   struct dela_entry* tag                = NULL;
 
   while (delaf_tag_ptr != NULL) {
-    // for (const auto& tag : delaf_tags) {
     tag              = (struct dela_entry*)delaf_tag_ptr->pointer;
     config_lines_ptr = _config_lines;
     while (config_lines_ptr != NULL) {
@@ -927,7 +925,6 @@ unichar* Multi2Delaf::retrieve_inflectional_codes(
   struct dela_entry* tag             = NULL;
 
   while (delaf_tag_ptr != NULL) {
-    // for (const auto& tag : delaf_tags) {
     tag      = (struct dela_entry*)delaf_tag_ptr->pointer;
     line_ptr = _config_lines;
     while (line_ptr != NULL) {
