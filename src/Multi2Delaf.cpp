@@ -61,6 +61,23 @@ int advance_to_next_no_blank_char(unichar** str) {
 }
 
 /**
+ * Set *str to the next delaf tag.
+ * Assumes that *str ended with '\0'.
+ * Returns 1 if *str does not contain any more delaf tag, otherwise returns 0.
+ */
+int advance_to_next_delaf_tag(unichar** str) {
+  int i = 0;
+  while ((*str)[i] != '\0' && (*str)[i] != '{') {
+    i++;
+  }
+  if ((*str)[i] == '\0') {
+    return 1;
+  }
+  *str = *str + i;
+  return 0;
+}
+
+/**
  * Return a new allocated unicode string describing the lemma.
  * Set *ptr to the next unread character.
  * Assumes that (*ptr)[0] == ','.
@@ -433,26 +450,22 @@ void free_config_line(void* void_line) {
  */
 struct dela_entry* tokenize_delaf_tag(unichar** ptr) {
   unichar* line               = *ptr;
-  unichar* next_no_blank_char = line;
-  if (advance_to_next_no_blank_char(&next_no_blank_char)) {
+  unichar* next_delaf_tag = line;
+  if (advance_to_next_delaf_tag(&next_delaf_tag)) {
     return NULL;  // end of the line, no more dela_entry
   }
-  if (next_no_blank_char[0] != '{') {
-    fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n",
-                line);
-  }
-  int i = 1;
-  while (next_no_blank_char[i] != '\0' && next_no_blank_char[i] != '}') {
+  int i = 1; // 1 to skip opening brace '{'
+  while (next_delaf_tag[i] != '\0' && next_delaf_tag[i] != '}') {
     i++;
   }
-  if (next_no_blank_char[i] == '\0') {
-    fatal_error("Delaf tag must be enclosed in curly braces, line: '%S'\n",
+  if (next_delaf_tag[i] == '\0') {
+    fatal_error("Unclosed curly brace: Delaf tag must be enclosed in curly braces, line: '%S'\n",
                 line);
   }
-  unichar* token_dela_entry = u_strndup(next_no_blank_char + 1, i - 1);
+  unichar* token_dela_entry = u_strndup(next_delaf_tag + 1, i - 1);
   struct dela_entry* tag    = tokenize_DELAF_line(token_dela_entry);
   free(token_dela_entry);
-  *ptr = next_no_blank_char + i + 1;  // + 1 to skip closing brace '}'
+  *ptr = next_delaf_tag + i + 1;  // + 1 to skip closing brace '}'
   return tag;
 }
 
