@@ -25,8 +25,16 @@ with your changes. The recommended [workflow](http://rypress.com/tutorials/git/r
  
  1. Create a local **branch** for your changes
 
+    If your new branch depends on a branch that has not yet been merged, use the following:
+
     ```
-    git checkout -b my-changes origin/master
+    git checkout branch-not-yet-merged
+    git branch my-branch branch-not-yet-merged
+    ```
+
+    Otherwise:
+    ```
+    git checkout -b my-branch origin/master
     ```
 
    Use a short and descriptive name for your branch. If you are developing a new
@@ -39,6 +47,8 @@ with your changes. The recommended [workflow](http://rypress.com/tutorials/git/r
    [**new issue**](https://github.com/UnitexGramLab/unitex-core/issues/new)
   
 1. Edit the files and **compile** your code following the *How to Build* instructions
+
+    - Refrain from using new C++ libraries, so as not to limit the ability to compile code under architectures, platforms or other C/C++ compilers that are incompatible with them. (e.g. instead of vector use struct list_pointer)
 
 1. Execute [`./unitex-core-test.sh -p1 -M1`](https://github.com/UnitexGramLab/unitex-core-tests#getting-started)
    to run non-regression and memory error detection **tests**. Note that is not necessary or even
@@ -54,6 +64,8 @@ with your changes. The recommended [workflow](http://rypress.com/tutorials/git/r
     git config --global user.email "john.doe@example.org"
     ```
 
+1. If changes made include new files, add them in files src/build/Unitex4_vs2019.*
+
 1. **Commit** your code following the [Commit Message Guidelines](https://github.com/UnitexGramLab/unitex-doc-contributor-guidelines/blob/master/pages/05.guidelines/01.commits/docs.md)
 
 1. Make sure your fork is **up to date**
@@ -68,13 +80,6 @@ with your changes. The recommended [workflow](http://rypress.com/tutorials/git/r
     ```
     git checkout my-changes
     git rebase master
-    ```
-
-1. **Merge** back into master
-
-    ```
-    git checkout master
-    git merge my-changes
     ```
 
 1. **Push** your changes to your remote repository on GitHub
