@@ -498,8 +498,10 @@ return filename + l + 1;
  */
 void remove_path_and_extension(const char* filename,char* result) {
 char temp[FILENAME_MAX];
+char temp2[FILENAME_MAX];
 remove_path(filename,temp);
-remove_extension(temp,result);
+remove_extension(temp,temp2);
+strcpy(result,temp2);
 }
 
 
