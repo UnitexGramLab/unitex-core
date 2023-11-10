@@ -553,6 +553,9 @@
     <ClCompile Include="..\MorphologicalLocate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Multi2Delaf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\MultiFlex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
