@@ -596,9 +596,19 @@ if (tag[i]!='}' || val!=P_OK) {
    return NULL;
 }
 /* And we tokenize it as a normal DELAF line */
-int foo_error;
-struct dela_entry* dicentry=tokenize_DELAF_line(buffer,0,&foo_error,0,prv_alloc);
-free_cb(buffer,prv_alloc);
+int* verbose_error = NULL;
+if (!emit_error) {
+  // verbose error stores the error number returned by tokenize_DELAF_line,
+  // if verbose_error is NULL, tokenize_DELAF_line messages prints directly
+  // the error messages
+  verbose_error = (int*)malloc(sizeof(int));
+}
+struct dela_entry* dicentry =
+    tokenize_DELAF_line(buffer, 0, verbose_error, 0, prv_alloc);
+free_cb(buffer, prv_alloc);
+if (verbose_error != NULL) {
+  free(verbose_error);
+}
 return dicentry;
 }
 
