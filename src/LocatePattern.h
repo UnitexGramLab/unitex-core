@@ -377,6 +377,10 @@ struct locate_parameters {
    void*private_param_locate_trace;
 
    const char* token_filename;
+   const char* concord_filename;
+
+   const VersatileEncodingConfig* versatile_encoding_config;
+
    unichar* recyclable_unichar_buffer;
    unsigned int size_recyclable_unichar_buffer;
 

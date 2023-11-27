@@ -50,14 +50,14 @@ typedef struct {
 
 
 
-int is_longer_match(Match* a,Match* b);
-int match_end_after(Match* a,Match* b);
-int same_start_positions(Match* a,Match* b);
-int same_end_positions(Match* a,Match* b);
-int same_positions(Match* a,Match* b);
-int match_start_before(Match* a,Match* b);
-Overlap compare_matches(Match* a,Match* b);
-int valid_text_interval_tfst(Match* a,Match* b);
+int is_longer_match(const Match* a,const Match* b);
+int match_end_after(const Match* a,const Match* b);
+int same_start_positions(const Match* a,const Match* b);
+int same_end_positions(const Match* a,const Match* b);
+int same_positions(const Match* a,const Match* b);
+int match_start_before(const Match* a,const Match* b);
+Overlap compare_matches(const Match* a,const Match* b);
+int valid_text_interval_tfst(const Match* a,const Match* b);
 
 } // namespace unitex
 

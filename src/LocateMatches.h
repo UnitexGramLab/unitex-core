@@ -55,6 +55,11 @@ struct match_list* load_match_list(U_FILE*,OutputPolicy*,unichar*,Abstract_alloc
 void filter_unambiguous_outputs(struct match_list* *list,vector_int*);
 int are_ambiguous(struct match_list* a,struct match_list* b);
 
+int compare_for_sorting(const struct match_list* a, const struct match_list* b);
+struct match_list* merge_sorted_lists(struct match_list* a, struct match_list* b);
+void split_list(struct match_list* source, struct match_list** front, struct match_list** back);
+void sort_matches_left_most_longest_order(struct match_list** match_list_head);
+
 } // namespace unitex
 
 #endif

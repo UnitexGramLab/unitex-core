@@ -148,6 +148,9 @@ p->max_matches_at_token_pos=MAX_MATCHES_AT_TOKEN_POS;
 p->max_matches_per_subgraph=MAX_MATCHES_PER_SUBGRAPH;
 p->max_errors=MAX_ERRORS;
 
+p->concord_filename=NULL;
+p->versatile_encoding_config=NULL;
+
 p->pos_in_tokens = -1;
 p->pos_in_chars = -1;
 
@@ -266,6 +269,8 @@ U_FILE* out;
 U_FILE* info;
 struct locate_parameters* p=new_locate_parameters(real_elg_extensions_path);
 
+p->versatile_encoding_config = vec;
+
 if (stack_max>0) {
     p->stack_max = stack_max;
 }
@@ -319,6 +324,7 @@ char* concord_info = (buffer_filename + (step_filename_buffer * 1));
 
 strcpy(concord,dynamicDir);
 strcat(concord,"concord.ind");
+p->concord_filename = concord;
 
 strcpy(concord_info,dynamicDir);
 strcat(concord_info,"concord.n");
