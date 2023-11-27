@@ -30,7 +30,7 @@ namespace unitex {
 /**
  * Returns 1 if a is longer than b; 0 otherwise.
  */
-int is_longer_match(Match* a,Match* b) {
+int is_longer_match(const Match* a,const Match* b) {
 if (a->start_pos_in_token>b->start_pos_in_token) return 0;
 if (a->start_pos_in_token==b->start_pos_in_token) {
    if (a->start_pos_in_char>b->start_pos_in_char) return 0;
@@ -52,7 +52,7 @@ return 1;
 /**
  * Returns 1 if a ends strictly after b.
  */
-int match_end_after(Match* a,Match* b) {
+int match_end_after(const Match* a,const Match* b) {
 if (a->end_pos_in_token<b->end_pos_in_token) return 0;
 if (a->end_pos_in_token>b->end_pos_in_token) return 1;
 /* Same end positions in tokens */
@@ -67,7 +67,7 @@ return 1;
 /**
  * Returns 1 if a begins exactly at the same position that b.
  */
-int same_start_positions(Match* a,Match* b) {
+int same_start_positions(const Match* a,const Match* b) {
 return a->start_pos_in_token==b->start_pos_in_token
     && a->start_pos_in_char==b->start_pos_in_char
     && a->start_pos_in_letter==b->start_pos_in_letter;
@@ -77,7 +77,7 @@ return a->start_pos_in_token==b->start_pos_in_token
 /**
  * Returns 1 if a ends exactly at the same position that b.
  */
-int same_end_positions(Match* a,Match* b) {
+int same_end_positions(const Match* a,const Match* b) {
 return a->end_pos_in_token==b->end_pos_in_token
     && a->end_pos_in_char==b->end_pos_in_char
     && a->end_pos_in_letter==b->end_pos_in_letter;
@@ -87,7 +87,7 @@ return a->end_pos_in_token==b->end_pos_in_token
 /**
  * Returns 1 if a and b have the same bounds.
  */
-int same_positions(Match* a,Match* b) {
+int same_positions(const Match* a,const Match* b) {
 return same_start_positions(a,b) && same_end_positions(a,b);
 }
 
@@ -95,7 +95,7 @@ return same_start_positions(a,b) && same_end_positions(a,b);
 /**
  * Returns 1 if a's start position < b's start position; 0 otherwise
  */
-int match_start_before(Match* a,Match* b) {
+int match_start_before(const Match* a,const Match* b) {
 if (a->start_pos_in_token>b->start_pos_in_token) return 0;
 if (a->start_pos_in_token<b->start_pos_in_token) return 1;
 if (a->start_pos_in_char>b->start_pos_in_char) return 0;
@@ -104,7 +104,7 @@ return a->start_pos_in_letter<b->start_pos_in_letter;
 }
 
 
-int b_starts_after_end_of_a(Match* a,Match* b) {
+int b_starts_after_end_of_a(const Match* a,const Match* b) {
 if (b->start_pos_in_token<a->end_pos_in_token) return 0;
 if (b->start_pos_in_token>a->end_pos_in_token) return 1;
 if (b->start_pos_in_char<a->end_pos_in_char) return 0;
@@ -116,7 +116,7 @@ return b->start_pos_in_letter>a->end_pos_in_letter;
 /**
  * Compares a's positions and b's positions.
  */
-Overlap compare_matches(Match* a,Match* b) {
+Overlap compare_matches(const Match* a,const Match* b) {
 if (match_start_before(a,b)) {
    /* a starts before b starts */
    if (b_starts_after_end_of_a(a,b)) return A_BEFORE_B;
@@ -140,7 +140,7 @@ if (match_start_before(a,b)) {
 /**
  * Returns 1 if a starts before b ends; 0 otherwise.
  */
-int valid_text_interval_tfst(Match* a,Match* b) {
+int valid_text_interval_tfst(const Match* a,const Match* b) {
 if (a->start_pos_in_token<b->end_pos_in_token) return 1;
 if (a->start_pos_in_token>b->end_pos_in_token) return 0;
 return (a->start_pos_in_char<=b->end_pos_in_char);

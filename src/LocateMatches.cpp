@@ -74,11 +74,16 @@ void free_match_list_element(struct match_list* l,Abstract_allocator prv_alloc) 
   }
   if (l->output!=NULL) {
     free_cb(l->output,prv_alloc);
+    l->output = NULL;
   }
 
   free_cb(l,prv_alloc);
 
   // protecting against dangling pointer bugs
+
+  // NOTE: Do not set l to NULL here, as l is a copy of the original pointer
+  // This will not affect the external pointer that references this memory
+  // location. It only sets the local copy of the pointer to NULL. ~martinec
   l = NULL;
 }
 
@@ -253,6 +258,81 @@ while (l!=NULL) {
     continue;
   }
 }
+}
+
+// Utility function to compare two matches for sorting
+int compare_for_sorting(const struct match_list* a,
+                        const struct match_list* b) {
+  if (match_start_before(&(a->m), &(b->m))) {
+    // a starts before b, so a should come first
+    return -1;
+  } else if (same_start_positions(&(a->m), &(b->m))) {
+    // a and b start at the same position, compare based on length
+    return is_longer_match(&(a->m), &(b->m)) ? -1 : 1;
+  } else {
+    // a starts after b, so b should come first
+    return 1;
+  }
+}
+
+// Function to merge two sorted lists (part of merge sort)
+struct match_list* merge_sorted_lists(struct match_list* a,
+                                      struct match_list* b) {
+  struct match_list* result = NULL;
+
+  if (a == NULL)
+    return b;
+  else if (b == NULL)
+    return a;
+
+  if (compare_for_sorting(a, b) <= 0) {
+    result       = a;
+    result->next = merge_sorted_lists(a->next, b);
+  } else {
+    result       = b;
+    result->next = merge_sorted_lists(a, b->next);
+  }
+
+  return result;
+}
+
+// Function to split a list into two halves (part of merge sort)
+void split_list(struct match_list* source, struct match_list** front,
+                struct match_list** back) {
+  struct match_list* fast;
+  struct match_list* slow;
+  slow = source;
+  fast = source->next;
+
+  while (fast != NULL) {
+    fast = fast->next;
+    if (fast != NULL) {
+      slow = slow->next;
+      fast = fast->next;
+    }
+  }
+
+  *front     = source;
+  *back      = slow->next;
+  slow->next = NULL;
+}
+
+// Main function to sort the matches using merge sort
+void sort_matches_left_most_longest_order(struct match_list** match_list_head) {
+  struct match_list* head = *match_list_head;
+  struct match_list* a;
+  struct match_list* b;
+
+  if ((head == NULL) || (head->next == NULL)) {
+    return;
+  }
+
+  split_list(head, &a, &b);
+
+  sort_matches_left_most_longest_order(&a);
+  sort_matches_left_most_longest_order(&b);
+
+  *match_list_head = merge_sorted_lists(a, b);
 }
 
 } // namespace unitex
