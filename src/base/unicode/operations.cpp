@@ -97,7 +97,7 @@ const unichar* u_memchr(const unichar* ustr, unichar uchr, size_t maxlen) {
   size_t count = 0;
 
   // 16-bit mask from most significant bits
-  uint32_t mask;
+  uint32_t mask = 0;
 
   // find a 16-bytes alignment
   uint32_t align = ((uint32_t)(uintptr_t) (ustr) ) & 0xf;
@@ -259,7 +259,7 @@ size_t u_strlen(const unichar* ustr) {
   uptr += (U__SSE2__UNICHAR__PER__BLOCK__(__m128i))
 
   // 16-bit mask from most significant bits
-  uint32_t mask;
+  uint32_t mask = 0;
 
   // find a 16-bytes alignment
   uint32_t align = ((uint32_t)(uintptr_t) (ustr) ) & 0xf;
