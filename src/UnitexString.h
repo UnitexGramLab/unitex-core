@@ -424,6 +424,18 @@ class UnitexString {
   }
 
   /**
+   * @brief  Constructor from UnitexString
+   *
+   * Allocates and initializes a string from a null-terminated character
+   * sequence (UnitexString)
+   *
+   * @param  string A null-terminated character sequence (UnitexString)
+   */
+  explicit UnitexString(UnitexString* string) :
+      data_(attach(string->data_)) {
+  }
+
+  /**
    * @brief  Constructor from unitex Ustring
    *
    * Initializes an already allocate string representing a null-terminated
