@@ -278,26 +278,6 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
       p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->al.prv_alloc_generic);
     }
 
-    // note that when using the SHORTEST_MATCHES or LONGEST_MATCHES policies,
-    // the matches are already ordered from the left-most to the longest
-    if (p->match_policy == ALL_MATCHES) {
-      u_fclose(out);
-      u_printf("Sorting concord matches by the left-most longest order...\n");
-      out = u_fopen(p->versatile_encoding_config, p->concord_filename, U_MODIFY);
-      if (out == NULL) {
-        error("Cannot open %s\n", p->concord_filename);
-      } else {
-        unichar concord_header;
-        struct match_list* matches = load_match_list(out, NULL, &concord_header);
-        sort_matches_left_most_longest_order(&matches);
-
-        // set file position to the beginning in order to rewrite it
-        rewind(out);
-        save_concord_file_matches(out, matches, p->output_policy,
-                                  concord_header, p->al.prv_alloc_generic);
-      }
-    }
-
     u_printf("100%% done      \n\n");
     u_printf("%d match%s\n", p->number_of_matches,
             (p->number_of_matches == 1) ? "" : "es");
