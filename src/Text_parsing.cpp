@@ -56,9 +56,6 @@ static struct match_list* eliminate_shorter_matches(struct match_list*, int, int
 static struct match_list* save_matches(struct match_list*, int, U_FILE*,
         struct locate_parameters*, Abstract_allocator);
 static inline int at_text_start(struct locate_parameters*,int);
-static void save_concord_file_matches(U_FILE* f, struct match_list* l,
-                                      OutputPolicy output_policy, unichar header,
-                                      Abstract_allocator prv_alloc = NULL);
 
 static long CalcPerfHalfHundred(long text_size, long matching_units) {
     unsigned long text_size_calc_per_halfhundred = text_size;
@@ -88,7 +85,7 @@ static long CalcPerfHalfHundred(long text_size, long matching_units) {
  * Performs the Locate operation on the text, saving the occurrences
  * on the fly.
  */
-void launch_locate(U_FILE*& out, long int text_size, U_FILE* info,
+void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
         struct locate_parameters* p) {
     p->token_error_ctx.n_errors = 0;
     p->token_error_ctx.last_start = -1;
@@ -279,26 +276,6 @@ void launch_locate(U_FILE*& out, long int text_size, U_FILE* info,
 
     if ((p->search_limit == -1 || p->number_of_matches < p->search_limit)) {
       p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->al.prv_alloc_generic);
-    }
-
-    // note that when using the SHORTEST_MATCHES or LONGEST_MATCHES policies,
-    // the matches are already ordered from the left-most to the longest
-    if (p->match_policy == ALL_MATCHES) {
-      u_fclose(out);
-      u_printf("Sorting concord matches by the left-most longest order...\n");
-      out = u_fopen(p->versatile_encoding_config, p->concord_filename, U_MODIFY);
-      if (out == NULL) {
-        error("Cannot open %s\n", p->concord_filename);
-      } else {
-        unichar concord_header;
-        struct match_list* matches = load_match_list(out, NULL, &concord_header);
-        sort_matches_left_most_longest_order(&matches);
-
-        // set file position to the beginning in order to rewrite it
-        rewind(out);
-        save_concord_file_matches(out, matches, p->output_policy,
-                                  concord_header, p->al.prv_alloc_generic);
-      }
     }
 
     u_printf("100%% done      \n\n");
@@ -2312,6 +2289,33 @@ struct match_list* ptr;
         return NULL;
     }
 
+    /**
+     * Delay saving matches strategy
+     *
+     * This strategy involves a thorough check of all matches in the list to ascertain
+     * if they are ready to be saved. The core of this update focuses on ensuring
+     * that matches are fully processed and their end positions do not exceed the
+     * current position in the text processing.
+     *
+     * If any match extends beyond or reaches the current text position, it indicates
+     * that the match could still have changes. In such cases, the function avoid
+     * saving any matches. Instead, it sorts all the matches to maintain their
+     * correct order, which is crucial for accurate output. The function then
+     * returns the list without saving, to ensure that matches are saved only when
+     * they are completely finalized.
+     *
+     * This strategy for delay saving matches is designed to preserve the integrity of
+     * match results, especially under match policies like ALL_MATCHES.
+     */
+    for (ptr = l; ptr != NULL; ptr = ptr->next) {
+      if (ptr->m.end_pos_in_token >= current_position) {
+        // if any match's end position is not less than the current position,
+        // sort the matches and return the list as is, without saving any matches
+        sort_matches_left_most_longest_order(&l);
+        return l;
+      }
+    }
+
     if (l->m.end_pos_in_token < current_position) {
         /* we can save the match (necessary for SHORTEST_MATCHES: there
          * may be no shorter match) */
@@ -2461,43 +2465,6 @@ struct match_list* ptr;
     }
     l->next = save_matches(l->next, current_position, f, p, prv_alloc);
     return l;
-}
-
-void save_concord_file_matches(U_FILE* f, struct match_list* l,
-                               OutputPolicy output_policy, unichar header,
-                               Abstract_allocator prv_alloc) {
-  if (l == NULL) {
-    // no matches to save
-    return;
-  }
-
-  // write header
-  u_fprintf(f, "#%C\n", header);
-
-  struct match_list* current = l;
-  while (current != NULL) {
-    // save the next element before freeing the current one
-    struct match_list* next = current->next;
-
-    // Write match positions
-    u_fprintf(f, "%d.%d.%d %d.%d.%d", current->m.start_pos_in_token,
-              current->m.start_pos_in_char, current->m.start_pos_in_letter,
-              current->m.end_pos_in_token, current->m.end_pos_in_char,
-              current->m.end_pos_in_letter);
-
-    // write match output if applicable
-    if (output_policy != IGNORE_OUTPUTS && current->output != NULL) {
-      u_fprintf(f, " %S", current->output);
-    }
-
-    u_fprintf(f, "\n");
-
-    // free the current element
-    free_match_list_element(current, prv_alloc);
-
-    // move to the next element
-    current = next;
-  }
 }
 
 /**

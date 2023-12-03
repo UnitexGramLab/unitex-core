@@ -335,4 +335,53 @@ void sort_matches_left_most_longest_order(struct match_list** match_list_head) {
   *match_list_head = merge_sorted_lists(a, b);
 }
 
+/**
+ * Writes a list of matches to a file in the concordance format. Each match is
+ * output with its start and end positions, and optionally, its associated output
+ * depending on the output policy. After writing, the function releases the memory
+ * allocated for each match.
+ *
+ * @param f Pointer to the file where matches are to be saved.
+ * @param l Pointer to the head of the match list to be processed.
+ * @param output_policy Determines whether to include match outputs in the saved data.
+ * @param header Character related to the transduction mode ('D', 'I', 'M', 'R').
+ * @param prv_alloc Abstract allocator used for memory management.
+ */
+void save_matches_concord_format(U_FILE* f, struct match_list* l,
+                                 OutputPolicy output_policy, unichar header,
+                                 Abstract_allocator prv_alloc) {
+  if (l == NULL) {
+    // no matches to save
+    return;
+  }
+
+  // write header
+  u_fprintf(f, "#%C\n", header);
+
+  struct match_list* current = l;
+  while (current != NULL) {
+    // save the next element before freeing the current one
+    struct match_list* next = current->next;
+
+    // Write match positions
+    u_fprintf(f, "%d.%d.%d %d.%d.%d", current->m.start_pos_in_token,
+              current->m.start_pos_in_char, current->m.start_pos_in_letter,
+              current->m.end_pos_in_token, current->m.end_pos_in_char,
+              current->m.end_pos_in_letter);
+
+    // write match output if applicable
+    if (output_policy != IGNORE_OUTPUTS && current->output != NULL) {
+      u_fprintf(f, " %S", current->output);
+    }
+
+    u_fprintf(f, "\n");
+
+    // free the current element
+    free_match_list_element(current, prv_alloc);
+
+    // move to the next element
+    current = next;
+  }
+}
+
 } // namespace unitex

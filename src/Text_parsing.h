@@ -66,7 +66,7 @@ namespace unitex {
 #define COUNT_CANCEL_TRYING_INIT_CONST (1024)
 
 void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p,const struct optimizedFst2State*);
-void launch_locate(U_FILE*&,long int,U_FILE*,struct locate_parameters*);
+void launch_locate(U_FILE*,long int,U_FILE*,struct locate_parameters*);
 void core_tokenized_locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,struct locate_n_matches*,struct list_context*,struct locate_parameters*);
 unichar* get_token_sequence(struct locate_parameters*, int, int);
 
