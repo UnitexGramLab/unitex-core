@@ -43,5 +43,6 @@
 #define UNITEX_BASE_STRING_STRING_H_                                // NOLINT
 /* ************************************************************************** */
 #include "base/string/strtok_r.h"
+#include "base/string/util.h"
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_STRING_STRING_H_                             // NOLINT
