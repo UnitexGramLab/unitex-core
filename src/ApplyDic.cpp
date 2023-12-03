@@ -732,24 +732,51 @@ return 0;
  *
  * @author Alexis Neme
  * Modified by Sébastien Paumier
+ * Modified by Cristian Martinez
  */
-int dico_application_simplified(const VersatileEncodingConfig* vec,const unichar* text,const char* name_bin,struct dico_application_info* info) {
-char name_inf[FILENAME_MAX];
-remove_extension(name_bin,name_inf);
-strcat(name_inf,".inf");
-info->d=new_Dictionary(vec,name_bin,name_inf);
-if (info->d==NULL) return 1;
-unichar entry[DIC_WORD_SIZE];
-Ustring* ustr=new_Ustring();
-explore_bin_simple_words(info,info->d->initial_state_offset,text,entry,0,-1,0,ustr,0);
-free_Ustring(ustr);
-free_Dictionary(info->d);
-info->d=NULL;
-/*free_abstract_INF(info->inf,&info->inf_free);
-free_abstract_BIN(info->bin,&info->bin_free);*/
-return 0;
-}
+int dico_application_simplified(const VersatileEncodingConfig* vec,
+                                const unichar* text, const char* name_bin,
+                                struct dico_application_info* info) {
+  if (vec == NULL || text == NULL || name_bin == NULL || info == NULL) {
+    return DEFAULT_ERROR_CODE;
+  }
 
+  char name_inf[FILENAME_MAX];
+  remove_extension(name_bin, name_inf);
+  strcat(name_inf, ".inf");
+
+  info->d = new_Dictionary(vec, name_bin, name_inf);
+  if (info->d == NULL) {
+    return ALLOC_ERROR_CODE;
+  }
+
+  unichar* inflected = (unichar*)malloc(sizeof(unichar) * DIC_WORD_SIZE);
+  if (inflected == NULL) {
+    free_Dictionary(info->d);
+    return ALLOC_ERROR_CODE;
+  }
+
+  Ustring* ustr = new_Ustring();
+  if (ustr == NULL) {
+    free(inflected);
+    free_Dictionary(info->d);
+    return ALLOC_ERROR_CODE;
+  }
+
+  int pos_in_token = 0;
+  int token_number = -1;
+  int priority     = 0;
+  int base         = 0;
+  explore_bin_simple_words(info, info->d->initial_state_offset, text, inflected,
+                           pos_in_token, token_number, priority, ustr, base);
+
+  free_Ustring(ustr);
+  free(inflected);
+  free_Dictionary(info->d);
+  info->d = NULL;
+
+  return SUCCESS_RETURN_CODE;
+}
 
 /**
  * Adds the given match to the tag sequence array, enlarging it if needed.
