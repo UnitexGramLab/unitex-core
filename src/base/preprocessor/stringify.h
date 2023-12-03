@@ -46,6 +46,18 @@
 #define UNITEX_BASE_PREPROCESSOR_STRINGIFY_H_                       // NOLINT
 /* ************************************************************************** */
 /**
+ * @brief  Convert a single macro value into a string constant (surrounded by quotes)
+ *
+ * e.g.
+ * @code{.cpp}
+ *         #define FOO UNITEX_PPSTRINGIFY_NAME(__TIME__)
+ * @endcode
+ * FOO will be literally `"__TIME__"`
+ */
+#define UNITEX_PP_STRINGIFY_HELPER(s) #s
+#define UNITEX_PP_STRINGIFY(s) UNITEX_PP_STRINGIFY_HELPER(s)
+
+/**
  * @brief  Convert a macro name into a string constant (surrounded by quotes)
  *
  * e.g.
