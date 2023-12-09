@@ -1498,7 +1498,6 @@ if (grf==NULL) {
             write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
             free_SingleGraph(graph,NULL);
             vector_int_add(infos->part_of_precompiled_fst2,0);
-            if (n==1) return 0;
             return 1;
         }
     } else {
